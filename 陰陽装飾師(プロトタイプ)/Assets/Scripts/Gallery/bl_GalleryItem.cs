@@ -177,7 +177,8 @@ public class bl_GalleryItem : MonoBehaviour
             }
             else if (m_Type == UGFType.Shadown)
             {
-                Reflection.color = Color.black;
+                Reflection.color = new Color(0,0,0,0);
+                //Reflection.color = Color.black;
             }
             else
             {
