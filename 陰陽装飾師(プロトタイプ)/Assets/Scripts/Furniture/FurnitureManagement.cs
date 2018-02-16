@@ -132,7 +132,7 @@ public class FurnitureManagement : MonoBehaviour
         Button_Clicked();
         Gallery_Manager.mode_ = bl_GalleryManager.Mode.Change;
         Gallery_Manager.OpenGallery_furniture();
-        Gallery_Manager.Init_furniture(furniture_grid_[target_number_]);
+        Gallery_Manager.Init_furniture(furniture_grid_[target_number_].category_ID());
     }
 
     public void Delete()
@@ -447,7 +447,7 @@ public class FurnitureManagement : MonoBehaviour
     {
         Evaluation.UpdateGrid(furniture_grid_);
         Evaluation.EvaluationTotal();
-        Evaluation.UpdateLuckText();
+        Evaluation.UpdateElementsText();
         Evaluation.Comment_Text();
 
         Debug.Log("Evaluation_End");
@@ -576,7 +576,7 @@ public class FurnitureManagement : MonoBehaviour
                 //Debug.Log(clicked_object);
                 if (clicked_object != null)
                 {
-                    if (clicked_object.layer != 5)
+                    if (clicked_object.layer == 8)
                     {
                         clicked_furniture = true;
                         MouseLeftDown(clicked_object);
@@ -611,7 +611,7 @@ public class FurnitureManagement : MonoBehaviour
 
                 if (clicked_object != null)
                 {
-                    if (clicked_object.layer == 17)
+                    if (clicked_object.layer == 8)
                     {
                         MouseRightDown(clicked_object);
                     }
@@ -621,7 +621,7 @@ public class FurnitureManagement : MonoBehaviour
        
     }
 
-    public LevelManager levelmanager;
+    //public LevelManager levelmanager;
 
     private void Update()
     {        

@@ -166,7 +166,8 @@ public class bl_GalleryItem : MonoBehaviour
         }
 
         Sprite = sprite;
-        
+
+        Reflection.color = new Color(0, 0, 0, 0);
         gameObject.transform.Find("Content").gameObject.transform.Find("ItemButton").gameObject.GetComponent<Image>().sprite = Sprite;
 
         if (Reflection != null)
@@ -216,12 +217,10 @@ public class bl_GalleryItem : MonoBehaviour
         else if (mode_ == Mode.Type)
         {
             Button_Clicked();
-            FurnitureGrid temp = new FurnitureGrid();
-
-            temp.set_category_ID(ID);            
+                
             m_Manager.NextGallery_type();
             m_Manager.OpenGallery_furniture();
-            m_Manager.Init_furniture(temp);            
+            m_Manager.Init_furniture(ID);            
         }
         else if(mode_ == Mode.Furniture)
         {

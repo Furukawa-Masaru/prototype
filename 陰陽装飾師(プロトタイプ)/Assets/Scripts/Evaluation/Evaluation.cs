@@ -170,12 +170,6 @@ public partial class Evaluation : MonoBehaviour
 
     //*******************************************************************************************************************************************************************************************
 
-    public Text work_luck_text_;
-    public Text popular_luck_text_;
-    public Text health_luck_text_;
-    public Text economic_luck_text_;
-    public Text love_luck_text_;
-
     public Text hint_text_;
 
     //五行木取得用
@@ -271,13 +265,13 @@ public partial class Evaluation : MonoBehaviour
     //金運ノルマ(取得用)
     public int economic_norma()
     {
-        return norma_luck_[4];
+        return norma_luck_[3];
     }
 
     //恋愛運ノルマ(取得用)
     public int love_norma()
     {
-        return norma_luck_[5];
+        return norma_luck_[4];
     }
 
     //総合運ノルマ(取得用)
@@ -304,6 +298,70 @@ public partial class Evaluation : MonoBehaviour
         }        
     }
 
+    //***************************************************************************************************************
+    //UI表示
+
+    public Text[] elements_text_ = new Text[5];
+
+    public GameObject Gage_Value_yin;
+    public GameObject Gage_Value_yang;
+    private int yin_yang_max_ = 300;
+    private int yin_yang_min_ = -300;
+    
+    public GameObject[] Gage_Value_ = new GameObject[5];
+    private int all_luck_min_ = -500;
+
+    public void UpdateElementsText()
+    {
+        for (int i = 0; i < elements_.Length; i++)
+        {
+            elements_text_[i].text = elements_[i].ToString();
+        }
+
+        Debug.Log("陰陽(前) " + yin_yang_);
+
+        float yin_yang_temp_ = yin_yang_;
+
+        yin_yang_temp_ += (-yin_yang_min_);
+        yin_yang_temp_ /= yin_yang_max_ + (-yin_yang_min_);
+
+        Debug.Log("陰陽(後) " + yin_yang_temp_);
+
+        Gage_Value_yin.GetComponent<RectTransform>().localScale = new Vector3(yin_yang_temp_, 1, 1);
+        Gage_Value_yang.GetComponent<RectTransform>().localScale = new Vector3(1 - Gage_Value_yin.GetComponent<RectTransform>().localScale.x, 1, 1);
+
+        int count = 0;
+
+        for (int i = 0; i < luck_.Length; i++)
+        {
+            Debug.Log("運勢" + i + "(前) " + luck_[i]);
+
+            float luck_temp_ = luck_[i];
+
+            luck_temp_ += (-all_luck_min_);
+            luck_temp_ /= norma_luck_[i] + (-all_luck_min_);
+
+            Debug.Log("運勢" + i + "(後) " + luck_temp_);
+
+            Gage_Value_[i].GetComponent<RectTransform>().localScale = new Vector3(luck_temp_, 1, 1);
+
+            if (luck_temp_ >= 1)
+            {
+                count ++;
+                Gage_Value_[i].GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
+            }
+            else if (luck_temp_ <= 0)
+            {
+                Gage_Value_[i].GetComponent<RectTransform>().localScale = new Vector3(0, 1, 1);
+            }
+        }
+
+        if (count == luck_.Length)
+        {
+            GameObject.Find("LevelManager").GetComponent<LevelManager>().FinishGame(true);
+        }
+    }
+
     //*******************************************************************************************************************************************************************************************
 
     private Grid_Manager Grid_Manager_;
@@ -328,7 +386,7 @@ public partial class Evaluation : MonoBehaviour
         }
 
         EvaluationTotal();
-        UpdateLuckText();
+        UpdateElementsText();
         Comment_Text();
     }
 
@@ -379,16 +437,6 @@ public partial class Evaluation : MonoBehaviour
     }
 
     //*******************************************************************************************************************************************************************************************
-
-
-    public void UpdateLuckText()
-    {
-        work_luck_text_.text = luck_[0].ToString();
-        popular_luck_text_.text = luck_[1].ToString();
-        health_luck_text_.text = luck_[2].ToString();
-        economic_luck_text_.text = luck_[3].ToString();
-        love_luck_text_.text = luck_[4].ToString();      
-    }
 
     //総合評価関数(評価の一連の流れ)
     public void EvaluationTotal()

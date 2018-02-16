@@ -138,72 +138,22 @@ public partial class FurnitureGrid : MonoBehaviour
         return category_ID_;
     }
 
-    //家具のカテゴリーID(取得用)
+    //家具のカテゴリーID(セット用)
     public void set_category_ID(int id)
     {
         category_ID_ = id;
-
-        if (category_ID_ == 0)
-        {
-            //ベッド
-            furniture_type_ = FurnitureType.bed;
-        }
-        else if (category_ID_ == 1)
-        {
-            //テーブル
-            furniture_type_ = FurnitureType.table;
-        }
-        else if (category_ID_ == 2)
-        {
-            //ソファ
-            furniture_type_ = FurnitureType.sofa;
-        }
-        else if (category_ID_ == 3)
-        {
-            //カーペット
-            furniture_type_ = FurnitureType.carpet;
-        }
-        else if (category_ID_ == 4)
-        {
-            //タンス
-            furniture_type_ = FurnitureType.cabinet;
-        }        
-        else if (category_ID_ == 5)
-        {
-            //机
-            furniture_type_ = FurnitureType.desk;
-        }
-        else if (category_ID_ == 6)
-        {
-            //観葉植物
-            furniture_type_ = FurnitureType.foliage;
-        }
-        else if (category_ID_ == 7)
-        {
-            //天井ランプ
-            furniture_type_ = FurnitureType.ceillamp;
-        }
-        else if (category_ID_ == 8)
-        {
-            //机ランプ
-            furniture_type_ = FurnitureType.desklamp;
-        }
-        else if (category_ID_ == 9)
-        {
-            //家電
-            furniture_type_ = FurnitureType.electronics;
-        }
-        else if (category_ID_ == 10)
-        {
-            //カーテン
-            furniture_type_ = FurnitureType.curtain;
-        }
     }
 
     //家具の種類ID(取得用)
     public int furniture_ID()
     {
         return furniture_ID_;
+    }
+
+    //家具の種類ID(セット用)
+    public void set_furniture_ID(int id)
+    {
+        furniture_ID_ = id;
     }
 
     //名前
@@ -428,6 +378,93 @@ public partial class FurnitureGrid : MonoBehaviour
         return yin_yang_;
     }
 
+    //表示用
+    public void Status(int category_ID, int furniture_ID)
+    {
+        if (category_ID == 0)
+        {
+            //ベッド
+            furniture_type_ = FurnitureType.bed;
+            parameta_ = new int[6];
+            GetGridDataBed(furniture_ID);
+        }
+        else if (category_ID == 1)
+        {
+            //テーブル
+            furniture_type_ = FurnitureType.table;
+            parameta_ = new int[1];
+            GetGridDataTable(furniture_ID);
+        }
+        else if (category_ID == 2)
+        {
+            //ソファ
+            furniture_type_ = FurnitureType.sofa;
+            parameta_ = new int[1];
+            GetGridDataSofa(furniture_ID);
+        }
+        else if (category_ID == 3)
+        {
+            //カーペット
+            furniture_type_ = FurnitureType.carpet;
+            parameta_ = new int[1];
+            GetGridDataCarpet(furniture_ID);
+        }
+        else if (category_ID == 4)
+        {
+            //タンス
+            furniture_type_ = FurnitureType.cabinet;
+            parameta_ = new int[1];
+            GetGridDataCabinet(furniture_ID);
+        }
+        else if (category_ID == 5)
+        {
+            //机
+            furniture_type_ = FurnitureType.desk;
+            parameta_ = new int[1];
+            GetGridDataDesk(furniture_ID);
+        }
+        else if (category_ID == 6)
+        {
+            //観葉植物
+            furniture_type_ = FurnitureType.foliage;
+            parameta_ = new int[1];
+            GetGridDataFoliagePlant(furniture_ID);
+        }
+        else if (category_ID == 7)
+        {
+            //天井ランプ
+            furniture_type_ = FurnitureType.ceillamp;
+            parameta_ = new int[1];
+            GetGridDataCeilLamp(furniture_ID);
+        }
+        else if (category_ID == 8)
+        {
+            //机ランプ
+            furniture_type_ = FurnitureType.desklamp;
+            parameta_ = new int[1];
+            GetGridDataDeskLamp(furniture_ID);
+        }
+        else if (category_ID == 9)
+        {
+            //家電
+            furniture_type_ = FurnitureType.electronics;
+            parameta_ = new int[1];
+            GetGridDataConsumerElectronics(furniture_ID);
+        }
+
+        else if (category_ID == 10)
+        {
+            //カーテン
+            furniture_type_ = FurnitureType.curtain;
+            parameta_ = new int[1];
+            GetGridDataCurtain(furniture_ID);
+        }
+
+        sprite_ = Resources.Load<Sprite>(furniture_type().ToString() + "/" + furniture_type().ToString() + "_" + furniture_ID_);
+
+        CreateEnergy();
+    }
+
     //データ初期化(FurnitureGridをインスタンス化したとき，このメソッドを使って初期化する)
     public void Init(int category_ID, int furniture_ID)
     {
@@ -435,7 +472,7 @@ public partial class FurnitureGrid : MonoBehaviour
         furniture_ID_ = furniture_ID;
         furniture_grid_ = new GameObject();
 
-        furniture_grid_.layer = 17;
+        furniture_grid_.layer = 8;
 
         if (category_ID_ == 0)
         {
@@ -519,11 +556,10 @@ public partial class FurnitureGrid : MonoBehaviour
 
         CreateEnergy();
 
+        sprite_ = Resources.Load<Sprite>(furniture_type().ToString() + "/" + furniture_type().ToString() + "_" + furniture_ID_);
+
         string object_name = furniture_type().ToString();
         furniture_grid_.name = object_name;
-
-        sprite_ = Resources.Load<Sprite>(furniture_type().ToString() + "/" + furniture_type().ToString() + "_" + furniture_ID_);
-        //Debug.Log(furniture_type().ToString() + "/" + furniture_type().ToString() + "_" + furniture_ID_);
 
         vertices_all_grid_ = new Vector3[vertices_number_];
         vertices_all_ = new Vector3[vertices_number_];

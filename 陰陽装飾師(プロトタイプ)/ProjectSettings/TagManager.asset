@@ -3,7 +3,13 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - furniture_grid
+  - furniture_grid_rugs
+  - furniture_grid_wall
+  - furniture_grid_door
+  - furniture_grid_ceil
+  - furniture_grid_window
   layers:
   - Default
   - TransparentFX
@@ -13,7 +19,7 @@ TagManager:
   - UI
   - 
   - 
-  - 
+  - Furniture
   - 
   - 
   - 

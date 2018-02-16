@@ -52,13 +52,26 @@ public class bl_GalleryManager : MonoBehaviour
     public GameObject result;
     private GameObject DataManager;
 
-    private FurnitureGrid FurnitureGrid;
-    private int furniture_ID_; //仮家具グリッドID
+    private int category_ID_temp;
+    private int furniture_ID_temp;
     public enum Mode {Add, Change, Property };
     public Mode mode_;
 
     public FurnitureManagement FurnitureManagement;
     public GameObject Bottom;
+
+    public Text wood;
+    public Text fire;
+    public Text earth;
+    public Text metal;
+    public Text water;
+    public Text yin_yang;
+
+    public Text Color_content;
+    public Text Material_content;
+    public Text Pattern_content;
+    public Text Form_content;
+    public Text Characteristic_content;
 
     private bool once_true = true;
     private bool once_false = true;
@@ -131,11 +144,69 @@ public class bl_GalleryManager : MonoBehaviour
         }
     }
 
-    public void Init_furniture(FurnitureGrid furnituregrid)
+    public void Init_furniture(int id)
     {
-        FurnitureGrid = furnituregrid;
+        category_ID_temp = id;
 
-        for (int i = 0; i < sum_furniture[FurnitureGrid.category_ID()]; i++)
+        string furniture_temp = "";
+
+        if (category_ID_temp == 0)
+        {
+            //ベッド
+            furniture_temp = "bed";
+        }
+        else if (category_ID_temp == 1)
+        {
+            //テーブル
+            furniture_temp = "table";
+        }
+        else if (category_ID_temp == 2)
+        {
+            //ソファ
+            furniture_temp = "sofa";
+        }
+        else if (category_ID_temp == 3)
+        {
+            //カーペット
+            furniture_temp = "carpet";
+        }
+        else if (category_ID_temp == 4)
+        {
+            //タンス
+            furniture_temp = "cabinet";
+        }
+        else if (category_ID_temp == 5)
+        {
+            //机
+            furniture_temp = "desk";
+        }
+        else if (category_ID_temp == 6)
+        {
+            //観葉植物
+            furniture_temp = "foliage";
+        }
+        else if (category_ID_temp == 7)
+        {
+            //天井ランプ
+            furniture_temp = "ceillamp";
+        }
+        else if (category_ID_temp == 8)
+        {
+            //机ランプ
+            furniture_temp = "desklamp";
+        }
+        else if (category_ID_temp == 9)
+        {
+            //家電
+            furniture_temp = "electronics";
+        }
+        else if (category_ID_temp == 10)
+        {
+            //カーテン
+            furniture_temp = "curtain";
+        }
+
+        for (int i = 0; i < sum_furniture[category_ID_temp]; i++)
         {
             Item_furniture.Add(new bl_UGFInfo());
             Item_furniture[i].set_item(Instantiate(ItemPrefab) as GameObject);
@@ -144,7 +215,7 @@ public class bl_GalleryManager : MonoBehaviour
             bl_GalleryItem gi = Item_furniture[i].read_item().GetComponent<bl_GalleryItem>();
             furniture.Add(gi);
 
-            furniture[i].GetInfo(i, Resources.Load<Sprite>(furnituregrid.furniture_type().ToString() + "/" + furnituregrid.furniture_type().ToString() + "_" + (i + 1)), bl_GalleryItem.Mode.Furniture);
+            furniture[i].GetInfo(i, Resources.Load<Sprite>(furniture_temp + "/" + furniture_temp + "_" + (i + 1)), bl_GalleryItem.Mode.Furniture);
         }
     }
 
@@ -205,6 +276,49 @@ public class bl_GalleryManager : MonoBehaviour
     /// </summary>
     //変更から
 
+    public void OpenGallery_level()
+    {
+        ScrollList_level.horizontalNormalizedPosition = 0;
+        Gallery_level.SetActive(true);
+    }
+
+    public void NextGallery_level()
+    {
+        Button_Clicked();
+
+        Gallery_level.SetActive(false);
+    }
+
+    public void CloseResult()
+    {
+        gameObject.GetComponent<AudioSource>().Stop();
+        Button_Clicked();
+        room[ID_level].SetActive(false);
+        result.SetActive(false);
+        OpenGallery_level();
+    }
+
+    public void Result(bool ok)
+    {
+        Button_Clicked();
+
+        if (ok == true)
+        {
+            DataManager.GetComponent<DataManager>().set_direction(temp_compass);
+            DataManager.GetComponent<DataManager>().set_room(temp_room);
+            DataManager.GetComponent<DataManager>().set_norma_luck(norma_luck_);
+            DataManager.GetComponent<DataManager>().set_advaice_mode(advaice_mode_);
+
+            StartCoroutine(Sample("Game"));
+        }
+        else if (ok == false)
+        {
+            result.SetActive(false);
+            Gallery_level.SetActive(true);
+        }
+
+    }
+
     public void Level(int id)
     {
         ID_level = id;
@@ -250,11 +364,11 @@ public class bl_GalleryManager : MonoBehaviour
         {
             if (i == ID_level)
             {
-                norma_luck_[i] = 200;
+                norma_luck_[i] = 800;
             }
             else
             {
-                norma_luck_[i] = 50;
+                norma_luck_[i] = 500;
             }
         }
 
@@ -339,42 +453,6 @@ public class bl_GalleryManager : MonoBehaviour
         //result.transform.Find("compass&room").gameObject.transform.position = room[ID_level].transform.position + new Vector3(0,10,0);
     }
 
-    public void FullWindow_furniture(int id, Sprite sprite)
-    {
-        furniture_ID_ = id;
-        m_TextName.text = FurnitureGrid.furniture_type().ToString() + furniture_ID_;
-        m_FullIcon.sprite = sprite;        
-    }
-
-    //属性から
-    public void FullWindow_property(FurnitureGrid furnituregrid)
-    {
-        m_TextName.text = furnituregrid.object_name();
-        m_FullIcon.sprite = furnituregrid.read_sprite();
-    }
-
-    public void OpenGallery_level()
-    {
-        ScrollList_level.horizontalNormalizedPosition = 0;
-        Gallery_level.SetActive(true);
-    }
-
-    public void NextGallery_level()
-    {
-        Button_Clicked();
-
-        Gallery_level.SetActive(false);
-    }
-
-    public void CloseResult()
-    {
-        gameObject.GetComponent<AudioSource>().Stop();
-        Button_Clicked();
-        room[ID_level].SetActive(false);
-        result.SetActive(false);
-        OpenGallery_level();
-    }
-
     public void OpenGallery_type()
     {
         ScrollList_type.horizontalNormalizedPosition = 0;
@@ -433,7 +511,7 @@ public class bl_GalleryManager : MonoBehaviour
 
     public void Destroy_furniture()
     {
-        for (int i = 0; i < sum_furniture[FurnitureGrid.category_ID()]; i++)
+        for (int i = 0; i < sum_furniture[category_ID_temp]; i++)
         {
             Destroy(Item_furniture[0].read_item());
             Item_furniture.RemoveAt(0);
@@ -473,25 +551,390 @@ public class bl_GalleryManager : MonoBehaviour
               
     }
 
-    public void Result(bool ok)
+    //追加から
+    public void FullWindow_furniture(int id, Sprite sprite)
     {
-        Button_Clicked();
+        furniture_ID_temp = id;
 
-        if (ok == true)
+        FurnitureGrid furnituregrid = new FurnitureGrid();
+
+        furnituregrid.set_category_ID(category_ID_temp);
+        furnituregrid.set_furniture_ID(id);
+        furnituregrid.Status(furnituregrid.category_ID(), furnituregrid.furniture_ID());
+
+        infomation(furnituregrid);
+
+        Destroy(furnituregrid);
+
+    }
+
+    //詳細から
+    public void FullWindow_property(FurnitureGrid furnituregrid)
+    {
+        infomation(furnituregrid);
+    }
+
+    public void infomation(FurnitureGrid furnituregrid)
+    {
+        wood.text = furnituregrid.elements_wood().ToString();
+        fire.text = furnituregrid.elements_fire().ToString();
+        earth.text = furnituregrid.elements_earth().ToString();
+        metal.text = furnituregrid.elements_metal().ToString();
+        water.text = furnituregrid.elements_water().ToString();
+        yin_yang.text = furnituregrid.yin_yang().ToString();
+
+        Color_content.text = "";
+        Material_content.text = "";
+        Pattern_content.text = "";
+        Form_content.text = "";
+        Characteristic_content.text = "";
+
+        for (int i = 0; i < furnituregrid.color_name().Count; i++)
         {
-            DataManager.GetComponent<DataManager>().set_direction(temp_compass);
-            DataManager.GetComponent<DataManager>().set_room(temp_room);
-            DataManager.GetComponent<DataManager>().set_norma_luck(norma_luck_);
-            DataManager.GetComponent<DataManager>().set_advaice_mode(advaice_mode_);
-            
-            StartCoroutine(Sample("Game"));
-        }
-        else if (ok == false)
-        {
-            result.SetActive(false);
-            Gallery_level.SetActive(true);
+            if (furnituregrid.color_name()[i] == FurnitureGrid.ColorName.White)
+            {
+                Color_content.text += "白";
+            }
+            else if (furnituregrid.color_name()[i] == FurnitureGrid.ColorName.Black)
+            {
+                Color_content.text += "黒";
+            }
+            else if (furnituregrid.color_name()[i] == FurnitureGrid.ColorName.Gray)
+            {
+                Color_content.text += "灰色";
+            }
+            else if (furnituregrid.color_name()[i] == FurnitureGrid.ColorName.DarkGray)
+            {
+                Color_content.text += "濃い灰色";
+            }
+            else if (furnituregrid.color_name()[i] == FurnitureGrid.ColorName.Red)
+            {
+                Color_content.text += "赤";
+            }
+            else if (furnituregrid.color_name()[i] == FurnitureGrid.ColorName.Pink)
+            {
+                Color_content.text += "ピンク";
+            }
+            else if (furnituregrid.color_name()[i] == FurnitureGrid.ColorName.Blue)
+            {
+                Color_content.text += "青";
+            }
+            else if (furnituregrid.color_name()[i] == FurnitureGrid.ColorName.LightBlue)
+            {
+                Color_content.text += "水色";
+            }
+            else if (furnituregrid.color_name()[i] == FurnitureGrid.ColorName.Orange)
+            {
+                Color_content.text += "オレンジ";
+            }
+            else if (furnituregrid.color_name()[i] == FurnitureGrid.ColorName.Yellow)
+            {
+                Color_content.text += "黄色";
+            }
+            else if (furnituregrid.color_name()[i] == FurnitureGrid.ColorName.Green)
+            {
+                Color_content.text += "緑";
+            }
+            else if (furnituregrid.color_name()[i] == FurnitureGrid.ColorName.LightGreen)
+            {
+                Color_content.text += "黄緑";
+            }
+            else if (furnituregrid.color_name()[i] == FurnitureGrid.ColorName.Beige)
+            {
+                Color_content.text += "ベージュ";
+            }
+            else if (furnituregrid.color_name()[i] == FurnitureGrid.ColorName.Cream)
+            {
+                Color_content.text += "クリーム";
+            }
+            else if (furnituregrid.color_name()[i] == FurnitureGrid.ColorName.Brown)
+            {
+                Color_content.text += "茶";
+            }
+            else if (furnituregrid.color_name()[i] == FurnitureGrid.ColorName.Ocher)
+            {
+                Color_content.text += "黄土色";
+            }
+            else if (furnituregrid.color_name()[i] == FurnitureGrid.ColorName.Gold)
+            {
+                Color_content.text += "金";
+            }
+            else if (furnituregrid.color_name()[i] == FurnitureGrid.ColorName.Silver)
+            {
+                Color_content.text += "銀";
+            }
+            else if (furnituregrid.color_name()[i] == FurnitureGrid.ColorName.Purple)
+            {
+                Color_content.text += "紫";
+            }
+
+            if (i < furnituregrid.color_name().Count - 1)
+            {
+                Color_content.text += ",";
+            }
         }
 
+        for (int i = 0; i < furnituregrid.material_type().Count; i++)
+        {
+            if (furnituregrid.material_type()[i] == FurnitureGrid.MaterialType.ArtificialFoliage)
+            {
+                Material_content.text += "人工観葉植物";
+            }
+            else if (furnituregrid.material_type()[i] == FurnitureGrid.MaterialType.Wooden)
+            {
+                Material_content.text += "木製";
+            }
+            else if (furnituregrid.material_type()[i] == FurnitureGrid.MaterialType.Paper)
+            {
+                Material_content.text += "紙";
+            }
+            else if (furnituregrid.material_type()[i] == FurnitureGrid.MaterialType.Leather)
+            {
+                Material_content.text += "革";
+            }
+            else if (furnituregrid.material_type()[i] == FurnitureGrid.MaterialType.NaturalFibre)
+            {
+                Material_content.text += "天然繊維";
+            }
+            else if (furnituregrid.material_type()[i] == FurnitureGrid.MaterialType.ChemicalFibre)
+            {
+                Material_content.text += "化学繊維";
+            }
+            else if (furnituregrid.material_type()[i] == FurnitureGrid.MaterialType.Cotton)
+            {
+                Material_content.text += "綿";
+            }
+            else if (furnituregrid.material_type()[i] == FurnitureGrid.MaterialType.Plastic)
+            {
+                Material_content.text += "プラスチック";
+            }
+            else if (furnituregrid.material_type()[i] == FurnitureGrid.MaterialType.Ceramic)
+            {
+                Material_content.text += "陶磁器";
+            }
+            else if (furnituregrid.material_type()[i] == FurnitureGrid.MaterialType.Marble)
+            {
+                Material_content.text += "大理石";
+            }
+            else if (furnituregrid.material_type()[i] == FurnitureGrid.MaterialType.Metal)
+            {
+                Material_content.text += "金属";
+            }
+            else if (furnituregrid.material_type()[i] == FurnitureGrid.MaterialType.Mineral)
+            {
+                Material_content.text += "鉱物";
+            }
+            else if (furnituregrid.material_type()[i] == FurnitureGrid.MaterialType.Glass)
+            {
+                Material_content.text += "ガラス";
+            }
+            else if (furnituregrid.material_type()[i] == FurnitureGrid.MaterialType.Water)
+            {
+                Material_content.text += "水";
+            }
+
+            if (i < furnituregrid.material_type().Count - 1)
+            {
+                Material_content.text += ",";
+            }
+        }
+
+        for (int i = 0; i < furnituregrid.pattern_type().Count; i++)
+        {
+            if (furnituregrid.pattern_type()[i] == FurnitureGrid.PatternType.Stripe)
+            {
+                Pattern_content.text += "ストライプ";
+            }
+            else if (furnituregrid.pattern_type()[i] == FurnitureGrid.PatternType.Leaf)
+            {
+                Pattern_content.text += "リーフパターン";
+            }
+            else if (furnituregrid.pattern_type()[i] == FurnitureGrid.PatternType.Flower)
+            {
+                Pattern_content.text += "花柄";
+            }
+            else if (furnituregrid.pattern_type()[i] == FurnitureGrid.PatternType.Star)
+            {
+                Pattern_content.text += "星柄";
+            }
+            else if (furnituregrid.pattern_type()[i] == FurnitureGrid.PatternType.Diamond)
+            {
+                Pattern_content.text += "ダイヤ柄";
+            }
+            else if (furnituregrid.pattern_type()[i] == FurnitureGrid.PatternType.Animal)
+            {
+                Pattern_content.text += "アニマル柄";
+            }
+            else if (furnituregrid.pattern_type()[i] == FurnitureGrid.PatternType.Zigzag)
+            {
+                Pattern_content.text += "ジグザグ";
+            }
+            else if (furnituregrid.pattern_type()[i] == FurnitureGrid.PatternType.Novel)
+            {
+                Pattern_content.text += "奇抜";
+            }
+            else if (furnituregrid.pattern_type()[i] == FurnitureGrid.PatternType.Border)
+            {
+                Pattern_content.text += "ボーダー";
+            }
+            else if (furnituregrid.pattern_type()[i] == FurnitureGrid.PatternType.Check)
+            {
+                Pattern_content.text += "チェック";
+            }
+            else if (furnituregrid.pattern_type()[i] == FurnitureGrid.PatternType.Tile)
+            {
+                Pattern_content.text += "タイル柄";
+            }
+            else if (furnituregrid.pattern_type()[i] == FurnitureGrid.PatternType.Dot)
+            {
+                Pattern_content.text += "ドット";
+            }
+            else if (furnituregrid.pattern_type()[i] == FurnitureGrid.PatternType.Round)
+            {
+                Pattern_content.text += "丸柄";
+            }
+            else if (furnituregrid.pattern_type()[i] == FurnitureGrid.PatternType.Arch)
+            {
+                Pattern_content.text += "アーチ";
+            }
+            else if (furnituregrid.pattern_type()[i] == FurnitureGrid.PatternType.Fruits)
+            {
+                Pattern_content.text += "フルーツ";
+            }
+            else if (furnituregrid.pattern_type()[i] == FurnitureGrid.PatternType.Luster)
+            {
+                Pattern_content.text += "光沢";
+            }
+            else if (furnituregrid.pattern_type()[i] == FurnitureGrid.PatternType.Wave)
+            {
+                Pattern_content.text += "ウェーブストライプ";
+            }
+            else if (furnituregrid.pattern_type()[i] == FurnitureGrid.PatternType.Irregularity)
+            {
+                Pattern_content.text += "不規則パターン";
+            }
+            else if (furnituregrid.pattern_type()[i] == FurnitureGrid.PatternType.Cloud)
+            {
+                Pattern_content.text += "雲柄";
+            }
+
+            if (i < furnituregrid.pattern_type().Count - 1)
+            {
+                Pattern_content.text += ",";
+            }
+        }
+
+        for (int i = 0; i < furnituregrid.form_type().Count; i++)
+        {
+            if (furnituregrid.form_type()[i] == FurnitureGrid.FormType.High)
+            {
+                Form_content.text += "背が高い";
+            }
+            else if (furnituregrid.form_type()[i] == FurnitureGrid.FormType.Low)
+            {
+                Form_content.text += "背が低い";
+            }
+            else if (furnituregrid.form_type()[i] == FurnitureGrid.FormType.Vertical)
+            {
+                Form_content.text += "縦長";
+            }
+            else if (furnituregrid.form_type()[i] == FurnitureGrid.FormType.Oblong)
+            {
+                Form_content.text += "横長";
+            }
+            else if (furnituregrid.form_type()[i] == FurnitureGrid.FormType.Square)
+            {
+                Form_content.text += "正方形";
+            }
+            else if (furnituregrid.form_type()[i] == FurnitureGrid.FormType.Rectangle)
+            {
+                Form_content.text += "長方形";
+            }
+            else if (furnituregrid.form_type()[i] == FurnitureGrid.FormType.Round)
+            {
+                Form_content.text += "円形";
+            }
+            else if (furnituregrid.form_type()[i] == FurnitureGrid.FormType.Ellipse)
+            {
+                Form_content.text += "楕円形";
+            }
+            else if (furnituregrid.form_type()[i] == FurnitureGrid.FormType.Triangle)
+            {
+                Form_content.text += "三角形";
+            }
+            else if (furnituregrid.form_type()[i] == FurnitureGrid.FormType.Sharp)
+            {
+                Form_content.text += "尖っている";
+            }
+            else if (furnituregrid.form_type()[i] == FurnitureGrid.FormType.Novel)
+            {
+                Form_content.text += "奇抜";
+            }
+
+            if (i < furnituregrid.form_type().Count - 1)
+            {
+                Form_content.text += ",";
+            }
+        }
+
+        for (int i = 0; i < furnituregrid.characteristic().Count; i++)
+        {
+            if (furnituregrid.characteristic()[i] == FurnitureGrid.Characteristic.Luxury)
+            {
+                Characteristic_content.text += "高級";
+            }
+            else if (furnituregrid.characteristic()[i] == FurnitureGrid.Characteristic.Sound)
+            {
+                Characteristic_content.text += "音が出る";
+            }
+            else if (furnituregrid.characteristic()[i] == FurnitureGrid.Characteristic.Smell)
+            {
+                Characteristic_content.text += "いいにおい";
+            }
+            else if (furnituregrid.characteristic()[i] == FurnitureGrid.Characteristic.Light)
+            {
+                Characteristic_content.text += "発光";
+            }
+            else if (furnituregrid.characteristic()[i] == FurnitureGrid.Characteristic.Hard)
+            {
+                Characteristic_content.text += "硬い";
+            }
+            else if (furnituregrid.characteristic()[i] == FurnitureGrid.Characteristic.Soft)
+            {
+                Characteristic_content.text += "やわらかい";
+            }
+            else if (furnituregrid.characteristic()[i] == FurnitureGrid.Characteristic.Warm)
+            {
+                Characteristic_content.text += "温かみ";
+            }
+            else if (furnituregrid.characteristic()[i] == FurnitureGrid.Characteristic.Cold)
+            {
+                Characteristic_content.text += "冷たさ";
+            }
+            else if (furnituregrid.characteristic()[i] == FurnitureGrid.Characteristic.Flower)
+            {
+                Characteristic_content.text += "花関連";
+            }
+            else if (furnituregrid.characteristic()[i] == FurnitureGrid.Characteristic.Wind)
+            {
+                Characteristic_content.text += "風関連";
+            }
+            else if (furnituregrid.characteristic()[i] == FurnitureGrid.Characteristic.Western)
+            {
+                Characteristic_content.text += "西洋風";
+            }
+            else if (furnituregrid.characteristic()[i] == FurnitureGrid.Characteristic.Clutter)
+            {
+                Characteristic_content.text += "乱雑";
+            }
+
+            if (i < furnituregrid.characteristic().Count - 1)
+            {
+                Characteristic_content.text += ",";
+            }
+        }
+
+        m_FullIcon.sprite = furnituregrid.read_sprite();
     }
 
     // コルーチン  
@@ -514,7 +957,7 @@ public class bl_GalleryManager : MonoBehaviour
             Destroy_type();
             Gallery_type.SetActive(false);
 
-            FurnitureManagement.AddFurniture(FurnitureGrid.category_ID(), furniture_ID_);
+            FurnitureManagement.AddFurniture(category_ID_temp, furniture_ID_temp);
         }
         else if (mode_ == Mode.Change)
         {
@@ -523,7 +966,7 @@ public class bl_GalleryManager : MonoBehaviour
             Gallery_furniture.SetActive(false);
 
             FurnitureManagement.Menu.SetActive(false);
-            FurnitureManagement.ChangeFurniture(FurnitureGrid.category_ID(), furniture_ID_);
+            FurnitureManagement.ChangeFurniture(category_ID_temp, furniture_ID_temp);
         }
 
         FurnitureManagement.Add_ChangeMode(true);

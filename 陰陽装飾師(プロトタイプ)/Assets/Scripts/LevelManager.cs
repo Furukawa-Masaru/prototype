@@ -16,7 +16,6 @@ public class LevelManager : MonoBehaviour
     public GameObject game;
     public GameObject game_shikigami;
     public GameObject game_youkai;
-    public GameObject[] clear_luck = new GameObject[5];
     public GameObject[] room = new GameObject[5];
 
     public float counter;
@@ -26,13 +25,8 @@ public class LevelManager : MonoBehaviour
     public GameObject GalleryManager;
     private GameObject DataManager;
 
-    public GameObject Gage_Value_shikigami;
-    public GameObject Gage_Value_youkai;
-
     private int advaice_mode;
 
-    private int initial_value;
-    public int base_value;
     public bool Game_Play = false;
 
     private List<bool> count = new List<bool>();
@@ -46,7 +40,6 @@ public class LevelManager : MonoBehaviour
 	{
         DataManager = GameObject.Find("DataManager");
         advaice_mode = DataManager.GetComponent<DataManager>().read_advaice_mode();
-        clear_luck[advaice_mode].SetActive(true);
 
         Timer.GetComponent<Text>().text = counter.ToString("f2");
 
@@ -59,40 +52,7 @@ public class LevelManager : MonoBehaviour
     private void Update()
     {
         if (Game_Play == true)
-        {
-
-            if (advaice_mode == 0)
-            {
-                Gage_Value_shikigami.GetComponent<RectTransform>().localScale = new Vector3((float)((evaluation.work_luck() + base_value) - initial_value) / (float)(base_value * 2), 1, 1);
-            }
-            else if (advaice_mode == 1)
-            {
-                Gage_Value_shikigami.GetComponent<RectTransform>().localScale = new Vector3((float)((evaluation.popular_luck() + base_value) - initial_value) / (float)(base_value * 2), 1, 1);
-            }
-            else if (advaice_mode == 2)
-            {
-                Gage_Value_shikigami.GetComponent<RectTransform>().localScale = new Vector3((float)((evaluation.health_luck() + base_value) - initial_value) / (float)(base_value * 2), 1, 1);                
-            }
-            else if (advaice_mode == 3)
-            {
-                Gage_Value_shikigami.GetComponent<RectTransform>().localScale = new Vector3((float)((evaluation.economic_luck() + base_value) - initial_value) / (float)(base_value * 2), 1, 1);
-            }
-            else if (advaice_mode == 4)
-            {
-                Gage_Value_shikigami.GetComponent<RectTransform>().localScale = new Vector3((float)((evaluation.love_luck() + base_value) - initial_value) / (float)(base_value * 2), 1, 1);
-            }
-
-            Gage_Value_youkai.GetComponent<RectTransform>().localScale = new Vector3(1 - Gage_Value_shikigami.GetComponent<RectTransform>().localScale.x, 1, 1);
-
-            //勝利
-            if (Gage_Value_shikigami.GetComponent<RectTransform>().localScale.x >= 1)
-            {
-                Gage_Value_shikigami.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
-                Gage_Value_youkai.GetComponent<RectTransform>().localScale = new Vector3(1 - Gage_Value_shikigami.GetComponent<RectTransform>().localScale.x, 1, 1);
-
-                FinishGame(true);
-            }
-            
+        {            
             counter -= Time.deltaTime;
 
             if (counter < count.Count)
@@ -132,9 +92,6 @@ public class LevelManager : MonoBehaviour
             game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/water/game");
             icon_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/work/icon");            
             game_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/work/game");
-
-            initial_value = evaluation.work_luck();
-            Gage_Value_shikigami.GetComponent<Image>().color = Color.blue;
         }
         else if (advaice_mode == 1)
         {
@@ -142,9 +99,6 @@ public class LevelManager : MonoBehaviour
             game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/fire/game");
             icon_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/popular/icon");           
             game_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/popular/game");
-
-            initial_value = evaluation.popular_luck();
-            Gage_Value_shikigami.GetComponent<Image>().color = Color.red;
         }
         else if (advaice_mode == 2)
         {
@@ -152,9 +106,6 @@ public class LevelManager : MonoBehaviour
             game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/wood/game");
             icon_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/health/icon");
             game_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/health/game");
-
-            initial_value = evaluation.health_luck();
-            Gage_Value_shikigami.GetComponent<Image>().color = Color.green;
         }
         else if (advaice_mode == 3)
         {
@@ -162,9 +113,6 @@ public class LevelManager : MonoBehaviour
             game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/metal/game");
             icon_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/economic/icon");
             game_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/economic/game");
-
-            initial_value = evaluation.economic_luck();
-            Gage_Value_shikigami.GetComponent<Image>().color = Color.yellow;
         }
         else if (advaice_mode == 4)
         {
@@ -172,9 +120,6 @@ public class LevelManager : MonoBehaviour
             game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/earth/game");
             icon_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/love/icon");
             game_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/love/game");
-
-            initial_value = evaluation.love_luck();
-            Gage_Value_shikigami.GetComponent<Image>().color = Color.magenta;
         }
 
         icon.SetActive(true);
