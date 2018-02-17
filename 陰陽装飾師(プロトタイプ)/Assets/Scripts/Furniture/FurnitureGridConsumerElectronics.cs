@@ -10,10 +10,6 @@
 //parameta_[0] = 0 エアコン
 //parameta_[0] = 1 空気清浄機
 //parameta_[0] = 2 コンロ
-//parameta_[0] = 3 電子レンジ
-//parameta_[0] = 4 洗濯機
-//parameta_[0] = 5 冷蔵庫
-//parameta_[0] = 6 TV
 //
 //エアコンは壁掛け
 //(ここからは自分の勝手な判断)
@@ -68,7 +64,7 @@ public partial class FurnitureGrid : MonoBehaviour
                     blueflag_index_ = new bool[4] { true, false, false, false };
 
                     //パラメータの設定
-                    parameta_[0] = 0; //ダミー
+                    parameta_[0] = 0; //エアコン
 
                     //----------------------------------------------------
 
@@ -144,7 +140,7 @@ public partial class FurnitureGrid : MonoBehaviour
                     blueflag_index_ = new bool[4] { true, false, false, false };
 
                     //パラメータの設定
-                    parameta_[0] = 0; //ダミー
+                    parameta_[0] = 0; //エアコン
 
                     //----------------------------------------------------
 
@@ -188,7 +184,7 @@ public partial class FurnitureGrid : MonoBehaviour
 
             case 3:
                 {
-                    //家電2(エアコン)
+                    //家電2(空気清浄機)
 
                     object_type_ = ObjectType.WallMounted;
                     children_number_ = 1;
@@ -220,7 +216,7 @@ public partial class FurnitureGrid : MonoBehaviour
                     blueflag_index_ = new bool[4] { true, false, false, false };
 
                     //パラメータの設定
-                    parameta_[0] = 0; //ダミー
+                    parameta_[0] = 1; //空気清浄機
 
                     //----------------------------------------------------
 
@@ -296,7 +292,7 @@ public partial class FurnitureGrid : MonoBehaviour
                     blueflag_index_ = new bool[4] { true, false, false, false };
 
                     //パラメータの設定
-                    parameta_[0] = 0; //ダミー
+                    parameta_[0] = 2; //テレビ
 
                     //----------------------------------------------------
 

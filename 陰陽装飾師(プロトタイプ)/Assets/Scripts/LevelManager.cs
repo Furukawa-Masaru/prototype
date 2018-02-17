@@ -10,9 +10,6 @@ public class LevelManager : MonoBehaviour
     public GameObject Finish_Menu;
     public GameObject Timer;
 
-    public GameObject icon;
-    public GameObject icon_shikigami;
-    public GameObject icon_youkai;
     public GameObject game;
     public GameObject game_shikigami;
     public GameObject game_youkai;
@@ -40,6 +37,37 @@ public class LevelManager : MonoBehaviour
 	{
         DataManager = GameObject.Find("DataManager");
         advaice_mode = DataManager.GetComponent<DataManager>().read_advaice_mode();
+
+        furnituremanagement.Room(DataManager.GetComponent<DataManager>().read_room(), DataManager.GetComponent<DataManager>().read_direction(), DataManager.GetComponent<DataManager>().read_norma_luck(), DataManager.GetComponent<DataManager>().read_advaice_mode());
+
+        if (advaice_mode == 0)
+        {
+            game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/water/game");
+            game_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/work/game");
+        }
+        else if (advaice_mode == 1)
+        {
+            game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/fire/game");
+            game_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/popular/game");
+        }
+        else if (advaice_mode == 2)
+        {
+            game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/wood/game");
+            game_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/health/game");
+        }
+        else if (advaice_mode == 3)
+        {
+            game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/metal/game");
+            game_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/economic/game");
+        }
+        else if (advaice_mode == 4)
+        {
+            game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/earth/game");
+            game_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/love/game");
+        }
+
+        game.SetActive(true);
+        room[advaice_mode].SetActive(true);
 
         Timer.GetComponent<Text>().text = counter.ToString("f2");
 
@@ -84,51 +112,10 @@ public class LevelManager : MonoBehaviour
         DataManager.GetComponent<AudioSource>().clip = Resources.Load<AudioClip>("Sound/BGM/Game_BGM");
         DataManager.GetComponent<AudioSource>().Play();
 
-        furnituremanagement.Room(DataManager.GetComponent<DataManager>().read_room(), DataManager.GetComponent<DataManager>().read_direction(), DataManager.GetComponent<DataManager>().read_norma_luck(), DataManager.GetComponent<DataManager>().read_advaice_mode());
-
-        if (advaice_mode == 0)
-        {
-            icon_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/water/icon");
-            game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/water/game");
-            icon_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/work/icon");            
-            game_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/work/game");
-        }
-        else if (advaice_mode == 1)
-        {
-            icon_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/fire/icon");
-            game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/fire/game");
-            icon_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/popular/icon");           
-            game_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/popular/game");
-        }
-        else if (advaice_mode == 2)
-        {
-            icon_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/wood/icon");
-            game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/wood/game");
-            icon_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/health/icon");
-            game_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/health/game");
-        }
-        else if (advaice_mode == 3)
-        {
-            icon_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/metal/icon");
-            game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/metal/game");
-            icon_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/economic/icon");
-            game_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/economic/game");
-        }
-        else if (advaice_mode == 4)
-        {
-            icon_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/earth/icon");
-            game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/earth/game");
-            icon_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/love/icon");
-            game_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/love/game");
-        }
-
-        icon.SetActive(true);
-        game.SetActive(true);
-        room[advaice_mode].SetActive(true);
         Start_Menu.SetActive(false);
         
         furnituremanagement.Add_.GetComponent<Button>().interactable = true;
-        furnituremanagement.Change_Mode_.GetComponent<Button>().interactable = true;
+        furnituremanagement.Mode_.GetComponent<Button>().interactable = true;
 
         Game_Play = true;
     }
@@ -145,7 +132,7 @@ public class LevelManager : MonoBehaviour
 
         furnituremanagement.Menu.SetActive(false); ;
         furnituremanagement.Add_.GetComponent<Button>().interactable = false;
-        furnituremanagement.Change_Mode_.GetComponent<Button>().interactable = false;
+        furnituremanagement.Mode_.GetComponent<Button>().interactable = false;
         furnituremanagement.move_furniture = false;
 
         evaluation.set_is_finishedGame(true);

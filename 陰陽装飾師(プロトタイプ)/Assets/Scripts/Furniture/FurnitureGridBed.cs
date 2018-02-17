@@ -651,7 +651,7 @@ public partial class FurnitureGrid : MonoBehaviour
 
                     //--------------------------------------------------
 
-                    furniture_subtype_.Add(FurnitureType.desklamp);
+                    furniture_subtype_.Add(FurnitureType.DeskLamp);
 
 
                     break;
@@ -750,7 +750,7 @@ public partial class FurnitureGrid : MonoBehaviour
 
                     //--------------------------------------------------
 
-                    furniture_subtype_.Add(FurnitureType.desklamp);
+                    furniture_subtype_.Add(FurnitureType.DeskLamp);
 
                     break;
                 }

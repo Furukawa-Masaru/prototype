@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 
 public class Result : MonoBehaviour {
 
+    public Image BG;
     public Image Condition;
     public GameObject[] Shikigami = new GameObject[5];
     public GameObject[] Youkai = new GameObject[5];
@@ -17,12 +18,14 @@ public class Result : MonoBehaviour {
 
         if (DataManager.GetComponent<DataManager>().read_win() == true)
         {
+            BG.sprite = Resources.Load<Sprite>("Background/win");
             Condition.sprite = Resources.Load<Sprite>("Effect/win");
             DataManager.GetComponent<AudioSource>().PlayOneShot(Resources.Load<AudioClip>("Sound/SE/win"));
             Youkai[DataManager.GetComponent<DataManager>().read_advaice_mode()].GetComponent<RectTransform>().localScale = new Vector3(0.6f, 0.6f, 1);
         }
         else
         {
+            BG.sprite = Resources.Load<Sprite>("Background/lose");
             Condition.sprite = Resources.Load<Sprite>("Effect/lose");
             DataManager.GetComponent<AudioSource>().PlayOneShot(Resources.Load<AudioClip>("Sound/SE/lose"));
             Shikigami[DataManager.GetComponent<DataManager>().read_advaice_mode()].GetComponent<RectTransform>().localScale = new Vector3(0.6f, 0.6f, 1);

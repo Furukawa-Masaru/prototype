@@ -105,7 +105,7 @@ public partial class FurnitureGrid : MonoBehaviour
 
                     //------------------------------------------------------
 
-                    furniture_subtype_.Add(FurnitureType.cabinet);
+                    furniture_subtype_.Add(FurnitureType.Cabinet);
 
                     break;
                 }
@@ -484,7 +484,7 @@ public partial class FurnitureGrid : MonoBehaviour
 
                     //------------------------------------------------------
 
-                    furniture_subtype_.Add(FurnitureType.electronics);
+                    furniture_subtype_.Add(FurnitureType.ConsumerElectronics);
 
                     break;
                 }
@@ -885,8 +885,8 @@ public partial class FurnitureGrid : MonoBehaviour
 
                     //------------------------------------------------------
 
-                    furniture_subtype_.Add(FurnitureType.cabinet);
-                    furniture_subtype_.Add(FurnitureType.electronics);
+                    furniture_subtype_.Add(FurnitureType.Cabinet);
+                    furniture_subtype_.Add(FurnitureType.ConsumerElectronics);
 
 
                     break;
@@ -972,7 +972,7 @@ public partial class FurnitureGrid : MonoBehaviour
 
                     //------------------------------------------------------
 
-                    furniture_subtype_.Add(FurnitureType.cabinet);
+                    furniture_subtype_.Add(FurnitureType.Cabinet);
 
                     break;
                 }

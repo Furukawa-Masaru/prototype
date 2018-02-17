@@ -387,7 +387,7 @@ public partial class FurnitureGrid : MonoBehaviour
 
                     //--------------------------------------------------
 
-                    furniture_subtype_.Add(FurnitureType.foliage);
+                    furniture_subtype_.Add(FurnitureType.FoliagePlant);
 
                     break;
                 }

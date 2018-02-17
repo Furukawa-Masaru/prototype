@@ -31,7 +31,7 @@ public class bl_GalleryItem : MonoBehaviour
     private float currentAlpha = 1;
 
     private float center_select = 0.5f;
-    private float center_game = 0.6f;
+    private float center_game = 0.5f;
 
     private float center_width = 0.05f;
     private bool rotate = false;
@@ -144,25 +144,19 @@ public class bl_GalleryItem : MonoBehaviour
         {
             ID = id;
             gameObject.transform.Find("Content").gameObject.transform.Find("ItemButton").gameObject.GetComponent<RectTransform>().localScale = new Vector3(6.0f, 6.0f, 1);
-            gameObject.transform.Find("Content").gameObject.transform.Find("ItemButton").gameObject.GetComponent<RectTransform>().localPosition += new Vector3(0.0f, 110.0f, 0.0f);
-            Reflection_object.GetComponent<RectTransform>().localScale = new Vector3(6.0f, 6.0f, 1);
-            Reflection_object.GetComponent<RectTransform>().localPosition = new Vector3(0.0f, -450.0f, 0);
+            gameObject.transform.Find("Content").gameObject.transform.Find("ItemButton").gameObject.GetComponent<RectTransform>().localPosition += new Vector3(0.0f, 90.0f, 0.0f);
         }
         else if (mode_ == Mode.Type)
         {
             ID = id;
-            gameObject.transform.Find("Content").gameObject.transform.Find("ItemButton").gameObject.GetComponent<RectTransform>().localScale = new Vector3(3.0f, 3.0f, 1);
+            gameObject.transform.Find("Content").gameObject.transform.Find("ItemButton").gameObject.GetComponent<RectTransform>().localScale = new Vector3(7.0f, 7.0f, 1);
             gameObject.transform.Find("Content").gameObject.transform.Find("ItemButton").gameObject.GetComponent<RectTransform>().localPosition += new Vector3(0.0f, 30.0f, 0.0f);
-            Reflection_object.GetComponent<RectTransform>().localScale = new Vector3(3.0f, 3.0f, 1);
-            Reflection_object.GetComponent<RectTransform>().localPosition = new Vector3(0.0f, -140.0f, 0);
         }
         else if (mode_ == Mode.Furniture)
         {
             ID = id + 1;
-            gameObject.transform.Find("Content").gameObject.transform.Find("ItemButton").gameObject.GetComponent<RectTransform>().localScale = new Vector3(3.0f, 3.0f, 1);
+            gameObject.transform.Find("Content").gameObject.transform.Find("ItemButton").gameObject.GetComponent<RectTransform>().localScale = new Vector3(7.0f, 7.0f, 1);
             gameObject.transform.Find("Content").gameObject.transform.Find("ItemButton").gameObject.GetComponent<RectTransform>().localPosition += new Vector3(0.0f, 30.0f, 0.0f);
-            Reflection_object.GetComponent<RectTransform>().localScale = new Vector3(3.0f, 3.0f, 1);
-            Reflection_object.GetComponent<RectTransform>().localPosition = new Vector3(0.0f, -140.0f, 0);
         }
 
         Sprite = sprite;
@@ -170,22 +164,22 @@ public class bl_GalleryItem : MonoBehaviour
         Reflection.color = new Color(0, 0, 0, 0);
         gameObject.transform.Find("Content").gameObject.transform.Find("ItemButton").gameObject.GetComponent<Image>().sprite = Sprite;
 
-        if (Reflection != null)
-        {
-            if (m_Type == UGFType.Reflection)
-            {
-                Reflection.sprite = Sprite;
-            }
-            else if (m_Type == UGFType.Shadown)
-            {
-                Reflection.color = new Color(0,0,0,0);
-                //Reflection.color = Color.black;
-            }
-            else
-            {
-                Reflection.gameObject.SetActive(false);
-            }
-        }
+        //if (Reflection != null)
+        //{
+        //    if (m_Type == UGFType.Reflection)
+        //    {
+        //        Reflection.sprite = Sprite;
+        //    }
+        //    else if (m_Type == UGFType.Shadown)
+        //    {
+        //        Reflection.color = new Color(0,0,0,0);
+        //        //Reflection.color = Color.black;
+        //    }
+        //    else
+        //    {
+        //        Reflection.gameObject.SetActive(false);
+        //    }
+        //}
 
         if (ID == 0)
         {

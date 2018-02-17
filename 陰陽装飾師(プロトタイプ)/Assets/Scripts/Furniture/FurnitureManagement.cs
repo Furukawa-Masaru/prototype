@@ -28,9 +28,9 @@ public class FurnitureManagement : MonoBehaviour
     public bl_GalleryManager Gallery_Manager;
 
     public GameObject Menu;
-    public GameObject Current_Mode;
+    public GameObject Mode_;
     public GameObject Add_;
-    public GameObject Change_Mode_;
+
     public bool move_furniture = true;
 
     //インスタンス化されているFurnitureGridクラスをすべて取得
@@ -103,12 +103,12 @@ public class FurnitureManagement : MonoBehaviour
         if (tf == true)
         {
             Add_.SetActive(true);
-            Change_Mode_.SetActive(true);
+            Mode_.SetActive(true);
         }
         else
         {
             Add_.SetActive(false);
-            Change_Mode_.SetActive(false);
+            Mode_.SetActive(false);
         }
     }
 
@@ -168,14 +168,12 @@ public class FurnitureManagement : MonoBehaviour
 
         if (mode_ == TransformMode.Translate)
         {
-            Current_Mode.GetComponent<Image>().sprite = Resources.Load<Sprite>("Button/Rotate_Mode");
-            //Debug.Log("Change_Mode");
+            Mode_.transform.Find("Text").gameObject.GetComponent<Text>().text = "回転";
             mode_ = TransformMode.Rotate;
         }
         else if (mode_ == TransformMode.Rotate)
         {
-            Current_Mode.GetComponent<Image>().sprite = Resources.Load<Sprite>("Button/Transform_Mode");
-            //Debug.Log("Change_Mode");
+            Mode_.transform.Find("Text").gameObject.GetComponent<Text>().text = "移動";
             mode_ = TransformMode.Translate;
         }
     }
@@ -260,14 +258,12 @@ public class FurnitureManagement : MonoBehaviour
 
         for (int k = 0; k < furniture_grid_[target_number_].vertices_number(); k++)
         {
-            //Debug.Log(furniture_grid_[target_number_].vertices(k).ToString("f10"));
-
             for (int i = Grid_Manager.Grid_y_min; i < Grid_Manager.Grid_y_max; i++)
             {
                 for (int j = Grid_Manager.Grid_x_min; j < Grid_Manager.Grid_x_max; j++)
                 {
-                    float vertices_x = furniture_grid_[target_number_].vertices(k).x + furniture_grid_[target_number_].grid_position().x;
-                    float vertices_y = furniture_grid_[target_number_].vertices(k).y + furniture_grid_[target_number_].grid_position().y;
+                    float vertices_x = furniture_grid_[target_number_].vertices(k).x;
+                    float vertices_y = furniture_grid_[target_number_].vertices(k).y;
 
                     float grid_x_min = Grid_Manager.point(j, i).pos.x - (Grid_Manager.Grid_density / 2.0f);
                     float grid_y_min = Grid_Manager.point(j, i).pos.y - (Grid_Manager.Grid_density / 2.0f);
@@ -621,7 +617,7 @@ public class FurnitureManagement : MonoBehaviour
        
     }
 
-    //public LevelManager levelmanager;
+    public LevelManager levelmanager;
 
     private void Update()
     {        

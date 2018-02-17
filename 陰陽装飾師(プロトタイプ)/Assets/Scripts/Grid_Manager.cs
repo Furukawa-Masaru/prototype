@@ -123,7 +123,7 @@ public class Grid_Manager : MonoBehaviour
     public void Grid_all(int x, int y)
     {
         GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        sphere.transform.localScale = new Vector3(0.2f,0.2f,0.2f);
+        sphere.transform.localScale = new Vector3(0.1f,0.1f,0.1f);
         sphere.GetComponent<MeshRenderer>().material.color = Color.black;
         sphere.transform.position = point_[x, y].pos;
     }

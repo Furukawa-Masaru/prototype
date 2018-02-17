@@ -144,6 +144,8 @@ public class bl_GalleryManager : MonoBehaviour
         }
     }
 
+    public Text furniture_text;
+
     public void Init_furniture(int id)
     {
         category_ID_temp = id;
@@ -153,56 +155,67 @@ public class bl_GalleryManager : MonoBehaviour
         if (category_ID_temp == 0)
         {
             //ベッド
+            furniture_text.text = "ベッド";
             furniture_temp = "bed";
         }
         else if (category_ID_temp == 1)
         {
             //テーブル
+            furniture_text.text = "テーブル";
             furniture_temp = "table";
         }
         else if (category_ID_temp == 2)
         {
             //ソファ
+            furniture_text.text = "ソファ";
             furniture_temp = "sofa";
         }
         else if (category_ID_temp == 3)
         {
             //カーペット
+            furniture_text.text = "カーペット";
             furniture_temp = "carpet";
         }
         else if (category_ID_temp == 4)
         {
             //タンス
+            furniture_text.text = "タンス";
             furniture_temp = "cabinet";
         }
         else if (category_ID_temp == 5)
         {
             //机
+            furniture_text.text = "机";
             furniture_temp = "desk";
         }
         else if (category_ID_temp == 6)
         {
             //観葉植物
+            furniture_text.text = "観葉植物";
             furniture_temp = "foliage";
         }
         else if (category_ID_temp == 7)
         {
             //天井ランプ
+            furniture_text.text = "天井ランプ";
             furniture_temp = "ceillamp";
         }
         else if (category_ID_temp == 8)
         {
             //机ランプ
+            furniture_text.text = "机ランプ";
             furniture_temp = "desklamp";
         }
         else if (category_ID_temp == 9)
         {
             //家電
+            furniture_text.text = "家電";
             furniture_temp = "electronics";
         }
         else if (category_ID_temp == 10)
         {
             //カーテン
+            furniture_text.text = "カーテン";
             furniture_temp = "curtain";
         }
 
@@ -270,11 +283,6 @@ public class bl_GalleryManager : MonoBehaviour
         StopAllCoroutines();
         StartCoroutine(IEMoveSide_furniture(left));
     }
-
-    /// <summary>
-    /// クリックしたアイテムから情報を取得し、フルウィンドウに送信して開く
-    /// </summary>
-    //変更から
 
     public void OpenGallery_level()
     {
@@ -364,11 +372,11 @@ public class bl_GalleryManager : MonoBehaviour
         {
             if (i == ID_level)
             {
-                norma_luck_[i] = 800;
+                norma_luck_[i] = 400;
             }
             else
             {
-                norma_luck_[i] = 500;
+                norma_luck_[i] = 300;
             }
         }
 
@@ -419,7 +427,7 @@ public class bl_GalleryManager : MonoBehaviour
             compass_string = "北西";
         }
 
-        int ID_room = Random.Range(0, 5);
+        int ID_room = Random.Range(0, 3);
         string room_string = "";
 
         if (ID_room == 0)
@@ -437,16 +445,16 @@ public class bl_GalleryManager : MonoBehaviour
             temp_room = Evaluation.Room.Living;
             room_string = "リビング";
         }
-        else if (ID_room == 3)
-        {
-            temp_room = Evaluation.Room.Kitchen;
-            room_string = "台所";
-        }
-        else if (ID_room == 4)
-        {
-            temp_room = Evaluation.Room.Bathroom;
-            room_string = "浴室";
-        }
+        //else if (ID_room == 3)
+        //{
+        //    temp_room = Evaluation.Room.Kitchen;
+        //    room_string = "台所";
+        //}
+        //else if (ID_room == 4)
+        //{
+        //    temp_room = Evaluation.Room.Bathroom;
+        //    room_string = "浴室";
+        //}
 
         //result.GetComponent<Text>().text = "方角 " + compass_string + ", 部屋" + room_string;
         result.transform.Find("compass&room").gameObject.GetComponent<Text>().text = "「方角」" + compass_string + ", 「部屋」" + room_string;
@@ -564,6 +572,10 @@ public class bl_GalleryManager : MonoBehaviour
 
         infomation(furnituregrid);
 
+        //m_FullIcon.gameObject.GetComponent<RectTransform>().localScale = new Vector3(2.0f, 2.0f, 1.0f);
+        //m_FullIcon.gameObject.GetComponent<RectTransform>().localPosition += new Vector3(-200.0f, 0, 0); 
+        m_FullIcon.sprite = sprite;
+
         Destroy(furnituregrid);
 
     }
@@ -572,6 +584,10 @@ public class bl_GalleryManager : MonoBehaviour
     public void FullWindow_property(FurnitureGrid furnituregrid)
     {
         infomation(furnituregrid);
+
+        //m_FullIcon.gameObject.GetComponent<RectTransform>().localScale = new Vector3(2.0f, 2.0f, 1.0f);
+        //m_FullIcon.gameObject.GetComponent<RectTransform>().localPosition += new Vector3(-200.0f, 0, 0);
+        m_FullIcon.sprite = furnituregrid.read_sprite();
     }
 
     public void infomation(FurnitureGrid furnituregrid)
@@ -933,8 +949,6 @@ public class bl_GalleryManager : MonoBehaviour
                 Characteristic_content.text += ",";
             }
         }
-
-        m_FullIcon.sprite = furnituregrid.read_sprite();
     }
 
     // コルーチン  

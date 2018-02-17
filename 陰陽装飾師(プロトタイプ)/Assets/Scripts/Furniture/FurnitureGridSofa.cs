@@ -743,7 +743,7 @@ public partial class FurnitureGrid : MonoBehaviour
 
                     //--------------------------------------------------
 
-                    furniture_subtype_.Add(FurnitureType.bed);
+                    furniture_subtype_.Add(FurnitureType.Bed);
 
                     //--------------------------------------------------
 
