@@ -6038,10 +6038,8 @@ MonoBehaviour:
   Retire: {fileID: 624274415}
   Timer: {fileID: 516147375}
   game: {fileID: 1094391181}
-  game_shikigami: {fileID: 1706143253}
   game_youkai: {fileID: 1249233892}
   back_shikigami: {fileID: 263359684}
-  attack_shikigami: {fileID: 156872972}
   back_youkai: {fileID: 1047074917}
   attack_youkai: {fileID: 440006578}
   room:
@@ -12555,6 +12553,8 @@ MonoBehaviour:
   - {fileID: 908110058}
   - {fileID: 2069074322}
   - {fileID: 1181844746}
+  game_shikigami: {fileID: 1706143253}
+  attack_shikigami: {fileID: 156872972}
 --- !u!4 &2076845934
 Transform:
   m_ObjectHideFlags: 0

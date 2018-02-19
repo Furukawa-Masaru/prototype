@@ -343,7 +343,7 @@ public partial class Evaluation : MonoBehaviour
 
     public Text hint_text_;
 
-    public void Comment_Text()
+    public void Comment_Text(int num)
     {
         if (is_finished_game_ == true)
         {
@@ -351,7 +351,7 @@ public partial class Evaluation : MonoBehaviour
         }
         else
         {
-            hint_text_.text = comment_[0];
+            hint_text_.text = comment_[num];
         }
     }
 
@@ -369,14 +369,48 @@ public partial class Evaluation : MonoBehaviour
     public GameObject[] Gage_Max_ = new GameObject[5];
     private int all_luck_min_ = -500;
 
+    public GameObject game_shikigami;
+    public Animator attack_shikigami;
+
     public void UpdateElementsText()
     {
+        int max = 0;
+        int compare = 0;
+
         //五行テキスト 
         for (int i = 0; i < elements_.Length; i++)
-        {
-            Debug.Log(elements_wood());
+        {            
             elements_text_[i].text = elements_[i].ToString();
+
+            if (compare < elements_[i])
+            {
+                max = i;
+            }
+            compare = elements_[i];
         }
+
+        if (max == 0)
+        {
+            game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/wood/game");
+        }
+        else if (max == 1)
+        {
+            game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/fire/game");
+        }
+        else if (max == 2)
+        {
+            game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/earth/game");
+        }
+        else if (max == 3)
+        {
+            game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/metal/game");
+        }
+        else if (max == 4)
+        {
+            game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/water/game");
+        }
+
+        attack_shikigami.SetInteger("Element", max);
 
         //陰陽ゲージ
 
@@ -492,7 +526,7 @@ public partial class Evaluation : MonoBehaviour
 
         EvaluationTotal();
         UpdateElementsText();
-        Comment_Text();
+        Comment_Text(0);
     }
 
     //ノルマセット関数

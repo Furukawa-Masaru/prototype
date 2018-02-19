@@ -434,7 +434,7 @@ public class FurnitureManagement : MonoBehaviour
         Evaluation.UpdateGrid(furniture_grid_);
         Evaluation.EvaluationTotal();
         Evaluation.UpdateElementsText();
-        Evaluation.Comment_Text();
+        Evaluation.Comment_Text(0);
 
         Debug.Log("Evaluation_End");
     }

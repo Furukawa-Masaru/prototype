@@ -14,11 +14,9 @@ public class LevelManager : MonoBehaviour
     public GameObject Timer;
 
     public GameObject game;
-    public GameObject game_shikigami;
     public GameObject game_youkai;
 
     public Animator back_shikigami;
-    public Animator attack_shikigami;
     public Animator back_youkai;
     public Animator attack_youkai;
 
@@ -42,42 +40,39 @@ public class LevelManager : MonoBehaviour
         DataManager.GetComponent<AudioSource>().PlayOneShot(Resources.Load<AudioClip>("Sound/SE/Button_Click"));
     }
 
+    float dist_counter;
+    int comment_value;
+
     void Start()
 	{
         DataManager = GameObject.Find("DataManager");
         advaice_mode = DataManager.GetComponent<DataManager>().read_advaice_mode();
 
-        furnituremanagement.Room(DataManager.GetComponent<DataManager>().read_room(), DataManager.GetComponent<DataManager>().read_direction(), DataManager.GetComponent<DataManager>().read_norma_luck(), DataManager.GetComponent<DataManager>().read_advaice_mode());
-
         game.SetActive(true);
 
+        furnituremanagement.Room(DataManager.GetComponent<DataManager>().read_room(), DataManager.GetComponent<DataManager>().read_direction(), DataManager.GetComponent<DataManager>().read_norma_luck(), DataManager.GetComponent<DataManager>().read_advaice_mode());
+        
         if (advaice_mode == 0)
         {
-            game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/wood/game");
             game_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/work/game");          
         }
         else if (advaice_mode == 1)
         {
-            game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/fire/game");
             game_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/popular/game");
         }
         else if (advaice_mode == 2)
         {
-            game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/earth/game");
             game_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/health/game");
         }
         else if (advaice_mode == 3)
         {
-            game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/metal/game");
             game_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/economic/game");
         }
         else if (advaice_mode == 4)
         {
-            game_shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/water/game");
             game_youkai.GetComponent<Image>().sprite = Resources.Load<Sprite>("youkai/love/game");           
         }
 
-        attack_shikigami.SetInteger("Element", advaice_mode);
         attack_youkai.SetInteger("Element", advaice_mode);
 
         back_shikigami.Play("式神背景");
@@ -86,6 +81,8 @@ public class LevelManager : MonoBehaviour
         room[advaice_mode].SetActive(true);
 
         Timer.GetComponent<Text>().text = counter.ToString("f2");
+        dist_counter = counter;
+        comment_value = 1;
 
         for (int i = 0; i < 10; i++)
         {
@@ -99,6 +96,22 @@ public class LevelManager : MonoBehaviour
         {            
             counter -= Time.deltaTime;
 
+            if (dist_counter - counter > 5)
+            {                
+                dist_counter = counter;
+
+                if (comment_value % 2 == 0)
+                {
+                    evaluation.Comment_Text(0);
+                }
+                else
+                {
+                    evaluation.Comment_Text(2);
+                }
+
+                comment_value++;
+            }
+
             if (counter < count.Count)
             {
                 int i = (int)counter;
@@ -107,8 +120,7 @@ public class LevelManager : MonoBehaviour
                 {
                     DataManager.GetComponent<AudioSource>().PlayOneShot(Resources.Load<AudioClip>("Sound/SE/countdown_" + (i + 1)));
                     count[i] = false;
-                }
-                
+                }               
             }
 
             //敗北
@@ -141,14 +153,14 @@ public class LevelManager : MonoBehaviour
     {       
         if (win)
         {
-            attack_shikigami.SetInteger("Element", 5);
+            evaluation.attack_shikigami.SetInteger("Element", 5);
             attack_youkai.gameObject.SetActive(false);
 
             back_youkai.gameObject.SetActive(false);
         }
         else
         {
-            attack_shikigami.gameObject.SetActive(false);
+            evaluation.attack_shikigami.gameObject.SetActive(false);
             attack_youkai.SetInteger("Element", 5);
 
             back_shikigami.gameObject.SetActive(false);
@@ -169,7 +181,7 @@ public class LevelManager : MonoBehaviour
 
         evaluation.set_is_finishedGame(true);
         evaluation.EvaluationTotal();
-        evaluation.Comment_Text();
+        evaluation.Comment_Text(0);
 
         Retire.GetComponent<Button>().interactable = false;
         Finish_Menu.SetActive(true);
@@ -180,8 +192,34 @@ public class LevelManager : MonoBehaviour
     }
 
     // コルーチン  
-    private IEnumerator Sample(string name)
+    private IEnumerator Sample(string name, bool win)
     {
+        DataManager.GetComponent<AudioSource>().PlayOneShot(Resources.Load<AudioClip>("Sound/SE/death"));
+
+        while (true)
+        {
+            if (win)
+            {
+                game_youkai.GetComponent<Image>().color = Color.Lerp(game_youkai.GetComponent<Image>().color, new Color(255, 255, 255, 0), 0.05f);
+
+                if (game_youkai.GetComponent<Image>().color.a < 0.01f)
+                {
+                    break;
+                }
+            }
+            else
+            {
+                evaluation.game_shikigami.GetComponent<Image>().color = Color.Lerp(evaluation.game_shikigami.GetComponent<Image>().color, new Color(255, 255, 255, 0), 0.05f);
+
+                if (evaluation.game_shikigami.GetComponent<Image>().color.a < 0.01f)
+                {                    
+                    break;
+                }
+            }
+
+            yield return null;
+        }
+
         yield return new WaitForSeconds(4.0f);
 
         SceneManager.LoadScene(name);
@@ -192,21 +230,12 @@ public class LevelManager : MonoBehaviour
         while (true)
         {
             Finish_Menu.GetComponent<RectTransform>().localScale = Vector3.Lerp(Finish_Menu.GetComponent<RectTransform>().localScale, new Vector3(1,1,1), 0.05f);
-
-            if (win)
-            {
-                game_youkai.GetComponent<Image>().color = Color.Lerp(game_shikigami.GetComponent<Image>().color, new Color(255, 255, 255, 0), 0.05f);
-            }
-            else
-            {
-                game_shikigami.GetComponent<Image>().color = Color.Lerp(game_shikigami.GetComponent<Image>().color, new Color(255, 255, 255, 0), 0.05f);
-            }            
-
+            
             if (Finish_Menu.GetComponent<RectTransform>().localScale.x - 1 < 0.05f)
             {
                 Finish_Menu.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
-                DataManager.GetComponent<AudioSource>().PlayOneShot(Resources.Load<AudioClip>("Sound/SE/death"));
-                StartCoroutine(Sample("Result"));
+               
+                StartCoroutine(Sample("Result", win));
 
                 yield break;
             }

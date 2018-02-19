@@ -372,7 +372,7 @@ MonoBehaviour:
   m_TextName: {fileID: 0}
   m_FullInfoText: {fileID: 0}
   FullButtonOption: {fileID: 0}
-  ItemPrefab: {fileID: 1559149566427446, guid: a7436629ebd6a484ba6c9d6420d8e32a, type: 2}
+  ItemPrefab: {fileID: 1249855858593480, guid: a68d38725dc97b64c908de241963e33b, type: 2}
   Gallery_level_Panel: {fileID: 1526661802}
   Gallery_type_Panel: {fileID: 0}
   Gallery_furniture_Panel: {fileID: 0}
@@ -1641,7 +1641,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1280968077}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 234, y: 9, z: 0}
+  m_LocalPosition: {x: 250, y: 9, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1761020479}
@@ -1649,8 +1649,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 234, y: 9}
-  m_SizeDelta: {x: 280, y: 70}
+  m_AnchoredPosition: {x: 250, y: 9}
+  m_SizeDelta: {x: 350, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1280968079
 MonoBehaviour:
@@ -1685,7 +1685,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u904B\u52E2\u9078\u629E"
+  m_Text: "\u96E3\u6613\u5EA6\u9078\u629E"
 --- !u!222 &1280968080
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1964,7 +1964,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1408558805
 RectTransform:
   m_ObjectHideFlags: 0
