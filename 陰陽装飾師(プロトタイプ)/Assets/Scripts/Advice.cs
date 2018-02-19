@@ -21,8 +21,8 @@ public class Advice : MonoBehaviour {
 
         if (DataManager.GetComponent<DataManager>().read_advaice_mode() == 0)
         {
-            shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/water/body");
-            StartCoroutine(Delay("shikigami/water/voice"));
+            shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/wood/body");
+            StartCoroutine(Delay("shikigami/wood/voice"));
         }
         else if (DataManager.GetComponent<DataManager>().read_advaice_mode() == 1)
         {
@@ -31,8 +31,8 @@ public class Advice : MonoBehaviour {
         }
         else if (DataManager.GetComponent<DataManager>().read_advaice_mode() == 2)
         {
-            shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/wood/body");
-            StartCoroutine(Delay("shikigami/wood/voice"));
+            shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/earth/body");
+            StartCoroutine(Delay("shikigami/earth/voice"));
         }
         else if (DataManager.GetComponent<DataManager>().read_advaice_mode() == 3)
         {
@@ -41,8 +41,8 @@ public class Advice : MonoBehaviour {
         }
         else if (DataManager.GetComponent<DataManager>().read_advaice_mode() == 4)
         {
-            shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/earth/body");
-            StartCoroutine(Delay("shikigami/earth/voice"));
+            shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/water/body");
+            StartCoroutine(Delay("shikigami/water/voice"));
         }
 
         for (int i = 0; i < comment_text.Count; i++)

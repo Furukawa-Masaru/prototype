@@ -760,11 +760,11 @@ MonoBehaviour:
   BG: {fileID: 2138542204}
   Condition: {fileID: 163223057}
   Shikigami:
-  - {fileID: 636048429}
-  - {fileID: 1673439881}
   - {fileID: 691286146}
-  - {fileID: 1268436870}
+  - {fileID: 1673439881}
   - {fileID: 1252839727}
+  - {fileID: 1268436870}
+  - {fileID: 636048429}
   Youkai:
   - {fileID: 85023808}
   - {fileID: 974824506}

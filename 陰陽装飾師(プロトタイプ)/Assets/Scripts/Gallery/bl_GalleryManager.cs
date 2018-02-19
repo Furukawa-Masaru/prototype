@@ -372,11 +372,11 @@ public class bl_GalleryManager : MonoBehaviour
         {
             if (i == ID_level)
             {
-                norma_luck_[i] = 400;
+                norma_luck_[i] = 0;
             }
             else
             {
-                norma_luck_[i] = 300;
+                norma_luck_[i] = 0;
             }
         }
 
@@ -513,7 +513,7 @@ public class bl_GalleryManager : MonoBehaviour
         }
         else
         {
-            FurnitureManagement.Add_ChangeMode(true);
+            FurnitureManagement.Menu.SetActive(true);
         }
     }
 

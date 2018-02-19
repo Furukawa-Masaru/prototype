@@ -121,6 +121,7 @@ public class FurnitureManagement : MonoBehaviour
     {
         Button_Clicked();
         Add_ChangeMode(false);
+        Menu.SetActive(false);
         move_furniture = false;
         Gallery_Manager.mode_ = bl_GalleryManager.Mode.Add;
         Gallery_Manager.OpenGallery_type();
@@ -205,7 +206,7 @@ public class FurnitureManagement : MonoBehaviour
 
             FurnitureGrid temp = new FurnitureGrid();
             temp.Init(category_ID, grid_ID);
-            temp.Translate(Grid_Manager.point(Grid_Manager.Grid_x_max / 2, Grid_Manager.Grid_y_max / 2).pos);
+            temp.Translate(Grid_Manager.point((int)(Grid_Manager.Grid_x_max() * 0.5f), (int)(Grid_Manager.Grid_y_max() * 0.5f)).pos);
 
             furniture_grid_.Add(temp);
         }
@@ -258,17 +259,17 @@ public class FurnitureManagement : MonoBehaviour
 
         for (int k = 0; k < furniture_grid_[target_number_].vertices_number(); k++)
         {
-            for (int i = Grid_Manager.Grid_y_min; i < Grid_Manager.Grid_y_max; i++)
+            for (int i = Grid_Manager.Grid_y_min(); i < Grid_Manager.Grid_y_max(); i++)
             {
-                for (int j = Grid_Manager.Grid_x_min; j < Grid_Manager.Grid_x_max; j++)
+                for (int j = Grid_Manager.Grid_x_min(); j < Grid_Manager.Grid_x_max(); j++)
                 {
                     float vertices_x = furniture_grid_[target_number_].vertices(k).x;
                     float vertices_y = furniture_grid_[target_number_].vertices(k).y;
 
-                    float grid_x_min = Grid_Manager.point(j, i).pos.x - (Grid_Manager.Grid_density / 2.0f);
-                    float grid_y_min = Grid_Manager.point(j, i).pos.y - (Grid_Manager.Grid_density / 2.0f);
-                    float grid_x_max = Grid_Manager.point(j, i).pos.x + (Grid_Manager.Grid_density / 2.0f);
-                    float grid_y_max = Grid_Manager.point(j, i).pos.y + (Grid_Manager.Grid_density / 2.0f);
+                    float grid_x_min = Grid_Manager.point(j, i).pos.x - (Grid_Manager.Grid_density() * 0.5f);
+                    float grid_y_min = Grid_Manager.point(j, i).pos.y - (Grid_Manager.Grid_density() * 0.5f);
+                    float grid_x_max = Grid_Manager.point(j, i).pos.x + (Grid_Manager.Grid_density() * 0.5f);
+                    float grid_y_max = Grid_Manager.point(j, i).pos.y + (Grid_Manager.Grid_density() * 0.5f);
 
                     if (grid_x_min < vertices_x && vertices_x < grid_x_max &&
                         grid_y_min < vertices_y && vertices_y < grid_y_max)
@@ -331,12 +332,12 @@ public class FurnitureManagement : MonoBehaviour
         Vector3 target_pos = new Vector3();
 
         float dist_min = Vector3.Distance(
-               Grid_Manager.point(Grid_Manager.Grid_x_min, Grid_Manager.Grid_y_min).pos,
+               Grid_Manager.point(Grid_Manager.Grid_x_min(), Grid_Manager.Grid_y_min()).pos,
                furniture_grid_[target_number_].grid_position());
 
-        for (int i = Grid_Manager.Grid_y_min; i < Grid_Manager.Grid_y_max; i++)
+        for (int i = Grid_Manager.Grid_y_min(); i < Grid_Manager.Grid_y_max(); i++)
         {
-            for (int j = Grid_Manager.Grid_x_min; j < Grid_Manager.Grid_x_max; j++)
+            for (int j = Grid_Manager.Grid_x_min(); j < Grid_Manager.Grid_x_max(); j++)
             {
                 float dist_temp = Vector3.Distance(
                     Grid_Manager.point(j, i).pos,
@@ -358,7 +359,7 @@ public class FurnitureManagement : MonoBehaviour
     {
         //Grid_Manager.Test_sphere(Grid_Manager.Grid_x_max / 2, Grid_Manager.Grid_y_max / 2, 0.3f, Color.red);
 
-        Vector3 target = furniture_grid_temp.furniture_grid().transform.position - Grid_Manager.point(Grid_Manager.Grid_x_max / 2, Grid_Manager.Grid_y_max / 2).pos;
+        Vector3 target = furniture_grid_temp.furniture_grid().transform.position - Grid_Manager.point((int)(Grid_Manager.Grid_x_max() * 0.5f), (int)(Grid_Manager.Grid_y_max() * 0.5f)).pos;
         Vector3 source = new Vector3(1.0f, 0, 0);
 
         float angle =
@@ -423,20 +424,9 @@ public class FurnitureManagement : MonoBehaviour
 
     public void Room(Evaluation.Room room, Evaluation.Direction direction, int[] norma_luck, int advaice_mode)
     {
-        //AddFurniture(0, 1, new Vector3(-4.0f, -1.0f, 0));
-        //AddFurniture(1, 1, new Vector3(3.0f, 1.0f, 0));
-        //AddFurniture(2, 1, new Vector3(4.0f, -3.0f, 0));
-        //AddFurniture(3, 1, new Vector3(0.0f, 1.0f, 0));
-        //AddFurniture(7, 1, new Vector3(7.0f, 1.0f, 0));       
-        //AddFurniture(8, 1, new Vector3(1.5f, -5.5f, 0));               
-        //AddFurniture(9, 1, new Vector3(6.5f, -3.0f, 0));
+        Grid_Manager.Instantiate(advaice_mode);
 
-        //for (int i = 0; i < furniture_grid_.Count; i++)
-        //{
-        //    furniture_direction(furniture_grid_[i], new Vector3(0.0f, 0.0f, 0));
-        //}
-
-        Evaluation.Init(room, direction, norma_luck, advaice_mode, furniture_grid_, Grid_Manager);
+        Evaluation.Init(room, direction, norma_luck, advaice_mode, furniture_grid_);
     }
 
     public void Update_Evaluate()
@@ -554,7 +544,7 @@ public class FurnitureManagement : MonoBehaviour
 
         Add_ChangeMode(false);
 
-        Menu.transform.position = clicked_object.transform.position + new Vector3(2.0f, 2.0f, -0.1f);
+        Menu.transform.position = clicked_object.transform.position + new Vector3(3.0f, 3.0f, -1.0f);
         Menu.SetActive(true);
         move_furniture = false;
     }

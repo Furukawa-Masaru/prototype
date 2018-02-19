@@ -366,6 +366,7 @@ public partial class Evaluation : MonoBehaviour
     private int yin_yang_min_ = -300;
 
     public GameObject[] Gage_Value_ = new GameObject[5];
+    public GameObject[] Gage_Max_ = new GameObject[5];
     private int all_luck_min_ = -500;
 
     public void UpdateElementsText()
@@ -407,29 +408,37 @@ public partial class Evaluation : MonoBehaviour
 
         for (int i = 0; i < luck_.Length; i++)
         {
-            //Debug.Log("運勢" + i + "(前) " + luck_[i]);
-
             float luck_temp_ = luck_[i];
 
             luck_temp_ += (-all_luck_min_);
             luck_temp_ /= norma_luck_[i] + (-all_luck_min_);
-
-            //Debug.Log("運勢" + i + "(後) " + luck_temp_);
 
             Gage_Value_[i].GetComponent<RectTransform>().localScale = new Vector3(luck_temp_, 1, 1);
 
             if (luck_temp_ >= 1)
             {
                 count++;
+
                 Gage_Value_[i].GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
-                Gage_Value_[i].GetComponent<Image>().color = 
-                    new Color(Gage_Value_[i].GetComponent<Image>().color.r,
-                    Gage_Value_[i].GetComponent<Image>().color.g,
-                    Gage_Value_[i].GetComponent<Image>().color.b, 255);
-            }
-            else if (luck_temp_ <= 0)
+
+                if (Gage_Max_[i].activeSelf == false)
+                {
+                    Gage_Max_[i].SetActive(true);
+                    DataManager.GetComponent<AudioSource>().PlayOneShot(Resources.Load<AudioClip>("Sound/SE/gage_max"));
+                }               
+            }           
+            else
             {
-                Gage_Value_[i].GetComponent<RectTransform>().localScale = new Vector3(0, 1, 1);
+                if (luck_temp_ <= 0)
+                {
+                    Gage_Value_[i].GetComponent<RectTransform>().localScale = new Vector3(0, 1, 1);
+                }
+
+                if (Gage_Max_[i].activeSelf == true)
+                {
+                    Gage_Max_[i].SetActive(false);
+                    //DataManager.GetComponent<AudioSource>().PlayOneShot(Resources.Load<AudioClip>("Sound/SE/gage_max"));
+                }
             }
         }
 
@@ -441,13 +450,11 @@ public partial class Evaluation : MonoBehaviour
 
     //*******************************************************************************************************************************************************************************************
 
-    private Grid_Manager Grid_Manager_;
     private DataManager DataManager;
 
     //初期化関数(この関数は最初に1回だけ実行すること)
-    public void Init(Room room_role, Direction room_direction, int[] norma_luck, int advaice_mode, List<FurnitureGrid> furniture_grid, Grid_Manager grid_manager)
+    public void Init(Room room_role, Direction room_direction, int[] norma_luck, int advaice_mode, List<FurnitureGrid> furniture_grid)
     {
-        Grid_Manager_ = grid_manager;
         DataManager = GameObject.Find("DataManager").GetComponent<DataManager>();
 
         room_role_ = room_role;

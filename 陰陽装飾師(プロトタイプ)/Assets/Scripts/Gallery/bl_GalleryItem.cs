@@ -145,6 +145,39 @@ public class bl_GalleryItem : MonoBehaviour
             ID = id;
             gameObject.transform.Find("Content").gameObject.transform.Find("ItemButton").gameObject.GetComponent<RectTransform>().localScale = new Vector3(6.0f, 6.0f, 1);
             gameObject.transform.Find("Content").gameObject.transform.Find("ItemButton").gameObject.GetComponent<RectTransform>().localPosition += new Vector3(0.0f, 90.0f, 0.0f);
+
+            GameObject luck_image = new GameObject();
+                        
+            if (id == 0)
+            {
+                luck_image.name = "work";
+                luck_image.AddComponent<Image>().sprite = Resources.Load<Sprite>("Effect/work");
+            }
+            if (id == 1)
+            {
+                luck_image.name = "popular";
+                luck_image.AddComponent<Image>().sprite = Resources.Load<Sprite>("Effect/popular");
+            }
+            if (id == 2)
+            {
+                luck_image.name = "health";
+                luck_image.AddComponent<Image>().sprite = Resources.Load<Sprite>("Effect/health");
+            }
+            if (id == 3)
+            {
+                luck_image.name = "economic";
+                luck_image.AddComponent<Image>().sprite = Resources.Load<Sprite>("Effect/economic");
+            }
+            if (id == 4)
+            {
+                luck_image.name = "love";
+                luck_image.AddComponent<Image>().sprite = Resources.Load<Sprite>("Effect/love");
+            }
+
+            luck_image.transform.parent = gameObject.transform.Find("Content").gameObject.transform;
+            luck_image.GetComponent<RectTransform>().sizeDelta = new Vector2(40.0f, 25.0f);
+            luck_image.GetComponent<RectTransform>().localPosition = new Vector3(0,-50,0);
+
         }
         else if (mode_ == Mode.Type)
         {
@@ -158,6 +191,8 @@ public class bl_GalleryItem : MonoBehaviour
             gameObject.transform.Find("Content").gameObject.transform.Find("ItemButton").gameObject.GetComponent<RectTransform>().localScale = new Vector3(7.0f, 7.0f, 1);
             gameObject.transform.Find("Content").gameObject.transform.Find("ItemButton").gameObject.GetComponent<RectTransform>().localPosition += new Vector3(0.0f, 30.0f, 0.0f);
         }
+
+        gameObject.transform.Find("Content").gameObject.transform.Find("Text").gameObject.SetActive(false);
 
         Sprite = sprite;
 
