@@ -88,9 +88,9 @@ public partial class FurnitureGrid : MonoBehaviour
                 }
             case FurnitureType.FoliagePlant: //観葉植物
                 {
-                    elements_wood_ += 30;
+                    elements_wood_ += 50;
                     elements_fire_ += 0;
-                    elements_earth_ += 0;
+                    elements_earth_ += 15;
                     elements_metal_ += 0;
                     elements_water_ += 0;
                     yin_yang_ += 0;
@@ -99,21 +99,21 @@ public partial class FurnitureGrid : MonoBehaviour
             case FurnitureType.CeilLamp: //天井ランプ
                 {
                     elements_wood_ += 0;
-                    elements_fire_ += 0;
+                    elements_fire_ += 40;
                     elements_earth_ += 0;
                     elements_metal_ += 0;
                     elements_water_ += 0;
-                    yin_yang_ += 0;
+                    yin_yang_ += 40;
                     break;
                 }
             case FurnitureType.DeskLamp: //机ランプ
                 {
                     elements_wood_ += 0;
-                    elements_fire_ += 0;
+                    elements_fire_ += 40;
                     elements_earth_ += 0;
                     elements_metal_ += 0;
                     elements_water_ += 0;
-                    yin_yang_ += 0;
+                    yin_yang_ += 40;
                     break;
                 }
             case FurnitureType.Sofa: //ソファー
@@ -143,7 +143,7 @@ public partial class FurnitureGrid : MonoBehaviour
                     elements_earth_ += 0;
                     elements_metal_ += 0;
                     elements_water_ += 0;
-                    yin_yang_ += 50;
+                    yin_yang_ += 100;
                     break;
                 }
             case FurnitureType.Curtain: //カーテン
@@ -173,138 +173,6 @@ public partial class FurnitureGrid : MonoBehaviour
                 }
         }
 
-        for (int i = 0; i < furniture_subtype_.Count; ++i)
-        {
-            switch (furniture_subtype_[i])
-            {
-                case FurnitureType.Bed: //ベッド
-                    {
-                        elements_wood_ += 0;
-                        elements_fire_ += 0;
-                        elements_earth_ += 0;
-                        elements_metal_ += 0;
-                        elements_water_ += 0;
-                        yin_yang_ += 0;
-                        break;
-                    }
-                case FurnitureType.Cabinet: //タンス
-                    {
-                        elements_wood_ += 0;
-                        elements_fire_ += 0;
-                        elements_earth_ += 0;
-                        elements_metal_ += 0;
-                        elements_water_ += 0;
-                        yin_yang_ += 0;
-                        break;
-                    }
-                case FurnitureType.Carpet: //カーペット
-                    {
-                        elements_wood_ += 0;
-                        elements_fire_ += 0;
-                        elements_earth_ += 0;
-                        elements_metal_ += 0;
-                        elements_water_ += 0;
-                        yin_yang_ += 0;
-                        break;
-                    }
-                case FurnitureType.Desk: //机
-                    {
-                        elements_wood_ += 0;
-                        elements_fire_ += 0;
-                        elements_earth_ += 0;
-                        elements_metal_ += 0;
-                        elements_water_ += 0;
-                        yin_yang_ += 0;
-                        break;
-                    }
-                case FurnitureType.FoliagePlant: //観葉植物
-                    {
-                        elements_wood_ += 30;
-                        elements_fire_ += 0;
-                        elements_earth_ += 0;
-                        elements_metal_ += 0;
-                        elements_water_ += 0;
-                        yin_yang_ += 0;
-                        break;
-                    }
-                case FurnitureType.CeilLamp: //天井ランプ
-                    {
-                        elements_wood_ += 0;
-                        elements_fire_ += 0;
-                        elements_earth_ += 0;
-                        elements_metal_ += 0;
-                        elements_water_ += 0;
-                        yin_yang_ += 0;
-                        break;
-                    }
-                case FurnitureType.DeskLamp: //机ランプ
-                    {
-                        elements_wood_ += 0;
-                        elements_fire_ += 0;
-                        elements_earth_ += 0;
-                        elements_metal_ += 0;
-                        elements_water_ += 0;
-                        yin_yang_ += 0;
-                        break;
-                    }
-                case FurnitureType.Sofa: //ソファー
-                    {
-                        elements_wood_ += 0;
-                        elements_fire_ += 0;
-                        elements_earth_ += 0;
-                        elements_metal_ += 0;
-                        elements_water_ += 0;
-                        yin_yang_ += 0;
-                        break;
-                    }
-                case FurnitureType.Table: //テーブル
-                    {
-                        elements_wood_ += 0;
-                        elements_fire_ += 0;
-                        elements_earth_ += 0;
-                        elements_metal_ += 0;
-                        elements_water_ += 0;
-                        yin_yang_ += 0;
-                        break;
-                    }
-                case FurnitureType.ConsumerElectronics: //家電
-                    {
-                        elements_wood_ += 20;
-                        elements_fire_ += 0;
-                        elements_earth_ += 0;
-                        elements_metal_ += 0;
-                        elements_water_ += 0;
-                        yin_yang_ += 50;
-                        break;
-                    }
-                case FurnitureType.Curtain: //カーテン
-                    {
-                        elements_wood_ += 0;
-                        elements_fire_ += 0;
-                        elements_earth_ += 0;
-                        elements_metal_ += 0;
-                        elements_water_ += 0;
-                        yin_yang_ += 0;
-                        break;
-                    }
-                case FurnitureType.Dresser: //鏡
-                    {
-                        elements_wood_ += 0;
-                        elements_fire_ += 0;
-                        elements_earth_ += 0;
-                        elements_metal_ += 0;
-                        elements_water_ += 0;
-                        yin_yang_ += 0;
-                        break;
-                    }
-                default: //その他
-                    {
-                        Debug.Log("この家具はその他です．");
-                        break;
-                    }
-            }
-        }
-
         for (int i = 0; i < color_name_.Count; ++i)
         {
             switch (color_name_[i])
@@ -315,9 +183,9 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_wood_ += 0;
                         elements_fire_ += 0;
                         elements_earth_ += 0;
-                        elements_metal_ += 3 * (1 + color_name_weight_[i]);
+                        elements_metal_ += 2 * color_name_weight_[i];
                         elements_water_ += 0;
-                        yin_yang_ += 4 * (1 + color_name_weight_[i]);
+                        yin_yang_ += 0;
                         break;
                     }
                 case ColorName.Black: //黒
@@ -326,8 +194,8 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_fire_ += 0;
                         elements_earth_ += 0;
                         elements_metal_ += 0;
-                        elements_water_ += 4 * (1 + color_name_weight_[i]);
-                        yin_yang_ += -4 * (1 + color_name_weight_[i]);
+                        elements_water_ += 6 * color_name_weight_[i];
+                        yin_yang_ += -6 * color_name_weight_[i];
                         break;
                     }
                 case ColorName.Gray: //灰
@@ -335,7 +203,7 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_wood_ += 0;
                         elements_fire_ += 0;
                         elements_earth_ += 0;
-                        elements_metal_ += 2 * (1 + color_name_weight_[i]);
+                        elements_metal_ += 3 * color_name_weight_[i];
                         elements_water_ += 0;
                         yin_yang_ += 0;
                         break;
@@ -345,39 +213,39 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_wood_ += 0;
                         elements_fire_ += 0;
                         elements_earth_ += 0;
-                        elements_metal_ += 2 * (1 + color_name_weight_[i]);
-                        elements_water_ += 1 * (1 + color_name_weight_[i]);
-                        yin_yang_ += -1 * (1 + color_name_weight_[i]);
+                        elements_metal_ += 3 * color_name_weight_[i];
+                        elements_water_ += 2 * color_name_weight_[i];
+                        yin_yang_ += -2 * color_name_weight_[i];
                         break;
                     }
                 case ColorName.Red: //赤
                     {
                         elements_wood_ += 0;
-                        elements_fire_ += 4 * (1 + color_name_weight_[i]);
+                        elements_fire_ += 6 * color_name_weight_[i];
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 5 * (1 + color_name_weight_[i]);
+                        yin_yang_ += 4 * color_name_weight_[i];
                         break;
                     }
                 case ColorName.Pink: //ピンク
                     {
                         elements_wood_ += 0;
-                        elements_fire_ += 2 * (1 + color_name_weight_[i]);
+                        elements_fire_ += 3 * color_name_weight_[i];
                         elements_earth_ += 0;
-                        elements_metal_ += 2 * (1 + color_name_weight_[i]);
+                        elements_metal_ += 2 * color_name_weight_[i];
                         elements_water_ += 0;
-                        yin_yang_ += 2 * (1 + color_name_weight_[i]);
+                        yin_yang_ += 1 * color_name_weight_[i];
                         break;
                     }
                 case ColorName.Blue: //青
                     {
-                        elements_wood_ += 2 * (1 + color_name_weight_[i]);
+                        elements_wood_ += 1 * color_name_weight_[i];
                         elements_fire_ += 0;
                         elements_earth_ += 0;
                         elements_metal_ += 0;
-                        elements_water_ += 3 * (1 + color_name_weight_[i]);
-                        yin_yang_ += -2 * (1 + color_name_weight_[i]);
+                        elements_water_ += 5 * color_name_weight_[i];
+                        yin_yang_ += -2 * color_name_weight_[i];
                         break;
                     }
                 case ColorName.LightBlue: //水色
@@ -386,33 +254,33 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_fire_ += 0;
                         elements_earth_ += 0;
                         elements_metal_ += 0;
-                        elements_water_ += 3 * (1 + color_name_weight_[i]);
-                        yin_yang_ += 2 * (1 + color_name_weight_[i]);
+                        elements_water_ += 3 * color_name_weight_[i];
+                        yin_yang_ += 0;
                         break;
                     }
                 case ColorName.Orange: //オレンジ
                     {
                         elements_wood_ += 0;
-                        elements_fire_ += 3 * (1 + color_name_weight_[i]);
+                        elements_fire_ += 3 * color_name_weight_[i];
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 3 * (1 + color_name_weight_[i]);
+                        yin_yang_ += 2 * color_name_weight_[i];
                         break;
                     }
                 case ColorName.Yellow: //黄
                     {
                         elements_wood_ += 0;
                         elements_fire_ += 0;
-                        elements_earth_ += 3 * (1 + color_name_weight_[i]);
-                        elements_metal_ += 1 * (1 + color_name_weight_[i]);
+                        elements_earth_ += 3 * color_name_weight_[i];
+                        elements_metal_ += 1 * color_name_weight_[i];
                         elements_water_ += 0;
-                        yin_yang_ += 3 * (1 + color_name_weight_[i]);
+                        yin_yang_ += 1 * color_name_weight_[i];
                         break;
                     }
                 case ColorName.Green: //緑
                     {
-                        elements_wood_ += 4 * (1 + color_name_weight_[i]);
+                        elements_wood_ += 6 * color_name_weight_[i];
                         elements_fire_ += 0;
                         elements_earth_ += 0;
                         elements_metal_ += 0;
@@ -422,22 +290,22 @@ public partial class FurnitureGrid : MonoBehaviour
                     }
                 case ColorName.LightGreen: //黄緑
                     {
-                        elements_wood_ += 3 * (1 + color_name_weight_[i]);
+                        elements_wood_ += 3 * color_name_weight_[i];
                         elements_fire_ += 0;
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 2 * (1 + color_name_weight_[i]);
+                        yin_yang_ += 1 * color_name_weight_[i];
                         break;
                     }
                 case ColorName.Beige: //ベージュ
                     {
                         elements_wood_ += 0;
                         elements_fire_ += 0;
-                        elements_earth_ += 2 * (1 + color_name_weight_[i]);
-                        elements_metal_ += 2 * (1 + color_name_weight_[i]);
+                        elements_earth_ += 3 * color_name_weight_[i];
+                        elements_metal_ += 3 * color_name_weight_[i];
                         elements_water_ += 0;
-                        yin_yang_ += 2 * (1 + color_name_weight_[i]);
+                        yin_yang_ += 0;
                         break;
                     }
                 case ColorName.Cream: //クリーム色
@@ -445,26 +313,26 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_wood_ += 0;
                         elements_fire_ += 0;
                         elements_earth_ += 0;
-                        elements_metal_ += 2 * (1 + color_name_weight_[i]);
-                        elements_water_ += 2 * (1 + color_name_weight_[i]);
-                        yin_yang_ += 2 * (1 + color_name_weight_[i]);
+                        elements_metal_ += 3 * color_name_weight_[i];
+                        elements_water_ += 3 * color_name_weight_[i];
+                        yin_yang_ += 0;
                         break;
                     }
                 case ColorName.Brown: //茶
                     {
                         elements_wood_ += 0;
                         elements_fire_ += 0;
-                        elements_earth_ += 4 * (1 + color_name_weight_[i]);
+                        elements_earth_ += 6 * color_name_weight_[i];
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += -1 * (1 + color_name_weight_[i]);
+                        yin_yang_ += -1 * color_name_weight_[i];
                         break;
                     }
                 case ColorName.Ocher: //黄土色
                     {
                         elements_wood_ += 0;
                         elements_fire_ += 0;
-                        elements_earth_ += 3 * (1 + color_name_weight_[i]);
+                        elements_earth_ += 4 * color_name_weight_[i];
                         elements_metal_ += 0;
                         elements_water_ += 0;
                         yin_yang_ += 0;
@@ -475,9 +343,9 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_wood_ += 0;
                         elements_fire_ += 0;
                         elements_earth_ += 0;
-                        elements_metal_ += 5 * (1 + color_name_weight_[i]);
+                        elements_metal_ += 10 * color_name_weight_[i];
                         elements_water_ += 0;
-                        yin_yang_ += 5 * (1 + color_name_weight_[i]);
+                        yin_yang_ += 8 * color_name_weight_[i];
                         break;
                     }
                 case ColorName.Silver: //銀
@@ -485,19 +353,19 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_wood_ += 0;
                         elements_fire_ += 0;
                         elements_earth_ += 0;
-                        elements_metal_ += 4 * (1 + color_name_weight_[i]);
+                        elements_metal_ += 6 * color_name_weight_[i];
                         elements_water_ += 0;
-                        yin_yang_ += -1 * (1 + color_name_weight_[i]);
+                        yin_yang_ += 0;
                         break;
                     }
                 case ColorName.Purple: //紫
                     {
                         elements_wood_ += 0;
-                        elements_fire_ += 2 * (1 + color_name_weight_[i]);
+                        elements_fire_ += 5 * color_name_weight_[i];
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += -2 * (1 + color_name_weight_[i]);
+                        yin_yang_ += -3 * color_name_weight_[i];
                         break;
                     }
                 default:
@@ -521,89 +389,89 @@ public partial class FurnitureGrid : MonoBehaviour
             {
                 case MaterialType.ArtificialFoliage: //人工観葉植物
                     {
-                        elements_wood_ += 2 * (1 + material_type_weight_[i]);
+                        elements_wood_ += 0;
                         elements_fire_ += 0;
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += -25 * (1 + material_type_weight_[i]);
+                        yin_yang_ += 0;
                         break;
                     }
                 case MaterialType.Wooden: //木材
                     {
-                        elements_wood_ += 4 * (1 + material_type_weight_[i]);
+                        elements_wood_ += 6 * material_type_weight_[i];
                         elements_fire_ += 0;
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 0;
+                        yin_yang_ += -1 * material_type_weight_[i];
                         break;
                     }
                 case MaterialType.Paper: //紙
                     {
-                        elements_wood_ += 3 * (1 + material_type_weight_[i]);
+                        elements_wood_ += 4 * material_type_weight_[i];
                         elements_fire_ += 0;
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 0;
+                        yin_yang_ += -2 * material_type_weight_[i];
                         break;
                     }
                 case MaterialType.Leather: //革
                     {
-                        elements_wood_ += 2 * (1 + material_type_weight_[i]);
-                        elements_fire_ += 0;
-                        elements_earth_ += 2 * (1 + material_type_weight_[i]);
+                        elements_wood_ += 0;
+                        elements_fire_ += 4 * material_type_weight_[i];
+                        elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 2 * (1 + material_type_weight_[i]);
+                        yin_yang_ += 2 * material_type_weight_[i];
                         break;
                     }
                 case MaterialType.NaturalFibre: //天然繊維
                     {
-                        elements_wood_ += 1 * (1 + material_type_weight_[i]);
+                        elements_wood_ += 1 * material_type_weight_[i];
                         elements_fire_ += 0;
-                        elements_earth_ += 3 * (1 + material_type_weight_[i]);
+                        elements_earth_ += 5 * material_type_weight_[i];
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 0;
+                        yin_yang_ += -1 * material_type_weight_[i];
                         break;
                     }
                 case MaterialType.ChemicalFibre: //化学繊維
                     {
                         elements_wood_ += 0;
-                        elements_fire_ += 10 * (1 + material_type_weight_[i]);
+                        elements_fire_ += 6 * material_type_weight_[i];
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 10 * (1 + material_type_weight_[i]);
+                        yin_yang_ += 10 * material_type_weight_[i];
                         break;
                     }
                 case MaterialType.Cotton: //綿
                     {
-                        elements_wood_ += 1 * (1 + material_type_weight_[i]);
+                        elements_wood_ += 0;
                         elements_fire_ += 0;
-                        elements_earth_ += 3 * (1 + material_type_weight_[i]);
+                        elements_earth_ += 5 * material_type_weight_[i];
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 0;
+                        yin_yang_ += -2 * material_type_weight_[i];
                         break;
                     }
                 case MaterialType.Plastic: //プラスチック
                     {
                         elements_wood_ += 0;
-                        elements_fire_ += 10 * (1 + material_type_weight_[i]);
+                        elements_fire_ += 6 * material_type_weight_[i];
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 10 * (1 + material_type_weight_[i]);
+                        yin_yang_ += 10 * material_type_weight_[i];
                         break;
                     }
                 case MaterialType.Ceramic: //陶磁器
                     {
                         elements_wood_ += 0;
                         elements_fire_ += 0;
-                        elements_earth_ += 4 * (1 + material_type_weight_[i]);
+                        elements_earth_ += 6 * material_type_weight_[i];
                         elements_metal_ += 0;
                         elements_water_ += 0;
                         yin_yang_ += 0;
@@ -613,7 +481,7 @@ public partial class FurnitureGrid : MonoBehaviour
                     {
                         elements_wood_ += 0;
                         elements_fire_ += 0;
-                        elements_earth_ += 4 * (1 + material_type_weight_[i]);
+                        elements_earth_ += 6 * material_type_weight_[i];
                         elements_metal_ += 0;
                         elements_water_ += 0;
                         yin_yang_ += 0;
@@ -624,17 +492,17 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_wood_ += 0;
                         elements_fire_ += 0;
                         elements_earth_ += 0;
-                        elements_metal_ += 4 * (1 + material_type_weight_[i]);
+                        elements_metal_ += 6 * material_type_weight_[i];
                         elements_water_ += 0;
-                        yin_yang_ += 1 * (1 + material_type_weight_[i]);
+                        yin_yang_ += 4 * material_type_weight_[i];
                         break;
                     }
                 case MaterialType.Mineral: //鉱物
                     {
                         elements_wood_ += 0;
                         elements_fire_ += 0;
-                        elements_earth_ += 0;
-                        elements_metal_ += 4 * (1 + material_type_weight_[i]);
+                        elements_earth_ += 2 * material_type_weight_[i];
+                        elements_metal_ += 4 * material_type_weight_[i];
                         elements_water_ += 0;
                         yin_yang_ += 0;
                         break;
@@ -645,8 +513,8 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_fire_ += 0;
                         elements_earth_ += 0;
                         elements_metal_ += 0;
-                        elements_water_ += 4 * (1 + material_type_weight_[i]);
-                        yin_yang_ += 2 * (1 + material_type_weight_[i]);
+                        elements_water_ += 5 * material_type_weight_[i];
+                        yin_yang_ += 8 * material_type_weight_[i];
                         break;
                     }
                 case MaterialType.Water: //水
@@ -655,8 +523,8 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_fire_ += 0;
                         elements_earth_ += 0;
                         elements_metal_ += 0;
-                        elements_water_ += 4 * (1 + material_type_weight_[i]);
-                        yin_yang_ += -1 * (1 + material_type_weight_[i]);
+                        elements_water_ += 6 * material_type_weight_[i];
+                        yin_yang_ += -2 * material_type_weight_[i];
                         break;
                     }
                 default: //その他
@@ -673,7 +541,7 @@ public partial class FurnitureGrid : MonoBehaviour
             {
                 case PatternType.Stripe: //ストライプ
                     {
-                        elements_wood_ += 2 * (1 + pattern_type_weight_[i]);
+                        elements_wood_ += 4 * pattern_type_weight_[i];
                         elements_fire_ += 0;
                         elements_earth_ += 0;
                         elements_metal_ += 0;
@@ -683,7 +551,7 @@ public partial class FurnitureGrid : MonoBehaviour
                     }
                 case PatternType.Leaf: //リーフ
                     {
-                        elements_wood_ += 3 * (1 + pattern_type_weight_[i]);
+                        elements_wood_ += 6 * pattern_type_weight_[i];
                         elements_fire_ += 0;
                         elements_earth_ += 0;
                         elements_metal_ += 0;
@@ -693,7 +561,7 @@ public partial class FurnitureGrid : MonoBehaviour
                     }
                 case PatternType.Flower: //花柄
                     {
-                        elements_wood_ += 3 * (1 + pattern_type_weight_[i]);
+                        elements_wood_ += 6 * pattern_type_weight_[i];
                         elements_fire_ += 0;
                         elements_earth_ += 0;
                         elements_metal_ += 0;
@@ -704,7 +572,7 @@ public partial class FurnitureGrid : MonoBehaviour
                 case PatternType.Star: //星柄
                     {
                         elements_wood_ += 0;
-                        elements_fire_ += 2 * (1 + pattern_type_weight_[i]);
+                        elements_fire_ += 6 * pattern_type_weight_[i];
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
@@ -714,7 +582,7 @@ public partial class FurnitureGrid : MonoBehaviour
                 case PatternType.Diamond: //ダイヤ柄
                     {
                         elements_wood_ += 0;
-                        elements_fire_ += 2 * (1 + pattern_type_weight_[i]);
+                        elements_fire_ += 4 * pattern_type_weight_[i];
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
@@ -724,7 +592,7 @@ public partial class FurnitureGrid : MonoBehaviour
                 case PatternType.Animal: //アニマル柄
                     {
                         elements_wood_ += 0;
-                        elements_fire_ += 2 * (1 + pattern_type_weight_[i]);
+                        elements_fire_ += 5 * pattern_type_weight_[i];
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
@@ -734,28 +602,18 @@ public partial class FurnitureGrid : MonoBehaviour
                 case PatternType.Zigzag: //ジグザグ柄
                     {
                         elements_wood_ += 0;
-                        elements_fire_ += 2 * (1 + pattern_type_weight_[i]);
+                        elements_fire_ += 4 * pattern_type_weight_[i];
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
                         yin_yang_ += 0;
                         break;
                     }
-                case PatternType.Novel: //奇抜
-                    {
-                        elements_wood_ += 0;
-                        elements_fire_ += 3 * (1 + pattern_type_weight_[i]);
-                        elements_earth_ += 0;
-                        elements_metal_ += 0;
-                        elements_water_ += 0;
-                        yin_yang_ += 4 * (1 + pattern_type_weight_[i]);
-                        break;
-                    }
                 case PatternType.Border: //ボーダー
                     {
                         elements_wood_ += 0;
                         elements_fire_ += 0;
-                        elements_earth_ += 2 * (1 + pattern_type_weight_[i]);
+                        elements_earth_ += 5 * pattern_type_weight_[i];
                         elements_metal_ += 0;
                         elements_water_ += 0;
                         yin_yang_ += 0;
@@ -765,7 +623,7 @@ public partial class FurnitureGrid : MonoBehaviour
                     {
                         elements_wood_ += 0;
                         elements_fire_ += 0;
-                        elements_earth_ += 2 * (1 + pattern_type_weight_[i]);
+                        elements_earth_ += 5 * pattern_type_weight_[i];
                         elements_metal_ += 0;
                         elements_water_ += 0;
                         yin_yang_ += 0;
@@ -775,7 +633,7 @@ public partial class FurnitureGrid : MonoBehaviour
                     {
                         elements_wood_ += 0;
                         elements_fire_ += 0;
-                        elements_earth_ += 2 * (1 + pattern_type_weight_[i]);
+                        elements_earth_ += 5 * pattern_type_weight_[i];
                         elements_metal_ += 0;
                         elements_water_ += 0;
                         yin_yang_ += 0;
@@ -786,7 +644,7 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_wood_ += 0;
                         elements_fire_ += 0;
                         elements_earth_ += 0;
-                        elements_metal_ += 2 * (1 + pattern_type_weight_[i]);
+                        elements_metal_ += 5 * pattern_type_weight_[i];
                         elements_water_ += 0;
                         yin_yang_ += 0;
                         break;
@@ -796,7 +654,7 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_wood_ += 0;
                         elements_fire_ += 0;
                         elements_earth_ += 0;
-                        elements_metal_ += 2 * (1 + pattern_type_weight_[i]);
+                        elements_metal_ += 6 * pattern_type_weight_[i];
                         elements_water_ += 0;
                         yin_yang_ += 0;
                         break;
@@ -806,17 +664,17 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_wood_ += 0;
                         elements_fire_ += 0;
                         elements_earth_ += 0;
-                        elements_metal_ += 2 * (1 + pattern_type_weight_[i]);
+                        elements_metal_ += 5 * pattern_type_weight_[i];
                         elements_water_ += 0;
                         yin_yang_ += 0;
                         break;
                     }
                 case PatternType.Fruits: //フルーツ
                     {
-                        elements_wood_ += 0;
+                        elements_wood_ += 2 * pattern_type_weight_[i];
                         elements_fire_ += 0;
                         elements_earth_ += 0;
-                        elements_metal_ += 2 * (1 + pattern_type_weight_[i]);
+                        elements_metal_ += 5 * pattern_type_weight_[i];
                         elements_water_ += 0;
                         yin_yang_ += 0;
                         break;
@@ -826,18 +684,18 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_wood_ += 0;
                         elements_fire_ += 0;
                         elements_earth_ += 0;
-                        elements_metal_ += 3 * (1 + pattern_type_weight_[i]);
+                        elements_metal_ += 6 * pattern_type_weight_[i];
                         elements_water_ += 0;
-                        yin_yang_ += 4 * (1 + pattern_type_weight_[i]);
+                        yin_yang_ += 4 * pattern_type_weight_[i];
                         break;
                     }
                 case PatternType.Wave: //ウェーブストライプ
                     {
-                        elements_wood_ += 0;
+                        elements_wood_ += 1 * pattern_type_weight_[i];
                         elements_fire_ += 0;
-                        elements_earth_ += 0;
+                        elements_earth_ += 1 * pattern_type_weight_[i];
                         elements_metal_ += 0;
-                        elements_water_ += 2 * (1 + pattern_type_weight_[i]);
+                        elements_water_ += 6 * pattern_type_weight_[i];
                         yin_yang_ += 0;
                         break;
                     }
@@ -847,8 +705,8 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_fire_ += 0;
                         elements_earth_ += 0;
                         elements_metal_ += 0;
-                        elements_water_ += 2 * (1 + pattern_type_weight_[i]);
-                        yin_yang_ += 0;
+                        elements_water_ += 4 * pattern_type_weight_[i];
+                        yin_yang_ += 4 * pattern_type_weight_[i];
                         break;
                     }
                 case PatternType.Cloud: //雲柄
@@ -857,7 +715,7 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_fire_ += 0;
                         elements_earth_ += 0;
                         elements_metal_ += 0;
-                        elements_water_ += 2 * (1 + pattern_type_weight_[i]);
+                        elements_water_ += 5 * (1 + pattern_type_weight_[i]);
                         yin_yang_ += 0;
                         break;
                     }
@@ -875,7 +733,7 @@ public partial class FurnitureGrid : MonoBehaviour
             {
                 case FormType.High: //背が高い
                     {
-                        elements_wood_ += 2 * (1 + form_type_weight_[i]);
+                        elements_wood_ += 2 * form_type_weight_[i];
                         elements_fire_ += 0;
                         elements_earth_ += 0;
                         elements_metal_ += 0;
@@ -887,7 +745,7 @@ public partial class FurnitureGrid : MonoBehaviour
                     {
                         elements_wood_ += 0;
                         elements_fire_ += 0;
-                        elements_earth_ += 2 * (1 + form_type_weight_[i]);
+                        elements_earth_ += 2 * form_type_weight_[i];
                         elements_metal_ += 0;
                         elements_water_ += 0;
                         yin_yang_ += 0;
@@ -895,42 +753,42 @@ public partial class FurnitureGrid : MonoBehaviour
                     }
                 case FormType.Vertical: //縦長
                     {
-                        elements_wood_ += 2 * (1 + form_type_weight_[i]);
+                        elements_wood_ += 4 + form_type_weight_[i];
                         elements_fire_ += 0;
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 0;
+                        yin_yang_ += -1 * form_type_weight_[i];
                         break;
                     }
                 case FormType.Oblong: //横長
                     {
                         elements_wood_ += 0;
                         elements_fire_ += 0;
-                        elements_earth_ += 2 * (1 + form_type_weight_[i]);
+                        elements_earth_ += 4 * form_type_weight_[i];
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 0;
+                        yin_yang_ += -1 * form_type_weight_[i];
                         break;
                     }
                 case FormType.Square: //正方形
                     {
                         elements_wood_ += 0;
-                        elements_fire_ += 0;
+                        elements_fire_ += 3 * form_type_weight_[i];
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 3 * (1 + form_type_weight_[i]);
+                        yin_yang_ += 2 * form_type_weight_[i];
                         break;
                     }
                 case FormType.Rectangle: //長方形
                     {
                         elements_wood_ += 0;
-                        elements_fire_ += 0;
+                        elements_fire_ += 2 * form_type_weight_[i];
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += -3 * (1 + form_type_weight_[i]);
+                        yin_yang_ += -1 * form_type_weight_[i];
                         break;
                     }
                 case FormType.Round: //円形
@@ -938,9 +796,9 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_wood_ += 0;
                         elements_fire_ += 0;
                         elements_earth_ += 0;
-                        elements_metal_ += 0;
-                        elements_water_ += 0;
-                        yin_yang_ += 4 * (1 + form_type_weight_[i]);
+                        elements_metal_ += 5 * form_type_weight_[i];
+                        elements_water_ += 2 * form_type_weight_[i];
+                        yin_yang_ += 4 * form_type_weight_[i];
                         break;
                     }
                 case FormType.Ellipse: //楕円形
@@ -948,38 +806,38 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_wood_ += 0;
                         elements_fire_ += 0;
                         elements_earth_ += 0;
-                        elements_metal_ += 0;
-                        elements_water_ += 0;
+                        elements_metal_ += 2 * form_type_weight_[i];
+                        elements_water_ += 2 * form_type_weight_[i];
                         yin_yang_ += 0;
                         break;
                     }
                 case FormType.Triangle: //三角形
                     {
                         elements_wood_ += 0;
-                        elements_fire_ += 2 * (1 + form_type_weight_[i]);
+                        elements_fire_ += 4 * form_type_weight_[i];
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 3 * (1 + form_type_weight_[i]);
+                        yin_yang_ += 1 * form_type_weight_[i];
                         break;
                     }
                 case FormType.Sharp: //尖っている
                     {
                         elements_wood_ += 0;
-                        elements_fire_ += 2 * (1 + form_type_weight_[i]);
+                        elements_fire_ += 5 * form_type_weight_[i];
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 3 * (1 + form_type_weight_[i]);
+                        yin_yang_ += 4 * form_type_weight_[i];
                         break;
                     }
                 case FormType.Novel: //奇抜
                     {
                         elements_wood_ += 0;
-                        elements_fire_ += 3 * (1 + form_type_weight_[i]);
+                        elements_fire_ += 0;
                         elements_earth_ += 0;
                         elements_metal_ += 0;
-                        elements_water_ += 0;
+                        elements_water_ += 4 * (1 + form_type_weight_[i]);
                         yin_yang_ += 4 * (1 + form_type_weight_[i]);
                         break;
                     }
@@ -1002,37 +860,37 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 3 * (1 + characteristic_weight_[i]);
+                        yin_yang_ += 2 * characteristic_weight_[i];
                         break;
                     }
                 case Characteristic.Sound: //音が出る
                     {
-                        elements_wood_ += 2 * (1 + characteristic_weight_[i]);
-                        elements_fire_ += 0;
+                        elements_wood_ += 0;
+                        elements_fire_ += 3 * characteristic_weight_[i];
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 2 * (1 + characteristic_weight_[i]);
+                        yin_yang_ += 1 * characteristic_weight_[i];
                         break;
                     }
                 case Characteristic.Smell: //いいにおい
                     {
-                        elements_wood_ += 0;
+                        elements_wood_ += 3 * characteristic_weight_[i];
                         elements_fire_ += 0;
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 2 * (1 + characteristic_weight_[i]);
+                        yin_yang_ += 1 * characteristic_weight_[i];
                         break;
                     }
                 case Characteristic.Light: //発光
                     {
                         elements_wood_ += 0;
-                        elements_fire_ += 3 * (1 + characteristic_weight_[i]);
+                        elements_fire_ += 3 * characteristic_weight_[i];
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 4 * (1 + characteristic_weight_[i]);
+                        yin_yang_ += 1 * characteristic_weight_[i];
                         break;
                     }
                 case Characteristic.Hard: //硬い
@@ -1042,7 +900,7 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 2 * (1 + characteristic_weight_[i]);
+                        yin_yang_ += 1 * characteristic_weight_[i];
                         break;
                     }
                 case Characteristic.Soft: //やわらかい
@@ -1052,7 +910,7 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += -2 * (1 + characteristic_weight_[i]);
+                        yin_yang_ += -1 * characteristic_weight_[i];
                         break;
                     }
                 case Characteristic.Warm: //温かみ
@@ -1062,7 +920,7 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 2 * (1 + characteristic_weight_[i]);
+                        yin_yang_ += 1 * characteristic_weight_[i];
                         break;
                     }
                 case Characteristic.Cold: //冷たさ
@@ -1072,22 +930,22 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += -2 * (1 + characteristic_weight_[i]);
+                        yin_yang_ += -1 * characteristic_weight_[i];
                         break;
                     }
                 case Characteristic.Flower: //花関連
                     {
-                        elements_wood_ += 2 * (1 + characteristic_weight_[i]);
+                        elements_wood_ += 3 * characteristic_weight_[i];
                         elements_fire_ += 0;
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += 0;
+                        yin_yang_ += -1 * characteristic_weight_[i];
                         break;
                     }
                 case Characteristic.Wind: //風関連
                     {
-                        elements_wood_ += 2 * (1 + characteristic_weight_[i]);
+                        elements_wood_ += 3 * characteristic_weight_[i];
                         elements_fire_ += 0;
                         elements_earth_ += 0;
                         elements_metal_ += 0;
@@ -1100,7 +958,7 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_wood_ += 0;
                         elements_fire_ += 0;
                         elements_earth_ += 0;
-                        elements_metal_ += 2 * (1 + characteristic_weight_[i]);
+                        elements_metal_ += 3 * characteristic_weight_[i];
                         elements_water_ += 0;
                         yin_yang_ += 0;
                         break;
@@ -1112,7 +970,7 @@ public partial class FurnitureGrid : MonoBehaviour
                         elements_earth_ += 0;
                         elements_metal_ += 0;
                         elements_water_ += 0;
-                        yin_yang_ += -90 * (1 + characteristic_weight_[i]);
+                        yin_yang_ += 0;
                         break;
                     }
                 default: //その他

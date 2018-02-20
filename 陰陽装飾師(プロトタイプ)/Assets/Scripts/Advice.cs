@@ -45,7 +45,7 @@ public class Advice : MonoBehaviour {
             StartCoroutine(Delay("shikigami/water/voice"));
         }
 
-        for (int i = 0; i < comment_text.Count; i++)
+        for (int i = 0; i < DataManager.GetComponent<DataManager>().read_comment().Count; i++)
         {
             comment.Add(DataManager.GetComponent<DataManager>().read_comment()[i]);
             comment_text[i].text = comment[i];

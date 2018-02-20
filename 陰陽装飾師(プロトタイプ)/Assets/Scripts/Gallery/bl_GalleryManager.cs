@@ -368,18 +368,6 @@ public class bl_GalleryManager : MonoBehaviour
 
         room[ID_level].SetActive(true);
 
-        for (int i = 0; i < norma_luck_.Length; i++)
-        {
-            if (i == ID_level)
-            {
-                norma_luck_[i] = 0;
-            }
-            else
-            {
-                norma_luck_[i] = 0;
-            }
-        }
-
         advaice_mode_ = ID_level;
 
         string compass_string = "";
@@ -456,9 +444,8 @@ public class bl_GalleryManager : MonoBehaviour
         //    room_string = "浴室";
         //}
 
-        //result.GetComponent<Text>().text = "方角 " + compass_string + ", 部屋" + room_string;
         result.transform.Find("compass&room").gameObject.GetComponent<Text>().text = "「方角」" + compass_string + ", 「部屋」" + room_string;
-        //result.transform.Find("compass&room").gameObject.transform.position = room[ID_level].transform.position + new Vector3(0,10,0);
+     
     }
 
     public void OpenGallery_type()

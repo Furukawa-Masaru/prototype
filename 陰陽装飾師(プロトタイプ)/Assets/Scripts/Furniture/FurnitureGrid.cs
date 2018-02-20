@@ -74,9 +74,6 @@ public partial class FurnitureGrid : MonoBehaviour
 
     //特徴抽出機能(クラスにする方法もあったが要素が含まれているかの実装が面倒だったのでクラスにしていない)********************
 
-    private List<FurnitureType> furniture_subtype_ = new List<FurnitureType>(); //色識別子
-    private List<int> furniture_subtype_weight_ = new List<int>(); //比重(1以上)
-
     private List<ColorName> color_name_ = new List<ColorName>(); //色識別子
     private List<int> color_name_weight_ = new List<int>(); //比重(1以上)
 
@@ -247,13 +244,6 @@ public partial class FurnitureGrid : MonoBehaviour
     {
         return characteristic_weight_;
     }
-
-    //サブ家具取得用(2018 2月15日)
-    public List<FurnitureType> furniture_subtype()
-    {
-        return furniture_subtype_;
-    }
-
 
     //******************************************************************************************************************
 
@@ -477,6 +467,7 @@ public partial class FurnitureGrid : MonoBehaviour
         furniture_ID_ = furniture_ID;
         furniture_grid_ = new GameObject();
 
+        //操作可能にする(移動・回転)
         furniture_grid_.layer = 8;
 
         if (category_ID_ == 0)
@@ -549,7 +540,6 @@ public partial class FurnitureGrid : MonoBehaviour
             parameta_ = new int[1];
             GetGridDataConsumerElectronics(furniture_ID_);
         }
-
         else if (category_ID_ == 10)
         {
             //カーテン
@@ -637,6 +627,7 @@ public partial class FurnitureGrid : MonoBehaviour
             furniture_grid_.AddComponent<BoxCollider>();
             furniture_grid_.GetComponents<BoxCollider>()[i].center = vertices[0] + new Vector3(quad_horizontal / 2, quad_vertical / 2, 0);
             furniture_grid_.GetComponents<BoxCollider>()[i].size = new Vector3(quad_horizontal, quad_vertical, 1);
+            furniture_grid_.GetComponents<BoxCollider>()[i].isTrigger = true;
 
             children_grid_[i].AddComponent<Rigidbody>();
             children_grid_[i].GetComponent<Rigidbody>().isKinematic = true;
@@ -653,14 +644,14 @@ public partial class FurnitureGrid : MonoBehaviour
         {
             furniture_grid_.tag = "furniture_grid_rugs"; //カーペット
         }
-        else if (object_type_ == ObjectType.WallMounted)
-        {
-            furniture_grid_.tag = "furniture_grid_wall"; //壁掛け
-        }
-        else if (object_type_ == ObjectType.Door)
-        {
-            furniture_grid_.tag = "furniture_grid_door"; //ドア(窓)
-        }
+        //else if (object_type_ == ObjectType.WallMounted)
+        //{
+        //    furniture_grid_.tag = "furniture_grid_wall"; //壁掛け
+        //}
+        //else if (object_type_ == ObjectType.Door)
+        //{
+        //    furniture_grid_.tag = "furniture_grid_door"; //ドア(窓)
+        //}
         else if (object_type_ == ObjectType.CeilingHook)
         {
             furniture_grid_.tag = "furniture_grid_ceil"; //天井
@@ -669,7 +660,7 @@ public partial class FurnitureGrid : MonoBehaviour
         furniture_grid_.AddComponent<MeshRenderer>();
 
         furniture_grid_.AddComponent<GridError>(); //家具オブジェクトにGridError.cs(家具グリッド同士の衝突判定)をアタッチ
-        furniture_grid_.GetComponent<BoxCollider>().isTrigger = true;
+        //furniture_grid_.GetComponent<BoxCollider>().isTrigger = true;
         furniture_grid_.AddComponent<Rigidbody>();
         furniture_grid_.GetComponent<Rigidbody>().isKinematic = true;
         furniture_grid_.SetActive(true);

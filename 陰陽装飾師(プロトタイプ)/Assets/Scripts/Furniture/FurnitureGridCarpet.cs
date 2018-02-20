@@ -65,7 +65,13 @@ public partial class FurnitureGrid : MonoBehaviour
                     //----------------------------------------------------
 
                     color_name_.Add(ColorName.Beige);
-                    color_name_weight_.Add(5);
+                    color_name_weight_.Add(10);
+
+                    color_name_.Add(ColorName.Green);
+                    color_name_weight_.Add(3);
+
+                    color_name_.Add(ColorName.White);
+                    color_name_weight_.Add(3);
 
                     color_name_.Add(ColorName.Cream);
                     color_name_weight_.Add(2);
@@ -73,34 +79,39 @@ public partial class FurnitureGrid : MonoBehaviour
                     color_name_.Add(ColorName.Gold);
                     color_name_weight_.Add(2);
 
-                    color_name_.Add(ColorName.Green);
-                    color_name_weight_.Add(2);
+
 
                     //----------------------------------------------------
 
                     material_type_.Add(MaterialType.ChemicalFibre);
-                    material_type_weight_.Add(4);
+                    material_type_weight_.Add(10);
 
                     //----------------------------------------------------
 
                     pattern_type_.Add(PatternType.Arch);
-                    pattern_type_weight_.Add(3);
+                    pattern_type_weight_.Add(10);
 
                     pattern_type_.Add(PatternType.Flower);
-                    pattern_type_weight_.Add(2);
+                    pattern_type_weight_.Add(5);
 
                     pattern_type_.Add(PatternType.Leaf);
-                    pattern_type_weight_.Add(2);
+                    pattern_type_weight_.Add(5);
 
                     //------------------------------------------------------
 
                     form_type_.Add(FormType.Rectangle);
-                    form_type_weight_.Add(4);
+                    form_type_weight_.Add(9);
 
                     //-----------------------------------------------------
 
                     characteristic_.Add(Characteristic.Luxury);
+                    characteristic_weight_.Add(4);
+
+                    characteristic_.Add(Characteristic.Western);
                     characteristic_weight_.Add(3);
+
+                    characteristic_.Add(Characteristic.Warm);
+                    characteristic_weight_.Add(2);
 
                     break;
                 }
@@ -144,35 +155,47 @@ public partial class FurnitureGrid : MonoBehaviour
                     //----------------------------------------------------
 
                     color_name_.Add(ColorName.Beige);
-                    color_name_weight_.Add(5);
+                    color_name_weight_.Add(8);
 
                     color_name_.Add(ColorName.Black);
-                    color_name_weight_.Add(3);
+                    color_name_weight_.Add(7);
 
                     color_name_.Add(ColorName.Purple);
                     color_name_weight_.Add(3);
 
+                    color_name_.Add(ColorName.Orange);
+                    color_name_weight_.Add(2);
+
                     //----------------------------------------------------
 
-                    material_type_.Add(MaterialType.ChemicalFibre);
-                    material_type_weight_.Add(4);
+                    material_type_.Add(MaterialType.NaturalFibre);
+                    material_type_weight_.Add(10);
 
                     //----------------------------------------------------
 
                     pattern_type_.Add(PatternType.Flower);
-                    pattern_type_weight_.Add(4);
+                    pattern_type_weight_.Add(6);
 
                     pattern_type_.Add(PatternType.Irregularity);
-                    pattern_type_weight_.Add(2);
+                    pattern_type_weight_.Add(6);
+
+                    pattern_type_.Add(PatternType.Diamond);
+                    pattern_type_weight_.Add(4);
+
+                    pattern_type_.Add(PatternType.Zigzag);
+                    pattern_type_weight_.Add(4);
 
                     //------------------------------------------------------
 
                     form_type_.Add(FormType.Rectangle);
-                    form_type_weight_.Add(5);
+                    form_type_weight_.Add(10);
 
                     //-----------------------------------------------------
 
                     characteristic_.Add(Characteristic.Luxury);
+                    characteristic_weight_.Add(3);
+
+                    characteristic_.Add(Characteristic.Western);
                     characteristic_weight_.Add(2);
 
                     break;
@@ -217,10 +240,10 @@ public partial class FurnitureGrid : MonoBehaviour
                     //----------------------------------------------------
 
                     color_name_.Add(ColorName.Beige);
-                    color_name_weight_.Add(5);
+                    color_name_weight_.Add(8);
 
                     color_name_.Add(ColorName.Brown);
-                    color_name_weight_.Add(4);
+                    color_name_weight_.Add(9);
 
                     color_name_.Add(ColorName.Black);
                     color_name_weight_.Add(2);
@@ -228,27 +251,33 @@ public partial class FurnitureGrid : MonoBehaviour
                     //----------------------------------------------------
 
                     material_type_.Add(MaterialType.NaturalFibre);
-                    material_type_weight_.Add(4);
+                    material_type_weight_.Add(10);
 
                     //----------------------------------------------------
 
                     pattern_type_.Add(PatternType.Flower);
-                    pattern_type_weight_.Add(3);
+                    pattern_type_weight_.Add(6);
 
                     pattern_type_.Add(PatternType.Leaf);
-                    pattern_type_weight_.Add(3);
+                    pattern_type_weight_.Add(6);
+
+                    pattern_type_.Add(PatternType.Arch);
+                    pattern_type_weight_.Add(4);
 
                     pattern_type_.Add(PatternType.Diamond);
-                    pattern_type_weight_.Add(1);
+                    pattern_type_weight_.Add(4);
 
                     //------------------------------------------------------
 
                     form_type_.Add(FormType.Rectangle);
-                    form_type_weight_.Add(4);
+                    form_type_weight_.Add(9);
 
                     //-----------------------------------------------------
 
                     characteristic_.Add(Characteristic.Luxury);
+                    characteristic_weight_.Add(3);
+
+                    characteristic_.Add(Characteristic.Western);
                     characteristic_weight_.Add(2);
 
                     break;
@@ -293,30 +322,39 @@ public partial class FurnitureGrid : MonoBehaviour
                     //----------------------------------------------------
 
                     color_name_.Add(ColorName.Black);
-                    color_name_weight_.Add(8);
+                    color_name_weight_.Add(16);
 
                     color_name_.Add(ColorName.White);
-                    color_name_weight_.Add(3);
+                    color_name_weight_.Add(4);
 
                     //----------------------------------------------------
 
                     material_type_.Add(MaterialType.NaturalFibre);
-                    material_type_weight_.Add(4);
+                    material_type_weight_.Add(10);
 
                     //----------------------------------------------------
 
-                    pattern_type_.Add(PatternType.Flower);
-                    pattern_type_weight_.Add(4);
+                    pattern_type_.Add(PatternType.Dot);
+                    pattern_type_weight_.Add(5);
+
+                    pattern_type_.Add(PatternType.Star);
+                    pattern_type_weight_.Add(5);
 
                     //------------------------------------------------------
 
                     form_type_.Add(FormType.Round);
-                    form_type_weight_.Add(5);
+                    form_type_weight_.Add(10);
 
                     //-----------------------------------------------------
 
                     characteristic_.Add(Characteristic.Luxury);
-                    characteristic_weight_.Add(3);
+                    characteristic_weight_.Add(4);
+
+                    characteristic_.Add(Characteristic.Cold);
+                    characteristic_weight_.Add(2);
+
+                    characteristic_.Add(Characteristic.Western);
+                    characteristic_weight_.Add(2);
 
                     break;
                 }
@@ -359,30 +397,36 @@ public partial class FurnitureGrid : MonoBehaviour
 
                     //----------------------------------------------------
 
-                    color_name_.Add(ColorName.White);
-                    color_name_weight_.Add(7);
-
                     color_name_.Add(ColorName.Black);
-                    color_name_weight_.Add(4);
+                    color_name_weight_.Add(10);
+
+                    color_name_.Add(ColorName.Cream);
+                    color_name_weight_.Add(8);
+
+                    color_name_.Add(ColorName.White);
+                    color_name_weight_.Add(2);
 
                     //----------------------------------------------------
 
                     material_type_.Add(MaterialType.ChemicalFibre);
-                    material_type_weight_.Add(4);
+                    material_type_weight_.Add(10);
 
                     //----------------------------------------------------
 
                     pattern_type_.Add(PatternType.Flower);
-                    pattern_type_weight_.Add(6);
+                    pattern_type_weight_.Add(10);
 
                     //------------------------------------------------------
 
                     form_type_.Add(FormType.Rectangle);
-                    form_type_weight_.Add(4);
+                    form_type_weight_.Add(9);
 
                     //-----------------------------------------------------
 
                     characteristic_.Add(Characteristic.Luxury);
+                    characteristic_weight_.Add(3);
+
+                    characteristic_.Add(Characteristic.Cold);
                     characteristic_weight_.Add(2);
 
                     break;
@@ -427,31 +471,31 @@ public partial class FurnitureGrid : MonoBehaviour
                     //----------------------------------------------------
 
                     color_name_.Add(ColorName.Beige);
-                    color_name_weight_.Add(5);
+                    color_name_weight_.Add(7);
+
+                    color_name_.Add(ColorName.Ocher);
+                    color_name_weight_.Add(7);
 
                     color_name_.Add(ColorName.Brown);
                     color_name_weight_.Add(3);
 
                     color_name_.Add(ColorName.Gray);
-                    color_name_weight_.Add(2);
-
-                    color_name_.Add(ColorName.Ocher);
-                    color_name_weight_.Add(2);
+                    color_name_weight_.Add(3);
 
                     //----------------------------------------------------
 
                     material_type_.Add(MaterialType.ChemicalFibre);
-                    material_type_weight_.Add(4);
+                    material_type_weight_.Add(10);
 
                     //----------------------------------------------------
 
                     pattern_type_.Add(PatternType.Tile);
-                    pattern_type_weight_.Add(5);
+                    pattern_type_weight_.Add(20);
 
                     //------------------------------------------------------
 
                     form_type_.Add(FormType.Rectangle);
-                    form_type_weight_.Add(4);
+                    form_type_weight_.Add(9);
 
                     //-----------------------------------------------------
 
@@ -497,25 +541,28 @@ public partial class FurnitureGrid : MonoBehaviour
                     //----------------------------------------------------
 
                     color_name_.Add(ColorName.White);
-                    color_name_weight_.Add(4);
+                    color_name_weight_.Add(13);
 
                     color_name_.Add(ColorName.Brown);
-                    color_name_weight_.Add(3);
+                    color_name_weight_.Add(4);
 
                     color_name_.Add(ColorName.Gray);
-                    color_name_weight_.Add(3);
+                    color_name_weight_.Add(4);
 
                     //----------------------------------------------------
 
                     material_type_.Add(MaterialType.NaturalFibre);
-                    material_type_weight_.Add(4);
+                    material_type_weight_.Add(10);
 
                     //----------------------------------------------------
 
                     pattern_type_.Add(PatternType.Tile);
-                    pattern_type_weight_.Add(5);
+                    pattern_type_weight_.Add(15);
 
                     pattern_type_.Add(PatternType.Border);
+                    pattern_type_weight_.Add(1);
+
+                    pattern_type_.Add(PatternType.Check);
                     pattern_type_weight_.Add(1);
 
                     pattern_type_.Add(PatternType.Diamond);
@@ -530,7 +577,7 @@ public partial class FurnitureGrid : MonoBehaviour
                     //------------------------------------------------------
 
                     form_type_.Add(FormType.Rectangle);
-                    form_type_weight_.Add(5);
+                    form_type_weight_.Add(10);
 
                     //-----------------------------------------------------
 
@@ -575,34 +622,40 @@ public partial class FurnitureGrid : MonoBehaviour
 
                     //----------------------------------------------------
 
-                    color_name_.Add(ColorName.Cream);
-                    color_name_weight_.Add(5);
-
                     color_name_.Add(ColorName.Beige);
-                    color_name_weight_.Add(2);
+                    color_name_weight_.Add(11);
+
+                    color_name_.Add(ColorName.Cream);
+                    color_name_weight_.Add(3);
 
                     color_name_.Add(ColorName.Gold);
-                    color_name_weight_.Add(2);
+                    color_name_weight_.Add(3);
 
                     color_name_.Add(ColorName.Green);
-                    color_name_weight_.Add(2);
+                    color_name_weight_.Add(3);
 
                     //----------------------------------------------------
 
-                    material_type_.Add(MaterialType.NaturalFibre);
-                    material_type_weight_.Add(4);
+                    material_type_.Add(MaterialType.ChemicalFibre);
+                    material_type_weight_.Add(10);
 
                     //----------------------------------------------------
 
                     pattern_type_.Add(PatternType.Round);
-                    pattern_type_weight_.Add(6);
+                    pattern_type_weight_.Add(18);
+
+                    pattern_type_.Add(PatternType.Zigzag);
+                    pattern_type_weight_.Add(2);
 
                     //------------------------------------------------------
 
                     form_type_.Add(FormType.Rectangle);
-                    form_type_weight_.Add(5);
+                    form_type_weight_.Add(10);
 
                     //-----------------------------------------------------
+
+                    characteristic_.Add(Characteristic.Warm);
+                    characteristic_weight_.Add(2);
 
                     break;
                 }
@@ -645,26 +698,26 @@ public partial class FurnitureGrid : MonoBehaviour
 
                     //----------------------------------------------------
 
-                    color_name_.Add(ColorName.Gray);
-                    color_name_weight_.Add(7);
+                    color_name_.Add(ColorName.DarkGray);
+                    color_name_weight_.Add(10);
 
-                    color_name_.Add(ColorName.Black);
-                    color_name_weight_.Add(4);
+                    color_name_.Add(ColorName.Gray);
+                    color_name_weight_.Add(10);
 
                     //----------------------------------------------------
 
                     material_type_.Add(MaterialType.ChemicalFibre);
-                    material_type_weight_.Add(4);
+                    material_type_weight_.Add(10);
 
                     //----------------------------------------------------
 
                     pattern_type_.Add(PatternType.Tile);
-                    pattern_type_weight_.Add(6);
+                    pattern_type_weight_.Add(20);
 
                     //------------------------------------------------------
 
                     form_type_.Add(FormType.Rectangle);
-                    form_type_weight_.Add(4);
+                    form_type_weight_.Add(9);
 
                     //-----------------------------------------------------
 
@@ -710,12 +763,12 @@ public partial class FurnitureGrid : MonoBehaviour
                     //----------------------------------------------------
 
                     color_name_.Add(ColorName.White);
-                    color_name_weight_.Add(10);
+                    color_name_weight_.Add(20);
 
                     //----------------------------------------------------
 
                     material_type_.Add(MaterialType.NaturalFibre);
-                    material_type_weight_.Add(4);
+                    material_type_weight_.Add(10);
 
                     //----------------------------------------------------
 
@@ -723,9 +776,12 @@ public partial class FurnitureGrid : MonoBehaviour
                     //------------------------------------------------------
 
                     form_type_.Add(FormType.Rectangle);
-                    form_type_weight_.Add(4);
+                    form_type_weight_.Add(9);
 
                     //-----------------------------------------------------
+
+                    characteristic_.Add(Characteristic.Warm);
+                    characteristic_weight_.Add(2);
 
                     break;
                 }
@@ -769,28 +825,28 @@ public partial class FurnitureGrid : MonoBehaviour
                     //----------------------------------------------------
 
                     color_name_.Add(ColorName.Black);
-                    color_name_weight_.Add(4);
+                    color_name_weight_.Add(7);
 
                     color_name_.Add(ColorName.Gray);
-                    color_name_weight_.Add(4);
+                    color_name_weight_.Add(7);
 
                     color_name_.Add(ColorName.Beige);
-                    color_name_weight_.Add(3);
+                    color_name_weight_.Add(6);
 
                     //----------------------------------------------------
 
                     material_type_.Add(MaterialType.NaturalFibre);
-                    material_type_weight_.Add(4);
+                    material_type_weight_.Add(10);
 
                     //----------------------------------------------------
 
                     pattern_type_.Add(PatternType.Flower);
-                    pattern_type_weight_.Add(4);
+                    pattern_type_weight_.Add(10);
 
                     //------------------------------------------------------
 
                     form_type_.Add(FormType.Rectangle);
-                    form_type_weight_.Add(4);
+                    form_type_weight_.Add(9);
 
                     //-----------------------------------------------------
 

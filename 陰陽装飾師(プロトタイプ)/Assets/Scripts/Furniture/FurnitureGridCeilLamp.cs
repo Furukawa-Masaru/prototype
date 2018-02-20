@@ -66,30 +66,34 @@ public partial class FurnitureGrid : MonoBehaviour
                     //----------------------------------------------------
 
                     color_name_.Add(ColorName.Gold);
-                    color_name_weight_.Add(3);
+                    color_name_weight_.Add(10);
+
+
+                    color_name_.Add(ColorName.Purple);
+                    color_name_weight_.Add(4);
 
                     //----------------------------------------------------
 
                     material_type_.Add(MaterialType.Metal);
-                    material_type_weight_.Add(2);
+                    material_type_weight_.Add(12);
 
                     //----------------------------------------------------
 
                     //------------------------------------------------------
 
                     form_type_.Add(FormType.Round);
-                    form_type_weight_.Add(1);
+                    form_type_weight_.Add(8);
 
                     //-----------------------------------------------------
 
                     characteristic_.Add(Characteristic.Light);
-                    characteristic_weight_.Add(2);
+                    characteristic_weight_.Add(5);
 
                     characteristic_.Add(Characteristic.Luxury);
-                    characteristic_weight_.Add(2);
+                    characteristic_weight_.Add(4);
 
                     characteristic_.Add(Characteristic.Western);
-                    characteristic_weight_.Add(2);
+                    characteristic_weight_.Add(4);
 
                     break;
                 }
@@ -133,24 +137,30 @@ public partial class FurnitureGrid : MonoBehaviour
                     //----------------------------------------------------
 
                     color_name_.Add(ColorName.White);
-                    color_name_weight_.Add(3);
+                    color_name_weight_.Add(8);
+
+                    color_name_.Add(ColorName.Gray);
+                    color_name_weight_.Add(6);
 
                     //----------------------------------------------------
 
                     material_type_.Add(MaterialType.Plastic);
-                    material_type_weight_.Add(2);
+                    material_type_weight_.Add(8);
+
+                    material_type_.Add(MaterialType.Metal);
+                    material_type_weight_.Add(6);
 
                     //----------------------------------------------------
 
                     //------------------------------------------------------
 
                     form_type_.Add(FormType.Round);
-                    form_type_weight_.Add(2);
+                    form_type_weight_.Add(8);
 
                     //-----------------------------------------------------
 
                     characteristic_.Add(Characteristic.Light);
-                    characteristic_weight_.Add(2);
+                    characteristic_weight_.Add(5);
 
                     break;
                 }

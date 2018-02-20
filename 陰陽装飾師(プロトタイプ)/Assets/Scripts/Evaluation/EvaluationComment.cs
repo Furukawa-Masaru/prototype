@@ -18,7 +18,8 @@ public partial class Evaluation : MonoBehaviour
 {
     partial void Comment()
     {
-        int comment_num = 6; //ゲーム終了時のコメント数(コメントの実装の仕方の上で偶数にする方が望ましい)
+        int comment_num_elements = 2; //五行陰陽関係コメント数
+        int comment_num_bonus = 2; //ボーナス点関係コメント数
 
         //アドバイスのモードによりコメントの重み変更．
         if (advaice_mode_ == 0)
@@ -26,30 +27,7 @@ public partial class Evaluation : MonoBehaviour
             //仕事運重視
             for (int i = 0; i < comment_flag_.Count; ++i)
             {
-                if (comment_flag_[i].luck_identifier_ == 0)
-                {
-                    comment_flag_[i].WeightAdd(100000 + 100 * (norma_luck_[0] - luck_[0]));
-                }
-                else if (comment_flag_[i].luck_identifier_ == 1)
-                {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[1] - luck_[1]));
-                }
-                else if (comment_flag_[i].luck_identifier_ == 2)
-                {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[2] - luck_[2]));
-                }
-                else if (comment_flag_[i].luck_identifier_ == 3)
-                {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[3] - luck_[3]));
-                }
-                else if (comment_flag_[i].luck_identifier_ == 4)
-                {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[4] - luck_[4]));
-                }
-                else
-                {
-                    comment_flag_[i].WeightAdd(100 * (all_norma_ - all_luck_));
-                }
+                comment_flag_[i].comment_weight_ += comment_flag_[i].work_weight_;
             }
         }
         else if (advaice_mode_ == 1)
@@ -58,30 +36,7 @@ public partial class Evaluation : MonoBehaviour
             //デフォルト
             for (int i = 0; i < comment_flag_.Count; ++i)
             {
-                if (comment_flag_[i].luck_identifier_ == 0)
-                {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[0] - luck_[0]));
-                }
-                else if (comment_flag_[i].luck_identifier_ == 1)
-                {
-                    comment_flag_[i].WeightAdd(100000 + 100 * (norma_luck_[1] - luck_[1]));
-                }
-                else if (comment_flag_[i].luck_identifier_ == 2)
-                {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[2] - luck_[2]));
-                }
-                else if (comment_flag_[i].luck_identifier_ == 3)
-                {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[3] - luck_[3]));
-                }
-                else if (comment_flag_[i].luck_identifier_ == 4)
-                {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[4] - luck_[4]));
-                }
-                else
-                {
-                    comment_flag_[i].WeightAdd(100 * (all_norma_ - all_luck_));
-                }
+                comment_flag_[i].comment_weight_ += comment_flag_[i].popular_weight_;
             }
 
         }
@@ -91,30 +46,7 @@ public partial class Evaluation : MonoBehaviour
             //デフォルト
             for (int i = 0; i < comment_flag_.Count; ++i)
             {
-                if (comment_flag_[i].luck_identifier_ == 0)
-                {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[0] - luck_[0]));
-                }
-                else if (comment_flag_[i].luck_identifier_ == 1)
-                {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[1] - luck_[1]));
-                }
-                else if (comment_flag_[i].luck_identifier_ == 2)
-                {
-                    comment_flag_[i].WeightAdd(100000 + 100 * (norma_luck_[2] - luck_[2]));
-                }
-                else if (comment_flag_[i].luck_identifier_ == 3)
-                {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[3] - luck_[3]));
-                }
-                else if (comment_flag_[i].luck_identifier_ == 4)
-                {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[4] - luck_[4]));
-                }
-                else
-                {
-                    comment_flag_[i].WeightAdd(100 * (all_norma_ - all_luck_));
-                }
+                comment_flag_[i].comment_weight_ += comment_flag_[i].health_weight_;
             }
         }
         else if (advaice_mode_ == 3)
@@ -123,30 +55,7 @@ public partial class Evaluation : MonoBehaviour
             //デフォルト
             for (int i = 0; i < comment_flag_.Count; ++i)
             {
-                if (comment_flag_[i].luck_identifier_ == 0)
-                {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[0] - luck_[0]));
-                }
-                else if (comment_flag_[i].luck_identifier_ == 1)
-                {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[1] - luck_[1]));
-                }
-                else if (comment_flag_[i].luck_identifier_ == 2)
-                {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[2] - luck_[2]));
-                }
-                else if (comment_flag_[i].luck_identifier_ == 3)
-                {
-                    comment_flag_[i].WeightAdd(100000 + 100 * (norma_luck_[3] - luck_[3]));
-                }
-                else if (comment_flag_[i].luck_identifier_ == 4)
-                {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[4] - luck_[4]));
-                }
-                else
-                {
-                    comment_flag_[i].WeightAdd(100 * (all_norma_ - all_luck_));
-                }
+                comment_flag_[i].comment_weight_ += comment_flag_[i].economic_weight_;
             }
         }
         else if (advaice_mode_ == 4)
@@ -155,30 +64,7 @@ public partial class Evaluation : MonoBehaviour
             //デフォルト
             for (int i = 0; i < comment_flag_.Count; ++i)
             {
-                if (comment_flag_[i].luck_identifier_ == 0)
-                {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[0] - luck_[0]));
-                }
-                else if (comment_flag_[i].luck_identifier_ == 1)
-                {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[1] - luck_[1]));
-                }
-                else if (comment_flag_[i].luck_identifier_ == 2)
-                {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[2] - luck_[2]));
-                }
-                else if (comment_flag_[i].luck_identifier_ == 3)
-                {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[3] - luck_[3]));
-                }
-                else if (comment_flag_[i].luck_identifier_ == 4)
-                {
-                    comment_flag_[i].WeightAdd(100000 + 100 * (norma_luck_[4] - luck_[4]));
-                }
-                else
-                {
-                    comment_flag_[i].WeightAdd(100 * (all_norma_ - all_luck_));
-                }
+                comment_flag_[i].comment_weight_ += comment_flag_[i].love_weight_;
             }
         }
         else
@@ -186,261 +72,314 @@ public partial class Evaluation : MonoBehaviour
             //デフォルト
             for (int i = 0; i < comment_flag_.Count; ++i)
             {
-                if (comment_flag_[i].luck_identifier_ == 0)
+                //仕事運による重みづけ
+                if ((norma_luck_[0] - luck_[0]) > comment_flag_[i].work_weight_)
                 {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[0] - luck_[0]));
+                    comment_flag_[i].comment_weight_ += comment_flag_[i].work_weight_;
                 }
-                else if (comment_flag_[i].luck_identifier_ == 1)
+                else if ((norma_luck_[0] - luck_[0]) > 0)
                 {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[1] - luck_[1]));
+                    comment_flag_[i].comment_weight_ += norma_luck_[0] - luck_[0];
                 }
-                else if (comment_flag_[i].luck_identifier_ == 2)
+
+                //人気運による重みづけ
+                if ((norma_luck_[1] - luck_[1]) > comment_flag_[i].popular_weight_)
                 {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[2] - luck_[2]));
+                    comment_flag_[i].comment_weight_ += comment_flag_[i].popular_weight_;
                 }
-                else if (comment_flag_[i].luck_identifier_ == 3)
+                else if ((norma_luck_[1] - luck_[1]) > 0)
                 {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[3] - luck_[3]));
+                    comment_flag_[i].comment_weight_ += norma_luck_[1] - luck_[1];
                 }
-                else if (comment_flag_[i].luck_identifier_ == 4)
+
+                //健康運による重みづけ
+                if ((norma_luck_[2] - luck_[2]) > comment_flag_[i].health_weight_)
                 {
-                    comment_flag_[i].WeightAdd(100 * (norma_luck_[4] - luck_[4]));
+                    comment_flag_[i].comment_weight_ += comment_flag_[i].health_weight_;
                 }
-                else
+                else if ((norma_luck_[2] - luck_[2]) > 0)
                 {
-                    comment_flag_[i].WeightAdd(100 * (all_norma_ - all_luck_));
+                    comment_flag_[i].comment_weight_ += norma_luck_[2] - luck_[2];
+                }
+
+                //金運による重みづけ
+                if ((norma_luck_[3] - luck_[3]) > comment_flag_[i].economic_weight_)
+                {
+                    comment_flag_[i].comment_weight_ += comment_flag_[i].economic_weight_;
+                }
+                else if ((norma_luck_[3] - luck_[3]) > 0)
+                {
+                    comment_flag_[i].comment_weight_ += norma_luck_[3] - luck_[3];
+                }
+
+                //恋愛運による重みづけ
+                if ((norma_luck_[4] - luck_[4]) > comment_flag_[i].love_weight_)
+                {
+                    comment_flag_[i].comment_weight_ += comment_flag_[i].love_weight_;
+                }
+                else if ((norma_luck_[4] - luck_[4]) > 0)
+                {
+                    comment_flag_[i].comment_weight_ += norma_luck_[4] - luck_[4];
                 }
             }
         }
 
         //ソート処理(ラムダ式を使うらしい)
-        comment_flag_.Sort((a, b) => b.flag_weight_ - a.flag_weight_);
+        comment_flag_.Sort((a, b) => b.comment_weight_ - a.comment_weight_);
 
+
+        //五行陰陽関係のコメント探索
         for (int i = 0; i < comment_flag_.Count; ++i)
         {
-            if (comment_.Count >= comment_num)
+            if (comment_.Count >= comment_num_elements)
             {
                 break;
             }
 
+            if ((comment_flag_[i].advice_type_ != AdviceType.ElementGame)
+                && (comment_flag_[i].advice_type_ != AdviceType.Element))
+            {
+                continue;
+            }
+
+            if (comment_flag_[i].comment_weight_ <= 0)
+            {
+                continue;
+            }
+
+            //ところどころコメントがかぶっています．
             switch (comment_flag_[i].comment_identifier_)
             {
                 case CommentIdentifier.OverYin:
-                    comment_.Add("部屋全体が陰気に偏っていて，仕事運，人気運，健康運，恋愛運が下がっています.");
+                    {
+                        string comment_buffer = "部屋の陰気がつよく，仕事運，人気運，健康運，恋愛運が下がっています．";
+                        bool bad_flag = false;
+                        bool foliage_flag = false;
+                        for (int j = 0; j < furniture_grid_.Count; ++j)
+                        {
+
+                            if ((furniture_grid_[j].material_type().IndexOf(FurnitureGrid.MaterialType.ArtificialFoliage) >= 0)
+                                && (furniture_grid_[j].characteristic().IndexOf(FurnitureGrid.Characteristic.Clutter) >= 0))
+                            {
+                                bad_flag = true;
+                                comment_buffer += "人工観葉植物, 乱雑な家具は部屋に大きな陰気をもたらします．";
+                                break;
+                            }
+                            else if (furniture_grid_[j].material_type().IndexOf(FurnitureGrid.MaterialType.ArtificialFoliage) >= 0)
+                            {
+                                bad_flag = true;
+                                comment_buffer += "人工観葉植物は部屋に大きな陰気をもたらします．";
+                                break;
+                            }
+                            else if ((furniture_grid_[j].characteristic().IndexOf(FurnitureGrid.Characteristic.Clutter) >= 0))
+                            {
+                                bad_flag = true;
+                                comment_buffer += "乱雑な家具は部屋に大きな陰気をもたらします．";
+                                break;
+                            }
+
+                            if (furniture_grid_[j].furniture_type() == FurnitureGrid.FurnitureType.FoliagePlant)
+                            {
+                                foliage_flag = true;
+                            }
+                        }
+
+                        if ((bad_flag == false) && (foliage_flag == false))
+                        {
+                            comment_buffer += "観葉植物は周囲の陰陽のバランスを整えますので是非置きましょう. ";
+                        }
+                        comment_.Add(comment_buffer);
+                    }
                     break;
                 case CommentIdentifier.OverYang:
-                    comment_.Add("部屋全体が陽気に偏っていて．仕事運，健康運，恋愛運が下がっています.");
-                    break;
-                case CommentIdentifier.EntranceYinNorthEast:
-                    comment_.Add("");
-                    break;
-                case CommentIdentifier.EntranceYinSouthWest:
-                    comment_.Add("");
-                    break;
-                case CommentIdentifier.EntranceNoCarpet:
-                    comment_.Add("");
-                    break;
-                case CommentIdentifier.EntranceSmell:
-                    comment_.Add("");
-                    break;
-                case CommentIdentifier.EntranceMulti:
-                    //優先度高め?
-                    comment_.Add("");
-                    break;
-                case CommentIdentifier.BedroomWoodNatural:
-                    comment_.Add("寝室に木製家具，天然繊維の家具を置くことで健康運が上がります. ");
-                    break;
-                case CommentIdentifier.BedroomBlue:
-                    comment_.Add("寝室に青色の家具を多めに置くことで健康運が上がります. ");
-                    break;
-                case CommentIdentifier.BedroomMulti:
-                    //寝室の総括的な
-                    comment_.Add("寝室は運気を増幅させる効果がありますが，悪い運気の元となっている家具配置が多く，悪い運気が増幅されています．");
-                    break;
-                case CommentIdentifier.LivingMulti:
-                    comment_.Add("リビングは仕事運，人気運，健康運を増幅させる効果がありますが，悪い運気の元となっている家具配置が多く，悪い運気が増幅されています．");
-                    break;
+                    {
+                        string comment_buffer = "部屋の陽気がつよく，仕事運，健康運，恋愛運が下がっています．";
+                        bool foliage_flag = false;
+                        for (int j = 0; j < furniture_grid_.Count; ++j)
+                        {
+                            if (furniture_grid_[j].furniture_type() == FurnitureGrid.FurnitureType.FoliagePlant)
+                            {
+                                foliage_flag = true;
+                            }
+                        }
 
-                case CommentIdentifier.WorkroomMulti:
-                    comment_.Add("仕事部屋は仕事運を増幅させる効果がありますが，悪い運気の元となっている家具配置が多く，悪い運気が増幅されています．");
+                        if (foliage_flag == false)
+                        {
+                            comment_buffer += "観葉植物は周囲の陰陽のバランスを整えますので是非置きましょう. ";
+                        }
+                        comment_.Add(comment_buffer);
+                    }
                     break;
-
+                //部屋の方位から受けるパワー関連
                 case CommentIdentifier.NorthWeak:
-                    comment_.Add("部屋の気が弱く，北の部屋が与える金運，恋愛運のパワーが受けられていません");
+                    comment_.Add("北の部屋では水の気を中心に部屋の気を上げることで北方位が司る金運，恋愛運を上げることができます．");
                     break;
                 case CommentIdentifier.NorthEastWeak:
-                    comment_.Add("部屋の気が弱く，北東の部屋がもつ運勢のパワーが受けられていません");
+                    comment_.Add("北東の部屋では土の気を中心に部屋の気を上げることで北東方位が司る全体運を上げることができます．");
                     break;
                 case CommentIdentifier.NorthEastMinus:
-                    comment_.Add("北東の部屋では，陰陽のバランスが悪いと運勢が大きく下がってしまいます．");
+                    comment_.Add("北東の部屋では陰陽のバランスが取れていないと, 方位が司る運気のパワーが逆効果になってしまいます．"); //陰
                     break;
                 case CommentIdentifier.EastWeak:
-                    comment_.Add("部屋の気が弱く，東の部屋が与える仕事運のパワーが受けられていません．");
+                    comment_.Add("東の部屋では木の気を中心に部屋の気を上げることで東方位が司る仕事運を上げることができます．");
                     break;
                 case CommentIdentifier.SouthEastWeak:
-                    comment_.Add("部屋の気が弱く，南東の部屋が与える人気運，恋愛運のパワーが受けられていません．");
+                    comment_.Add("南東の部屋では木の気を中心に部屋の気を上げることで南東方位が司る人気運，恋愛運を上げることができます．");
                     break;
                 case CommentIdentifier.SouthWeak:
-                    comment_.Add("部屋の気が弱く，南の部屋が与える人気運，健康運, 恋愛運のパワーが受けられていません．");
+                    comment_.Add("南の部屋では火の気を中心に部屋の気を上げることで南方位が司る人気運，健康運, 恋愛運を上げることができます．");
                     break;
                 case CommentIdentifier.SouthWestWeak:
-                    comment_.Add("部屋の気が弱く，南西の部屋が与える仕事運，人気運，健康運のパワーが受けられていません．");
+                    comment_.Add("南西の部屋では土の気を中心に部屋の気を上げることで南西方位が司る仕事運，人気運，健康運を上げることができます．");
                     break;
                 case CommentIdentifier.WestWeak:
-                    comment_.Add("部屋の気が弱く，西の部屋が与える金運, 恋愛運のパワーが受けられていません．");
+                    comment_.Add("西の部屋では金の気を中心に部屋の気を上げることで西方位が司る金運，恋愛運を上げることができます．");
                     break;
                 case CommentIdentifier.NorthWestWeak:
-                    comment_.Add("部屋の気が弱く，北西の部屋が与える仕事運, 金運のパワーが受けられていません．");
+                    comment_.Add("北西の部屋では金の気を中心に部屋の気を上げることで北西方位が司る仕事運，金運を上げることができます．");
                     break;
-                case CommentIdentifier.NorthCold:
-                    comment_.Add("北の部屋は健康運, 人気運を下げてしまいます．あたたかみのある家具を多く置くことでそれを回避することができます．");
+
+
+                //部屋の方位から受けるパワー関連(その方向の気以外)
+                case CommentIdentifier.NorthWeakOther:
+                    comment_.Add("北方位のパワーを享受する水の気は十分にありますので他の属性の気で部屋の気を上げて，北方位が司る金運，恋愛運をさらに受け取りましょう．");
                     break;
-                case CommentIdentifier.NorthPink:
-                    comment_.Add("北の部屋にピンクの家具を多めに置くことで恋愛運が上がります. ");
+                case CommentIdentifier.NorthEastWeakOther:
+                    comment_.Add("北東方位のパワーを享受する土の気は十分にありますので他の属性の気で部屋の気を上げて，北東方位が司る全体運をさらに受け取りましょう．");
                     break;
-                case CommentIdentifier.NorthEastHigh:
-                    comment_.Add("北東の部屋に背の高い家具を多めに置くことで運が全体的にが上がります. ");
+                case CommentIdentifier.EastWeakOther:
+                    comment_.Add("東方位のパワーを享受する木の気は十分にありますので他の属性の気で部屋の気を上げて，東方位が司る仕事運をさらに受け取りましょう．");
                     break;
-                case CommentIdentifier.EastWindSound:
-                    comment_.Add("東の部屋に風を連想させる家具を多めに置くことで人気運，恋愛運が上がります．");
+                case CommentIdentifier.SouthEastWeakOther:
+                    comment_.Add("南東方位のパワーを享受する木の気は十分にありますので他の属性の気で部屋の気を上げて，南東方位が司る人気運，恋愛運をさらに受け取りましょう．");
                     break;
-                case CommentIdentifier.SouthEastWindSound:
-                    comment_.Add("南東の部屋に風を連想させる家具を多めに置くことで人気運，恋愛運が上がります．");
+                case CommentIdentifier.SouthWeakOther:
+                    comment_.Add("南方位のパワーを享受する火の気は十分にありますので他の属性の気で部屋の気を上げて，南方位が司る人気運，健康運, 恋愛運をさらに受け取りましょう．");
                     break;
-                case CommentIdentifier.SouthEastOrange:
-                    comment_.Add("南東の部屋にオレンジの家具を多めに置くことで人気運，恋愛運が上がります");
+                case CommentIdentifier.SouthWestWeakOther:
+                    comment_.Add("南西方位のパワーを享受する土の気は十分にありますので他の属性の気で部屋の気を上げて，南西方位が司る仕事運，人気運，健康運をさらに受け取りましょう. ");
+                    break;
+                case CommentIdentifier.WestWeakOther:
+                    comment_.Add("西方位のパワーを享受する金の気は十分にありますので他の属性の気で部屋の気を上げて，西方位が司る金運, 恋愛運をさらに受け取りましょう. ");
+                    break;
+                case CommentIdentifier.NorthWestWeakOther:
+                    comment_.Add("北西方位のパワーを享受する金の気は十分にありますので他の属性の気で部屋の気を上げて，西方位が司る金運, 仕事運をさらに受け取りましょう. ");
+                    break;
+
+
+
+                //部屋の小方位(部屋の中の方位)から受けるパワー関連
+                case CommentIdentifier.SplitNorthWeak:
+                    comment_.Add("部屋の北側の水の気を高めて，北方位が司る金運，恋愛運を受け取りましょう．");
+                    break;
+                case CommentIdentifier.SplitNorthEastWeak:
+                    comment_.Add("部屋の北東側の土の気を高めて，北東方位が司る全体運を受け取りましょう．");
+                    break;
+                case CommentIdentifier.SplitNorthEastMinus:
+                    comment_.Add("部屋の北東側の陰陽バランスが悪く，北東方位が司る全体運が悪影響を受けてます．");
+                    break;
+                case CommentIdentifier.SplitEastWeak:
+                    comment_.Add("部屋の東側の木の気を高めて，東方位が司る仕事運を受け取りましょう．");
+                    break;
+                case CommentIdentifier.SplitSouthEastWeak:
+                    comment_.Add("部屋の南東側の木の気を高めて，南東方位が司る人気運，恋愛運を受け取りましょう．");
+                    break;
+                case CommentIdentifier.SplitSouthWeak:
+                    comment_.Add("部屋の南側の火の気を高めて，南方位が司る人気運，健康運，恋愛運を受け取りましょう．");
+                    break;
+                case CommentIdentifier.SplitSouthWestWeak:
+                    comment_.Add("部屋の南西側の土の気を高めて，南西方位が司る仕事運，人気運，健康運を受け取りましょう．");
+                    break;
+                case CommentIdentifier.SplitWestWeak:
+                    comment_.Add("部屋の西側の金の気を高めて，西方位が司る金運，恋愛運を受け取りましょう．");
+                    break;
+                case CommentIdentifier.SplitNorthWestWeak:
+                    comment_.Add("部屋の北西側の金の気を高めて，北西方位が司る仕事運，金運を受け取りましょう．");
+                    break;
+
+
+                //ここから部屋の気関係その他
+                case CommentIdentifier.NorthWestVain:
+                    comment_.Add("北西の部屋では金の気があまりにも強すぎると仕事運，人気運が下がりますので上げすぎに注意しましょう. "); //傘ね
                     break;
                 case CommentIdentifier.SouthPurification:
-                    comment_.Add("悪い運気が少し強い場合，南の部屋の火の気を高めることで悪い運気をある程度抑えられます．");
+                    comment_.Add("南の部屋では，部屋の気が高いと悪い運気を浄化してくれます．今，悪い運気が高まっている部屋レイアウトなので，気を高めて悪い気を浄化してもらいましょう．");
                     break;
-                case CommentIdentifier.SouthWestLow:
-                    comment_.Add("南西の部屋に背の低い家具を多めに置くことで運が全体的に上がります．");
-                    break;
-                case CommentIdentifier.WestWestern:
-                    comment_.Add("西の部屋に西洋風の家具を多めに置くことで金運が上がります．");
-                    break;
-                case CommentIdentifier.WestLuxury:
-                    comment_.Add("西の部屋に高級そうな家具を多めに置くことで金運が上がります．");
-                    break;
-                case CommentIdentifier.NorthWestLuxury:
-                    comment_.Add("北西の部屋に高級そうな家具を多めに置くことで仕事運，金運が上がります．");
-                    break;
-                case CommentIdentifier.NorthWestLuxuryZero:
-                    comment_.Add("北西の部屋に高級そうな家具が一つもないと，仕事運，金運が下がります．");
-                    break;
-                case CommentIdentifier.NorthWestSilverGray:
-                    comment_.Add("北西の部屋に銀色，灰色の家具を多めに置くことで仕事運が上がります．");
-                    break;
-                case CommentIdentifier.NorthWestVain:
-                    comment_.Add("北西の部屋の金の気が強すぎて仕事運，人気運が下がっています．");
-                    break;
-                case CommentIdentifier.WhiteResetYinYang:
-                    comment_.Add("");
-                    break;
-                case CommentIdentifier.WhitePurification:
-                    comment_.Add("");
-                    break;
-                case CommentIdentifier.BlackStrengthening:
-                    comment_.Add("");
-                    break;
-                case CommentIdentifier.RedOne:
-                    comment_.Add("赤い家具を1つでも置けば，仕事運，人気運，健康運，恋愛運を上げることができます．");
-                    break;
-                case CommentIdentifier.PinkOne:
-                    comment_.Add("ピンクの家具を1つでも置けば，恋愛運を大きく上げることができます．");
-                    break;
-                case CommentIdentifier.PinkNoOrange:
-                    comment_.Add("せっかくピンクの家具がありますのでオレンジの家具を置いてみましょう．恋愛運を上げることができます．");
-                    break;
-                case CommentIdentifier.BlueOne:
-                    comment_.Add("青い家具を一つでも置くと，仕事運を上げることができます．");
-                    break;
-                case CommentIdentifier.BlueNoOrange:
-                    comment_.Add("せっかく青の家具がありますのでオレンジの家具を置いてみましょう. 健康運を上げることができます．");
-                    break;
-                case CommentIdentifier.OrangeNoPink:
-                    comment_.Add("せっかくオレンジの家具がありますのでピンクの家具を置いてみましょう．恋愛運を上げることができます．");
-                    break;
-                case CommentIdentifier.OrangeNoBlue:
-                    comment_.Add("せっかくオレンジの家具がありますので青の家具を置いてみましょう. 健康運を上げることができます．");
-                    break;
-                case CommentIdentifier.YellowBrownOne:
-                    comment_.Add("");
-                    break;
-                case CommentIdentifier.GreenPurification:
-                    comment_.Add("");
-                    break;
-                case CommentIdentifier.BeigeFew:
-                    comment_.Add("ベージュの家具を多く置けば,  仕事運，恋愛運を上げることができます．");
-                    break;
-                case CommentIdentifier.Cream:
-                    comment_.Add("");
-                    break;
-                case CommentIdentifier.GoldMulti:
-                    comment_.Add("");
-                    break;
-                case CommentIdentifier.SquareFix:
-                    comment_.Add("");
-                    break;
-                case CommentIdentifier.CircleGoodRelation:
-                    comment_.Add("");
-                    break;
-                case CommentIdentifier.CircleCirculation:
-                    comment_.Add("");
-                    break;
-                case CommentIdentifier.SharpBadRelation:
-                    comment_.Add("");
-                    break;
-                case CommentIdentifier.SweetSmell:
-                    comment_.Add("");
-                    break;
-                case CommentIdentifier.Luminescence:
-                    comment_.Add("");
-                    break;
-                case CommentIdentifier.FlowerAssociative:
-                    comment_.Add("");
-                    break;
-                case CommentIdentifier.ExcessFurniture:
-                    comment_.Add("");
-                    break;
-                case CommentIdentifier.ShortageFurniture:
-                    comment_.Add("");
-                    break;
-                case CommentIdentifier.WoodWeak:
-                    comment_.Add("木の気が弱すぎて仕事運，健康運があまり上がっていません．");
-                    break;
-                case CommentIdentifier.FireWeak:
-                    comment_.Add("火の気が弱すぎて人気運，健康運，恋愛運があまり上がっていません. ");
-                    break;
-                case CommentIdentifier.EarthWeak:
-                    comment_.Add("土の気が弱すぎて運気が全体的にあまり上がっていません．");
-                    break;
-                case CommentIdentifier.MetalWeak:
-                    comment_.Add("金の気が弱すぎて金運があまり上がっていません．");
-                    break;
-                case CommentIdentifier.WaterWeak:
-                    comment_.Add("水の気が弱すぎて仕事運，金運，恋愛運があまり上がっていません．");
-                    break;
-                case CommentIdentifier.WeakEnergy:
-                    comment_.Add("全体的に部屋の気が弱すぎます．");
-                    break;
+
+
+                //気が強すぎる
                 case CommentIdentifier.WoodOver:
-                    comment_.Add("木の気が強すぎて仕事運に悪影響を及ぼしています．");
+                    comment_.Add("部屋の木の気が強すぎて，仕事運に悪影響を及ぼしています．相生，相克効果など利用して木の気を抑えましょう．");
                     break;
                 case CommentIdentifier.FireOver:
-                    comment_.Add("火の気が強すぎて仕事運，健康運，恋愛運に悪影響を及ぼしています．");
+                    comment_.Add("部屋の火の気が強すぎて，仕事運，健康運，恋愛運に悪影響を及ぼしています．相生，相克効果などを利用して火の気を抑えましょう．");
                     break;
                 case CommentIdentifier.EarthOver:
-                    comment_.Add("土の気が強すぎて健康運に悪影響を及ぼしています．");
+                    comment_.Add("部屋の土の気が強すぎて，健康運に悪影響を及ぼしています．相生，相克効果などを利用して土の気を抑えましょう．");
                     break;
                 case CommentIdentifier.MetalOver:
-                    comment_.Add("金の気が強すぎて金運に悪影響を及ぼしています．");
+                    comment_.Add("部屋の金の気が強すぎて，金運に悪影響を及ぼしています．相生，相克効果などを利用して金の気を抑えましょう．");
                     break;
                 case CommentIdentifier.WaterOver:
-                    comment_.Add("水の気が強すぎて人気運，健康運，恋愛運に悪影響を及ぼしています．");
+                    comment_.Add("部屋の水の気が強すぎて，健康運，金運，恋愛運に悪影響を及ぼしています．相生，相克効果などを利用して水の気を抑えましょう．");
                     break;
+
+
+                //ここから相生効果に関するコメント
+                case CommentIdentifier.WoodSosho:
+                    comment_.Add("木の気は火の気に対し相生関係にあり，相性は良いですが，木の気が必要以上に火の気に吸収されています．木の気と火の気を合わせるのもほどほどにしましょう．");
+                    break;
+                case CommentIdentifier.FireSosho:
+                    comment_.Add("火の気は土の気に対し相生関係にあり，相性は良いですが，火の気が必要以上に土の気に吸収されています．火の気と土の気を合わせるのもほどほどにしましょう．");
+                    break;
+                case CommentIdentifier.EarthSosho:
+                    comment_.Add("土の気は金の気に対し相生関係にあり，相性は良いですが，土の気が必要以上に金の気に吸収されています．土の気と金の気を合わせるのもほどほどにしましょう．");
+                    break;
+                case CommentIdentifier.MetalSosho:
+                    comment_.Add("金の気は水の気に対し相生関係にあり，相性は良いですが，金の気が必要以上に水の気に吸収されています．金の気と水の気を合わせるのもほどほどにしましょう．");
+                    break;
+                case CommentIdentifier.WaterSosho:
+                    comment_.Add("水の気は木の気に対し相生関係にあり，相性は良いですが，水の気が必要以上に木の気に吸収されています．水の気と木の気を合わせるのもほどほどにしましょう．");
+                    break;
+
+                //ここから相克効果に関するコメント
+                case CommentIdentifier.WoodSokoku:
+                    comment_.Add("木の気は金の気，土の気と相性が悪いので，それらの気が強い場所や，家具の近くに木の気が強い家具を置くのはなるべく控えましょう．");
+                    break;
+                case CommentIdentifier.FireSokoku:
+                    comment_.Add("火の気は水の気，金の気と相性が悪いので，それらの気が強い場所や，家具の近くに木の気が強い家具を置くのはなるべく控えましょう．");
+                    break;
+                case CommentIdentifier.EarthSokoku:
+                    comment_.Add("土の気は木の気，水の気と相性が悪いので，それらの気が強い場所や, 家具の近くに木の気が強い家具を置くのはなるべく控えましょう．");
+                    break;
+                case CommentIdentifier.MetalSokoku:
+                    comment_.Add("金の気は火の気，木の気と相性が悪いので，それらの気が強い場所や，家具の近くに木の気が強い家具を置くのはなるべく控えましょう．");
+                    break;
+                case CommentIdentifier.WaterSokoku:
+                    comment_.Add("水の気は土の気，火の気と相性が悪いので，それらの気が強い場所や，家具の近くに木の気が強い家具を置くのはなるべく控えましょう．");
+                    break;
+
+                //ここから五行通常
+                case CommentIdentifier.WoodWeakNorth:
+                    comment_.Add("最後の部屋の気の状態に，さらに木の気を多く注ぎ込めば，運気アップを見込めます．");
+                    break;
+                case CommentIdentifier.FireWeakNorth:
+                    comment_.Add("最後の部屋の気の状態に，さらに火の気を多く注ぎ込めば，運気アップを見込めます．");
+                    break;
+                case CommentIdentifier.EarthWeakNorth:
+                    comment_.Add("最後の部屋の気の状態に，さらに土の気を多く注ぎ込めば，運気アップを見込めます．");
+                    break;
+                case CommentIdentifier.MetalWeakNorth:
+                    comment_.Add("最後の部屋の気の状態に，さらに金の気を多く注ぎ込めば，運気アップを見込めます．");
+                    break;
+                case CommentIdentifier.WaterWeakNorth:
+                    comment_.Add("最後の部屋の気の状態に，さらに水の気を多く注ぎ込めば，運気アップを見込めます．");
+                    break;
+
                 default:
+
                     break;
+
             }
 
             for (int j = 0; j < comment_.Count - 1; ++j)
@@ -451,7 +390,462 @@ public partial class Evaluation : MonoBehaviour
                     break;
                 }
             }
+
         }
-        comment_flag_.Clear();
+
+
+
+        for (int i = 0; i < comment_flag_.Count; ++i)
+        {
+            if (comment_.Count >= (comment_num_elements + comment_num_bonus))
+            {
+                break;
+            }
+
+            if ((comment_flag_[i].advice_type_ != AdviceType.BonusGame)
+                && (comment_flag_[i].advice_type_ != AdviceType.Bonus))
+            {
+                continue;
+            }
+
+            if (comment_flag_[i].comment_weight_ <= 0)
+            {
+                continue;
+            }
+
+            //ところどころコメントがかぶっています．
+            switch (comment_flag_[i].comment_identifier_)
+            {
+                //部屋の種類関連
+                case CommentIdentifier.BedroomMulti:
+                    comment_.Add("寝室は，運気の影響を特に受けやすい部屋なので，悪い運気を生み出さないように，細心の注意を払いましょう．");
+                    break;
+                case CommentIdentifier.WorkroomMulti:
+                    comment_.Add("仕事部屋は，仕事運の影響を受けやすくなっていますので，仕事運の悪い運気を生み出さないように，細心の注意を払いましょう．");
+                    break;
+                case CommentIdentifier.LivingMulti:
+                    comment_.Add("リビングは，仕事運，健康運，人気運の影響を受けやすくなっていますので，それらの悪い運気を生み出さないように，細心の注意を払いましょう．");
+                    break;
+
+                //北関連
+                case CommentIdentifier.NorthCold:
+                    comment_.Add("北の部屋は元々，健康運，人気運を下げてしまいますが，温かみのある家具を置くことで北方位の悪い効果を打ち消すことができます．");
+                    break;
+
+                //ここからベッドの内容
+                case CommentIdentifier.BedLiving:
+                    comment_.Add("リビングにベッドがあると仕事運，人気運，健康運が大きく下がりますので置かないようにしましょう．");
+                    break;
+                case CommentIdentifier.BedWorkroom:
+                    comment_.Add("仕事部屋にベッドがあると仕事運，健康運が大きく下がりますので置かないようにしましょう．");
+                    break;
+                case CommentIdentifier.BedNoBedroom:
+                    comment_.Add("寝室にベッドがないと健康運を中心に運気が大きく下がりますので最低1個は置くようにしましょう．");
+                    break;
+                case CommentIdentifier.BedGapWall:
+                    comment_.Add("ベッドと壁の隙間を開けないようにしましょう");
+                    break;
+                case CommentIdentifier.BedToDoor:
+                    comment_.Add("ベッドの枕をドアの正面に向けないようにしましょう");
+                    break;
+                case CommentIdentifier.BedNearWindow:
+                    comment_.Add("ベッドを窓の近くに置かないようにしましょう");
+                    break;
+                case CommentIdentifier.BedOver:
+                    comment_.Add("ベッドが多すぎて運気が全体的に大きく下がっています．ベッドの数は" + limit_bed_.ToString() + "個までにしましょう. ");
+                    break;
+                case CommentIdentifier.BedSouthDirection:
+                    comment_.Add("南枕のベッドは仕事運，健康運を下げますので北枕か東枕にしましょう．");
+                    break;
+                case CommentIdentifier.BedWestDirection:
+                    comment_.Add("西枕のベッドは仕事運，健康運を下げますので北枕か東枕にしましょう．");
+                    break;
+
+                //ここからタンスの内容
+                case CommentIdentifier.CabinetOver:
+                    comment_.Add("タンスが多すぎて運気が全体的に大きく下がっています．タンスの数は" + limit_cabinet_.ToString() + "個までにしましょう．");
+                    break;
+
+
+                //ここからカーペットの内容
+                case CommentIdentifier.CarpetOver:
+                    comment_.Add("カーペットが多すぎて運気が全体的に大きく下がっています．カーペットの数は" + limit_carpet_.ToString() + "個までにしましょう．");
+                    break;
+
+
+                //ここから机の内容
+                case CommentIdentifier.DeskBedroom:
+                    comment_.Add("寝室に机があると仕事運，健康運が大きくに下がりますので置かないようにしましょう．");
+                    break;
+                case CommentIdentifier.DeskNoWorkRoom:
+                    comment_.Add("仕事部屋に机がないと仕事運が極めて大幅に下がりますので最低1個は置くようにしましょう．");
+                    break;
+                case CommentIdentifier.DeskOver:
+                    comment_.Add("机が多すぎて運気が全体的に大きく下がっています．机の数は" + limit_desk_.ToString() + "個までにしましょう．");
+                    break;
+                case CommentIdentifier.DeskNoNorthEast:
+                    comment_.Add("机の向きを北向き，または東向きにすると仕事運を上げることができます．");
+                    break;
+                case CommentIdentifier.DeskNoSouth:
+                    comment_.Add("机の向きを南向きにすると人気運を上げることができます．");
+                    break;
+                case CommentIdentifier.DeskNoWest:
+                    comment_.Add("机の向きを西向きにすると金運を上げることができます．");
+                    break;
+                case CommentIdentifier.DeskSouthToWest:
+                    comment_.Add("机の向きを南向きから西向きに変えてみましょう");
+                    break;
+                case CommentIdentifier.DeskWestToNorthEast:
+                    comment_.Add("机の向きを西向きから北，または東向きに変えてみましょう");
+                    break;
+                case CommentIdentifier.DeskWestToSouth:
+                    comment_.Add("机の向きを西向きから南向きに変えてみましょう");
+                    break;
+
+                //ここから観葉植物の内容
+                case CommentIdentifier.FoliagePurification:
+                    comment_.Add("観葉植物を置きましょう");
+                    break;
+                case CommentIdentifier.FoliagePlantOver:
+                    comment_.Add("観葉植物が多すぎて運気が全体的に大きく下がっています．観葉植物の数は" + limit_foliage_.ToString() + "個までにしましょう．");
+                    break;
+
+
+                //ここからランプの内容
+                case CommentIdentifier.LampOver:
+                    comment_.Add("照明(ランプ)が多すぎて運気が全体的に大きく下がっています．ランプの数は" + limit_lamp_.ToString() + "個までにしましょう．");
+                    break;
+                case CommentIdentifier.LampNo:
+                    comment_.Add("部屋に照明(ランプ)がないのは論外です．金運以外の運気が大きく下がってしまいます．");
+                    break;
+
+
+                //ここからソファーの内容
+                case CommentIdentifier.SofaNoLiving:
+                    comment_.Add("リビングにソファーがないと仕事運, 人気運，特に健康運が大きく下がりますので最低1個は置くようにしましょう．");
+                    break;
+                case CommentIdentifier.SofaSplitWest:
+                    comment_.Add("ソファーは西側に，座席を東向きにして置くと，運気を全体的に上げることができます．");
+                    break;
+                case CommentIdentifier.SofaToDoor:
+                    comment_.Add("悪い運気を下げるか，ソファーの座席をドアに向けないようにしましょう");
+                    break;
+                case CommentIdentifier.SofaOver:
+                    comment_.Add("ソファーが多すぎて運気が全体的に大きく下がっています．ソファーの数は" + limit_sofa_.ToString() + "個までにしましょう．");
+                    break;
+
+
+                //ここからテーブルの内容
+                case CommentIdentifier.TableNoLiving:
+                    comment_.Add("リビングにテーブルがないと仕事運, 人気運，特に健康運が大きく下がりますので最低1個は置くようにしましょう．");
+                    break;
+                case CommentIdentifier.TableOver:
+                    comment_.Add("テーブルが多すぎて運気が全体的に大きく下がっています．テーブルの数は" + limit_table_.ToString() + "個までにしましょう．");
+                    break;
+
+                //ここから家電の内容
+                case CommentIdentifier.ElectronicsSouth:
+                    comment_.Add("家電類が部屋の南側に置いてあると仕事運，健康運，恋愛運が下がってしまいます．");
+                    break;
+                case CommentIdentifier.ElectronicsNoEast:
+                    comment_.Add("家電類は部屋の東側に置くと仕事運，人気運，健康運を上げることができます．");
+                    break;
+                case CommentIdentifier.TVNoToWest:
+                    comment_.Add("部屋の東側のテレビは画面を西向きにすると，仕事運，人気運，健康運がさらに上がります．");
+                    break;
+                case CommentIdentifier.ElectronicsOver:
+                    comment_.Add("家電類が多すぎて運気が全体的に大きく下がっています．家電類の数は" + limit_electronics_.ToString() + "個までにしましょう．");
+                    break;
+
+
+                //ここから家具の数量の内容
+                case CommentIdentifier.FurnitureFew:
+                    comment_.Add("いくら何でも家具が少なすぎます．最低でも" + limit_furniture_few_.ToString() + "個は置かないと運気が大きく下がってしまいます．");
+                    break;
+                case CommentIdentifier.FurnitureOver:
+                    comment_.Add("いくら何でも家具が多すぎます．家具の数は" + limit_furniture_.ToString() + "個までにしないと運気が大きく下がってしまいます．");
+                    break;
+
+
+
+                //ここから色特性
+                //白関連
+                case CommentIdentifier.WhiteColorPurification:
+                    comment_.Add("白い家具を置きましょう");
+                    break;
+                case CommentIdentifier.WhiteColorResetYinYang:
+                    comment_.Add("白い家具で部屋の陰陽を中和しましょう");
+                    break;
+
+                //黒関連
+                case CommentIdentifier.BlackColorStrengthening:
+                    comment_.Add("黒い家具は置けば");
+                    break;
+                case CommentIdentifier.BlackNoGreemWarm:
+                    comment_.Add("黒い家具を1つでも置くと人気運，健康運，恋愛運を下げてしまいますが緑，または温かみのある家具を置くことでその悪い効果を打ち消すことができます．");
+                    break;
+                case CommentIdentifier.BlackInteger:
+                    comment_.Add("黒い家具は置けば置くほど金運を少しずつ上げることができます．");
+                    break;
+
+
+                //灰色関連
+                case CommentIdentifier.GrayNorthWest:
+                    comment_.Add("北西の部屋では，灰色，濃い灰色，銀色の家具を置けば置くほど仕事運，金運を少しずつ上げることができます．");
+                    break;
+                case CommentIdentifier.GraySplitNorthWest:
+                    comment_.Add("灰色，濃い灰色，銀色の家具は部屋の北西側に置くと仕事運，金運を少しずつ上げることができます．");
+                    break;
+
+                //赤関連
+                case CommentIdentifier.RedColorOne:
+                    comment_.Add("赤い家具を最低限1個置きましょう");
+                    break;
+                case CommentIdentifier.RedOver:
+                    comment_.Add("赤い家具が多すぎます");
+                    break;
+
+                //ピンク関連
+                case CommentIdentifier.PinkColorOne:
+                    comment_.Add("ピンクの家具を最低限1個置きましょう");
+                    break;
+                case CommentIdentifier.PinkColorNoOrange:
+                    comment_.Add("ピンクの家具とオレンジの家具を合わせましょう");
+                    break;
+                case CommentIdentifier.PinkColorNorth:
+                    comment_.Add("ピンクの家具を増やしましょう");
+                    break;
+
+                //青関連
+                case CommentIdentifier.BlueColorOne:
+                    comment_.Add("青い家具を最低限1個置きましょう");
+                    break;
+                case CommentIdentifier.BlueBedroom:
+                    comment_.Add("青い家具を増やしましょう");
+                    break;
+                case CommentIdentifier.BlueNoGreenWarm:
+                    comment_.Add("青い家具を置くときは温かみのある家具や緑の家具と合わせましょう");
+                    break;
+
+
+                //水色関連
+                case CommentIdentifier.LightBlueColorNoOrange:
+                    comment_.Add("水色の家具とオレンジの家具を合わせましょう");
+                    break;
+
+
+                //オレンジ関連
+                case CommentIdentifier.OrangeColorNoPink:
+                    comment_.Add("ピンクの家具とオレンジの家具を合わせましょう");
+                    break;
+                case CommentIdentifier.OrangeColorNoLightBlue:
+                    comment_.Add("水色の家具とオレンジの家具を合わせましょう");
+                    break;
+                case CommentIdentifier.OrangeSouthEast:
+                    comment_.Add("オレンジの家具を増やしましょう");
+                    break;
+
+                //黄色関連
+                case CommentIdentifier.YellowBrownOcherOne:
+                    comment_.Add("");
+                    break;
+
+                //緑
+
+                //黄緑
+
+                //ベージュ関連
+                case CommentIdentifier.BeigeInteger:
+                    comment_.Add("ベージュの家具を増やしましょう");
+                    break;
+
+                //クリーム色
+                case CommentIdentifier.CreamColor:
+                    comment_.Add("");
+                    break;
+
+                //茶
+                //黄土色
+                //金
+                case CommentIdentifier.GoldOne:
+                    comment_.Add("");
+                    break;
+                //銀
+                //紫
+
+                //材質関連
+                //人工観葉植物
+
+                //木製
+                case CommentIdentifier.WoodNaturalCottonBedroom:
+                    comment_.Add("木製，天然繊維，綿製の家具を増やしましょう");
+                    break;
+                //紙
+                //革
+                //天然繊維
+                //化学繊維
+                case CommentIdentifier.CemicalPlusticOne:
+                    comment_.Add("化学繊維，プラスチック製の家具を置かないようにしましょう");
+                    break;
+                //綿
+                //プラスチック
+                //陶磁器
+                //大理石
+                //金属
+                //鉱物
+                //ガラス
+                //水
+
+
+                //模様関連
+                //ストライプ
+                //リーフパターン
+                //花柄
+                //星柄
+                //ダイヤ柄
+                //アニマル柄
+                //ジグザグ
+                //奇抜
+                //ボーダー
+                //チェック(市松)
+                //タイル柄
+                //ドット,
+                //丸柄,
+                //アーチ
+                //フルーツ
+                //光沢
+                //ウェーブストライプ
+                //不規則パターン
+                //雲柄
+
+
+                //形状関連
+                //背が高い
+                case CommentIdentifier.HighFormNorthEast:
+                    comment_.Add("背が高い家具を増やしましょう");
+                    break;
+                case CommentIdentifier.HighOver:
+                    comment_.Add("背が高い家具が多すぎます");
+                    break;
+
+                //背が低い
+                case CommentIdentifier.LowFormSouthWest:
+                    comment_.Add("背の低い家具を増やしましょう");
+                    break;
+                //縦長
+                //横長
+
+                //正方形
+                case CommentIdentifier.SquareMulti:
+                    comment_.Add("");
+                    break;
+
+                //長方形
+                case CommentIdentifier.RectangleMulti:
+                    comment_.Add("");
+                    break;
+
+                //円形
+                case CommentIdentifier.RoundMulti:
+                    comment_.Add("");
+                    break;
+
+                //楕円形
+                case CommentIdentifier.EllipseMulti:
+                    comment_.Add("");
+                    break;
+
+                //三角形
+
+                //尖っている
+                case CommentIdentifier.SharpMulti:
+                    comment_.Add("");
+                    break;
+
+                //奇抜な形状
+
+
+
+                //特性関連
+
+                //高級そう
+                case CommentIdentifier.LuxuryNorthWest:
+                    comment_.Add("");
+                    break;
+
+                case CommentIdentifier.LuxuryZeroNorthWest:
+                    comment_.Add("");
+                    break;
+
+                //音が出る
+                case CommentIdentifier.SoundEast:
+                    comment_.Add("");
+                    break;
+
+                case CommentIdentifier.SoundSouthEast:
+                    comment_.Add("");
+                    break;
+
+                //(いい)におい
+                case CommentIdentifier.SmellEast:
+                    comment_.Add("");
+                    break;
+
+                case CommentIdentifier.SmellSouthEast:
+                    comment_.Add("");
+                    break;
+
+                //発光
+                //硬い
+                //やわらかい
+                //温かみ
+                case CommentIdentifier.WarmFew:
+                    comment_.Add("");
+                    break;
+
+                //冷たさ
+                case CommentIdentifier.ColdNorth:
+                    comment_.Add("");
+                    break;
+
+                case CommentIdentifier.ColdInteger:
+                    comment_.Add("");
+                    break;
+
+                //花関連
+                //風関連
+                case CommentIdentifier.WindEast:
+                    comment_.Add("");
+                    break;
+
+                case CommentIdentifier.WindSouthEast:
+                    comment_.Add("");
+                    break;
+
+                //西洋風
+                case CommentIdentifier.WesternWest:
+                    comment_.Add("");
+                    break;
+
+                //乱雑
+
+                default:
+
+                    break;
+
+            }
+
+            for (int j = 0; j < comment_.Count - 1; ++j)
+            {
+                if (comment_[comment_.Count - 1] == comment_[j])
+                {
+                    comment_.RemoveAt(comment_.Count - 1);
+                    break;
+                }
+            }
+
+        }
     }
+
+
 }

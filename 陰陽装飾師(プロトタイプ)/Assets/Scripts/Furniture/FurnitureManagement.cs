@@ -422,8 +422,70 @@ public class FurnitureManagement : MonoBehaviour
         
     }
 
+    public void Door_Window(Vector3 door_pos, Vector3 window_pos, bool door_x, bool window_x)
+    {
+        GameObject Door = new GameObject();
+        Door.name = "ドア";
+        Door.tag = "furniture_grid_door";
+        Door.transform.position = door_pos;
+        Door.AddComponent<BoxCollider>();
+        if (door_x)
+        {
+            Door.GetComponent<BoxCollider>().size = new Vector3(3, 1, 1);
+        }
+        else
+        {
+            Door.GetComponent<BoxCollider>().size = new Vector3(1, 3, 1);
+        }
+        
+        //GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        //sphere.transform.localScale = new Vector3(1f, 1f, 1f);
+        //sphere.GetComponent<MeshRenderer>().material.color = Color.red;
+        //sphere.transform.position = door_pos;
+
+        GameObject Window = new GameObject();
+        Window.name = "窓";
+        Window.tag = "furniture_grid_window";
+        Window.transform.position = window_pos;
+        Window.AddComponent<BoxCollider>();
+        if (window_x)
+        {
+            Window.GetComponent<BoxCollider>().size = new Vector3(7, 1, 1);
+        }
+        else
+        {
+            Window.GetComponent<BoxCollider>().size = new Vector3(1, 7, 1);
+        }
+
+        //sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        //sphere.transform.localScale = new Vector3(1f, 1f, 1f);
+        //sphere.GetComponent<MeshRenderer>().material.color = Color.blue;
+        //sphere.transform.position = window_pos;
+    }
+
     public void Room(Evaluation.Room room, Evaluation.Direction direction, int[] norma_luck, int advaice_mode)
     {
+        if (advaice_mode == 0)
+        {
+            Door_Window(new Vector3(-7, -7.5f, 0), new Vector3(5.5f, 3.5f, 0), true, true);
+        }
+        else if (advaice_mode == 1)
+        {
+            Door_Window(new Vector3(7, 3.5f, 0), new Vector3(-9, -4, 0), true, false);
+        }
+        else if (advaice_mode == 2)
+        {
+            Door_Window(new Vector3(-9.5f, -5, 0), new Vector3(9.5f, 0, 0), false, false);
+        }
+        else if (advaice_mode == 3)
+        {
+            Door_Window(new Vector3(9.5f, 1.5f, 0), new Vector3(-9.5f, -4, 0), true, true);
+        }
+        else if (advaice_mode == 4)
+        {
+            Door_Window(new Vector3(7.5f, 4, 0), new Vector3(-5, -7.5f, 0), false, false);
+        }
+
         Grid_Manager.Instantiate(advaice_mode);
 
         Evaluation.Init(room, direction, norma_luck, advaice_mode, furniture_grid_);
@@ -442,6 +504,7 @@ public class FurnitureManagement : MonoBehaviour
     //家具グリッドのマウス操作(左クリックとドラッグ)
 
     Vector3 start_pos = new Vector3();
+
     Quaternion start_rot = new Quaternion();
 
     public void MouseLeftDown(GameObject clicked_object)

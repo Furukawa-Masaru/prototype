@@ -43,12 +43,60 @@ public class LevelManager : MonoBehaviour
     float dist_counter;
     int comment_value;
 
+    public Text Room_Compass_;
+
     void Start()
 	{
         DataManager = GameObject.Find("DataManager");
         advaice_mode = DataManager.GetComponent<DataManager>().read_advaice_mode();
 
         game.SetActive(true);
+
+        if (DataManager.GetComponent<DataManager>().read_room() == Evaluation.Room.Bedroom)
+        {
+            Room_Compass_.text = "寝室/";
+        }
+        else if (DataManager.GetComponent<DataManager>().read_room() == Evaluation.Room.Workroom)
+        {
+            Room_Compass_.text = "仕事部屋/";
+        }
+        else if (DataManager.GetComponent<DataManager>().read_room() == Evaluation.Room.Living)
+        {
+            Room_Compass_.text = "リビング/";
+        }
+
+        if (DataManager.GetComponent<DataManager>().read_direction() == Evaluation.Direction.North)
+        {
+            Room_Compass_.text += "北";
+        }
+        else if (DataManager.GetComponent<DataManager>().read_direction() == Evaluation.Direction.NorthEast)
+        {
+            Room_Compass_.text += "北東";
+        }
+        else if (DataManager.GetComponent<DataManager>().read_direction() == Evaluation.Direction.East)
+        {
+            Room_Compass_.text += "東";
+        }
+        else if (DataManager.GetComponent<DataManager>().read_direction() == Evaluation.Direction.SouthEast)
+        {
+            Room_Compass_.text += "南東";
+        }
+        else if (DataManager.GetComponent<DataManager>().read_direction() == Evaluation.Direction.South)
+        {
+            Room_Compass_.text += "南";
+        }
+        else if (DataManager.GetComponent<DataManager>().read_direction() == Evaluation.Direction.SouthWest)
+        {
+            Room_Compass_.text += "南西";
+        }
+        else if (DataManager.GetComponent<DataManager>().read_direction() == Evaluation.Direction.West)
+        {
+            Room_Compass_.text += "西";
+        }
+        else if (DataManager.GetComponent<DataManager>().read_direction() == Evaluation.Direction.NorthWest)
+        {
+            Room_Compass_.text += "北西";
+        }
 
         furnituremanagement.Room(DataManager.GetComponent<DataManager>().read_room(), DataManager.GetComponent<DataManager>().read_direction(), DataManager.GetComponent<DataManager>().read_norma_luck(), DataManager.GetComponent<DataManager>().read_advaice_mode());
         
@@ -106,7 +154,7 @@ public class LevelManager : MonoBehaviour
                 }
                 else
                 {
-                    evaluation.Comment_Text(2);
+                    evaluation.Comment_Text(1);
                 }
 
                 comment_value++;
@@ -191,6 +239,24 @@ public class LevelManager : MonoBehaviour
         StartCoroutine(update(win));
     }
 
+    private IEnumerator update(bool win)
+    {
+        while (true)
+        {
+            Finish_Menu.GetComponent<RectTransform>().localScale = Vector3.Lerp(Finish_Menu.GetComponent<RectTransform>().localScale, new Vector3(1,1,1), 0.05f);
+            
+            if (Finish_Menu.GetComponent<RectTransform>().localScale.x - 1 < 0.05f)
+            {
+                Finish_Menu.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
+               
+                StartCoroutine(Sample("Result", win));
+
+                yield break;
+            }
+            yield return null;
+        }
+    }
+
     // コルーチン  
     private IEnumerator Sample(string name, bool win)
     {
@@ -212,7 +278,7 @@ public class LevelManager : MonoBehaviour
                 evaluation.game_shikigami.GetComponent<Image>().color = Color.Lerp(evaluation.game_shikigami.GetComponent<Image>().color, new Color(255, 255, 255, 0), 0.05f);
 
                 if (evaluation.game_shikigami.GetComponent<Image>().color.a < 0.01f)
-                {                    
+                {
                     break;
                 }
             }
@@ -220,26 +286,8 @@ public class LevelManager : MonoBehaviour
             yield return null;
         }
 
-        yield return new WaitForSeconds(4.0f);
+        yield return new WaitForSeconds(3.0f);
 
         SceneManager.LoadScene(name);
-    }
-
-    private IEnumerator update(bool win)
-    {
-        while (true)
-        {
-            Finish_Menu.GetComponent<RectTransform>().localScale = Vector3.Lerp(Finish_Menu.GetComponent<RectTransform>().localScale, new Vector3(1,1,1), 0.05f);
-            
-            if (Finish_Menu.GetComponent<RectTransform>().localScale.x - 1 < 0.05f)
-            {
-                Finish_Menu.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
-               
-                StartCoroutine(Sample("Result", win));
-
-                yield break;
-            }
-            yield return null;
-        }
     }
 }

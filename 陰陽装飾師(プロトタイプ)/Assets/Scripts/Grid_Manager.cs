@@ -141,6 +141,11 @@ public class Grid_Manager : MonoBehaviour
                 point_[j, i].pos.x = (j - (Grid_x_max_ * 0.5f) + To_center_x_) * Grid_density_;
                 point_[j, i].pos.y = (i - (Grid_y_max_ * 0.5f) + To_center_y_) * Grid_density_;
 
+                if (j == Grid_x_min_ || j == Grid_x_max_ - 1 || i == Grid_y_min_ || i == Grid_y_max_ - 1)
+                {
+                    point_[j, i].wall = true;
+                    //Test_sphere(j, i, 2, Color.red);
+                }
                 //Grid_all(j, i);
             }
         }

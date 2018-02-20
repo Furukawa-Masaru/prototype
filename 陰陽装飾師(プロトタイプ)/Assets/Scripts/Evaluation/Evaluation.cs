@@ -1,31 +1,4 @@
 ﻿//風水評価クラス(多分furnitureManagementと同じように空のオブジェクトに放り込んで実装),動くかどうかのテストは行っていない
-//
-//使い方
-//①先ずInitで初期化(この初期化関数は最初に1回だけ実行すること)
-//②次にUpdateGrid,またはDeleteGridで家具グリッドの更新
-//③その後EvaluationTotalで運勢評価
-//②に戻る
-//
-//
-//更新点
-//2018年1月21日
-//五行と運気に関連する変数名を大きく変更(具体的には配列になった, forによるループ処理のため)
-//基本的には
-//[0] = 木, [1] = 火, [2] = 土, [3] = 金, [4] = 水
-//[0] = 仕事運, [1] = 人気運, [2] = 健康運, [3] = 金運, [4] = 恋愛運
-//運気を旺気成分(プラスの運気)と邪気成分(マイナスの運気)に分離(最終的に足し合わせる)
-//五行と陰陽を部屋の中の八方位に分割(最終的に足し合わせる)
-//
-//ノルマ変数を追加
-//ノルマ入力関数を追加
-//
-//
-//とりあえずコメントはこのようにして出力させますという方針をプログラム内に記述(1月28日更新)
-//コメント出力フラグのための構造体作成
-//要素
-//comment_identifier_ = コメント識別子，flag_weight_ = コメントの重要度，luck_identifier_ = 影響を受けた運気の識別子
-//FortuneItem関数改装案，いままでは引数に家具の番号を取っていたが，それを消して，関数内でベッドなり他の家具なり探索することにしたい(評価の実装のためにその方が都合よい)
-//ソースファイル内に似た操作の部分が結構あるので似た操作部分を関数化するか検討中
 
 using System.Collections;
 using System.Collections.Generic;
@@ -36,64 +9,240 @@ using UnityEngine.UI;
 
 public partial class Evaluation : MonoBehaviour
 {
-    public enum Room { Entrance, Living, Kitchen, Workroom, Bedroom, Bathroom, Toilet };
-    public enum Direction { North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest };
+    private const int limit_elements_ = 500;
+    private const int limit_yin_ = -300;
+    private const int limit_yang_ = 300;
 
-    //コメントの識別子(列挙型)
-    //基本的にボーナス点，ペナルティ点が呼び出されたら必ずコメント識別子が呼び出される．
+    private const int limit_bed_ = 2;
+    private const int limit_cabinet_ = 5;
+    private const int limit_carpet_ = 3;
+    private const int limit_desk_ = 3;
+    private const int limit_foliage_ = 5;
+    private const int limit_lamp_ = 4;
+    private const int limit_sofa_ = 4;
+    private const int limit_table_ = 2;
+    private const int limit_electronics_ = 5;
+    private const int limit_furniture_ = 13;
+    private const int limit_furniture_few_ = 3;
+
+    private const int limit_red_color_ = 3;
+    private const int limit_high_form_ = 5;
+
+    public enum Room { Entrance, Living, Kitchen, Workroom, Bedroom, Bathroom, Toilet };
+    private Room room_role_; //部屋の種類
+
+    public enum Direction { North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest };
+    private Direction room_direction_; //部屋の方角
+
     public enum CommentIdentifier
     {
+        //気と陰陽に関係するもの 
         OverYin, OverYang, //陰陽の強すぎ
-
-        EntranceYinNorthEast, EntranceYinSouthWest, EntranceNoCarpet, EntranceSmell, EntranceMulti, //玄関関連
-        BedroomWoodNatural, BedroomBlue, BedroomMulti, //寝室関連
-        LivingMulti, //リビング関連
-        WorkroomMulti, //仕事部屋関連
-
         NorthWeak, NorthEastWeak, NorthEastMinus, EastWeak, SouthEastWeak, SouthWeak, SouthWestWeak, WestWeak, NorthWestWeak, //方角基本性能
+        NorthWeakOther, NorthEastWeakOther, EastWeakOther, SouthEastWeakOther, SouthWeakOther, SouthWestWeakOther, WestWeakOther, NorthWestWeakOther, //方角基本性能(その方向の気以外)
         SplitNorthWeak, SplitNorthEastWeak, SplitNorthEastMinus, SplitEastWeak, SplitSouthEastWeak, SplitSouthWeak, SplitSouthWestWeak, SplitWestWeak, SplitNorthWestWeak, //方角基本性能(小方位)
-
-        NorthCold, NorthPink, //北の運勢
-        NorthEastHigh, //北東の運勢
-        EastWindSound, //東の運勢
-        SouthEastWindSound, SouthEastOrange, //南東の運勢
-        SouthPurification, //南の運勢
-        SouthWestLow, //南西の運勢
-        WestWestern, WestLuxury, //西の運勢
-        NorthWestLuxury, NorthWestLuxuryZero, NorthWestSilverGray, NorthWestVain, //北西の運勢
-
-
-
-        WhiteResetYinYang, WhitePurification, BlackStrengthening, RedOne, PinkOne, PinkNoOrange, BlueOne, BlueNoOrange, OrangeNoPink, OrangeNoBlue, //色関連
-        YellowBrownOne, GreenPurification, BeigeFew, Cream, GoldMulti,  //色関連
-
-        SquareFix, CircleGoodRelation, CircleCirculation, SharpBadRelation, //形状関連
-        SweetSmell, Luminescence, FlowerAssociative, //その他特性
-        ExcessFurniture, ShortageFurniture,  //家具の数関連
-
-        WoodWeak, FireWeak, EarthWeak, MetalWeak, WaterWeak, WeakEnergy, //気が弱い
+        SouthPurification, NorthWestVain,//方角その他
         WoodOver, FireOver, EarthOver, MetalOver, WaterOver, //気が強すぎ
 
-        WoodWeakSosho, FireWeakSosho, EarthWeakSosho, MetalWeakSosho, WaterWeakSosho, //相生
-        WoodWeakSokoku, FireWeakSokoku, EarthWeakSokoku, MetalWeakSokoku, WaterWeakSokoku,  //相克
+        //相生効果に関するコメント
+        WoodSoshoNorth, FireSoshoNorth, EarthSoshoNorth, MetalSoshoNorth, WaterSoshoNorth, //相生(ゲーム中のみ)
+        WoodSoshoNorthEast, FireSoshoNorthEast, EarthSoshoNorthEast, MetalSoshoNorthEast, WaterSoshoNorthEast, //相生(ゲーム中のみ)
+        WoodSoshoEast, FireSoshoEast, EarthSoshoEast, MetalSoshoEast, WaterSoshoEast, //相生(ゲーム中のみ)
+        WoodSoshoSouthEast, FireSoshoSouthEast, EarthSoshoSouthEast, MetalSoshoSouthEast, WaterSoshoSouthEast, //相生(ゲーム中のみ)
+        WoodSoshoSouth, FireSoshoSouth, EarthSoshoSouth, MetalSoshoSouth, WaterSoshoSouth, //相生(ゲーム中のみ)
+        WoodSoshoSouthWest, FireSoshoSouthWest, EarthSoshoSouthWest, MetalSoshoSouthWest, WaterSoshoSouthWest, //相生(ゲーム中のみ)
+        WoodSoshoWest, FireSoshoWest, EarthSoshoWest, MetalSoshoWest, WaterSoshoWest, //相生(ゲーム中のみ)
+        WoodSoshoNorthWest, FireSoshoNorthWest, EarthSoshoNorthWest, MetalSoshoNorthWest, WaterSoshoNorthWest, //相生(ゲーム中のみ)
+        WoodSosho, FireSosho, EarthSosho, MetalSosho, WaterSosho, //相生(ゲーム終了時)
 
-        BedLiving, BedWorkroom, BedNoBedroom, BedPillowDirection, BedConnected, BedGapWall, BedToDoor, BedNearWindow, BedOver, //ベッド関連 (2個まで)
-        CabinetOver, //タンス関連( 5個まで )
-        CarpetOver,//カーペット関連 (2個まで)
-        DeskBedroom, DeskNoWorkRoom, DeskNorthEast, DeskSouth, DeskWest, DeskFrontWindow, DeskSeatNearWall, DeskOver, //机関連 (2個まで)
-        FoliagePlantOver,//観葉植物関連 (5個まで)
-        //天井ランプ関連 
-        LampOver,//机ランプ (天井机ランプ合わせて4個まで)
-        SofaSplitWest, SofaToTV, SofaToDoor, SofaOver,//ソファー関連 (3個まで)
-        TableNoLiving, TableOver,//テーブル関連 (2個まで)
-        ElectronicsSouth, ElectronicsNoEast, ElectronicsYang, ElectronicsToWindowDoor, ElectronicsToBed, ElectronicsOver,//家電関連 ( 4個まで )
-                                                                                                                         //カーテン関連
+        //相克効果に関するコメント
+        WoodSokokuNorth, FireSokokuNorth, EarthSokokuNorth, MetalSokokuNorth, WaterSokokuNorth,  //相克(ゲーム中のみ)
+        WoodSokokuNorthEast, FireSokokuNorthEast, EarthSokokuNorthEast, MetalSokokuNorthEast, WaterSokokuNorthEast,  //相克(ゲーム中のみ)
+        WoodSokokuEast, FireSokokuEast, EarthSokokuEast, MetalSokokuEast, WaterSokokuEast,  //相克(ゲーム中のみ)
+        WoodSokokuSouthEast, FireSokokuSouthEast, EarthSokokuSouthEast, MetalSokokuSouthEast, WaterSokokuSouthEast,  //相克(ゲーム中のみ)
+        WoodSokokuSouth, FireSokokuSouth, EarthSokokuSouth, MetalSokokuSouth, WaterSokokuSouth,  //相克(ゲーム中のみ)
+        WoodSokokuSouthWest, FireSokokuSouthWest, EarthSokokuSouthWest, MetalSokokuSouthWest, WaterSokokuSouthWest,  //相克(ゲーム中のみ)
+        WoodSokokuWest, FireSokokuWest, EarthSokokuWest, MetalSokokuWest, WaterSokokuWest,  //相克(ゲーム中のみ)
+        WoodSokokuNorthWest, FireSokokuNorthWest, EarthSokokuNorthWest, MetalSokokuNorthWest, WaterSokokuNorthWest,  //相克(ゲーム中のみ)
+        WoodSokoku, FireSokoku, EarthSokoku, MetalSokoku, WaterSokoku,  //相克(ゲーム終了時)
+
+        //気を上げましょう
+        WoodWeakNorth, FireWeakNorth, EarthWeakNorth, MetalWeakNorth, WaterWeakNorth,  //気が低い(ゲーム中のみ)
+        WoodWeakNorthEast, FireWeakNorthEast, EarthWeakNorthEast, MetalWeakNorthEast, WaterWeakNorthEast,  //気が低い(ゲーム中のみ)
+        WoodWeakEast, FireWeakEast, EarthWeakEast, MetalWeakEast, WaterWeakEast,  //気が低い(ゲーム中のみ)
+        WoodWeakSouthEast, FireWeakSouthEast, EarthWeakSouthEast, MetalWeakSouthEast, WaterWeakSouthEast,  //気が低い(ゲーム中のみ)
+        WoodWeakSouth, FireWeakSouth, EarthWeakSouth, MetalWeakSouth, WaterWeakSouth,  //気が低い(ゲーム中のみ)
+        WoodWeakSouthWest, FireWeakSouthWest, EarthWeakSouthWest, MetalWeakSouthWest, WaterWeakSouthWest,  //気が低い(ゲーム中のみ)
+        WoodWeakWest, FireWeakWest, EarthWeakWest, MetalWeakWest, WaterWeakWest,  //気が低い(ゲーム中のみ)
+        WoodWeakNorthWest, FireWeakNorthWest, EarthWeakNorthWest, MetalWeakNorthWest, WaterWeakNorthWest,  //気が低い(ゲーム中のみ)
+        WoodWeak, FireWeak, EarthWeak, MetalWeak, WaterWeak,  //気を上げましょう(ゲーム終了時)
+
+        //ボーナス点に関係するもの
+        //部屋関連
+        BedroomMulti, //寝室関連(ゲーム終了専用)
+        LivingMulti, //リビング関連(ゲーム終了専用)
+        WorkroomMulti, //仕事部屋関連(ゲーム終了専用)
+
+
+        //方角関連
+        NorthCold,//北の運勢
+        //北東の運勢
+        //東の運勢
+        //南東の運勢
+        //南の運勢
+        //南西の運勢
+        //西の運勢
+        //北西の運勢
+
+
+        //家具関連
+        BedLiving, BedWorkroom, BedNoBedroom, BedConnected, BedGapWall, BedToDoor, BedNearWindow, BedOver, //ベッド関連
+        BedSouthToNorth, BedSouthToEast, BedWestToNorth, BedWestToEast, BedNorthToEast, BedEastToNorth, //ベッドの向き(ゲーム中専用)
+        BedSouthDirection, BedWestDirection, //ベッドの向き(ゲーム終了専用) 
+        CabinetOver, //タンス関連
+        CarpetOver,//カーペット関連
+        DeskBedroom, DeskNoWorkRoom, DeskFrontWindow, DeskSeatNearWall, DeskOver, //机関連
+        DeskNorthEastToSouth, DeskNorthEastToWest, DeskSouthToNorthEast, DeskSouthToWest, DeskWestToNorthEast, DeskWestToSouth, //机向き(タイプ1専用)
+        DeskNoNorthEast, DeskNoSouth, DeskNoWest, //机向き(タイプ2専用)
+        FoliagePurification, FoliagePlantOver,//観葉植物関連
+        LampOver, LampNo,//天井ランプ関連 
+                         //机ランプ
+        SofaNoLiving, SofaSplitWest, SofaToDoor, SofaOver,//ソファー関連
+        TableNoLiving, TableOver,//テーブル関連 
+        ElectronicsSouth, ElectronicsNoEast, TVNoToWest, ElectronicsToWindowDoor, ElectronicsToBed, ElectronicsOver,//家電関連 ( 4個まで )                                                                                                     
         FurnitureFew, FurnitureOver, //家具多すぎと少なすぎ
+
+
+        //色関連
+        WhiteColorResetYinYang, WhiteColorPurification, //白
+        BlackColorStrengthening, BlackNoGreemWarm, BlackInteger, //黒
+        GrayNorthWest, GraySplitNorthWest, //灰色
+                                           //濃い灰色
+        RedColorOne, RedOver,//赤
+        PinkColorOne, PinkColorNoOrange, PinkColorNorth,//ピンク
+        BlueColorOne, BlueBedroom, BlueNoGreenWarm, //青
+        LightBlueColorNoOrange, //水色
+        OrangeColorNoPink, OrangeColorNoLightBlue, OrangeSouthEast,//オレンジ
+        YellowBrownOcherOne, //黄色
+        //緑
+        //黄緑
+        BeigeInteger, //ベージュ
+        CreamColor, //クリーム色
+                    //茶
+                    //黄土色
+        GoldOne, //金
+        SilverFew, //銀
+                   //紫
+
+
+        //材質関連
+        //人工観葉植物
+        WoodNaturalCottonBedroom,  //木製
+                                   //紙
+                                   //革
+                                   //天然繊維
+        CemicalPlusticOne, //化学繊維
+                           //綿
+                           //プラスチック
+                           //陶磁器
+                           //大理石
+                           //金属
+                           //鉱物
+                           //ガラス
+                           //水
+
+
+        //模様関連
+        //ストライプ
+        //リーフパターン
+        //花柄
+        //星柄
+        //ダイヤ柄
+        //アニマル柄
+        //ジグザグ
+        //奇抜
+        //ボーダー
+        //チェック(市松)
+        //タイル柄
+        //ドット,
+        //丸柄,
+        //アーチ
+        //フルーツ
+        //光沢
+        //ウェーブストライプ
+        //不規則パターン
+        //雲柄
+
+
+        //形状関連
+        HighFormNorthEast, HighOver,//背が高い
+        LowFormSouthWest,           //背が低い
+                                    //縦長
+                                    //横長
+        SquareMulti,                 //正方形
+        RectangleMulti,              //長方形
+        RoundMulti,                  //円形
+        EllipseMulti,                //楕円形
+                                     //三角形
+        SharpMulti,                  //尖っている
+                                     //奇抜な形状
+
+
+        LuxuryNorthWest, LuxuryZeroNorthWest,//高級そう
+        SoundEast, SoundSouthEast, //音が出る
+        SmellEast, SmellSouthEast, //(いい)におい
+        //発光
+        //硬い
+        //やわらかい
+        WarmFew, //温かみ
+        ColdNorth, ColdInteger, //冷たさ
+        //花関連
+        WindEast, WindSouthEast, //風関連
+        WesternWest,//西洋風
+        //奇抜
+        //乱雑
     };
 
-    //------------------------------------------------------------------------------------------------------------------------------------------------
+    private enum AdviceType
+    {
+        Element, ElementGame, ElementEnd, Bonus, BonusGame, BonusEnd
+    }
+    private class CommentFlag
+    {
+        public CommentIdentifier comment_identifier_; //コメント識別子
+        public int work_weight_;
+        public int popular_weight_;
+        public int health_weight_;
+        public int economic_weight_;
+        public int love_weight_;
+        public AdviceType advice_type_; //五行陰陽に関係するもの = 0，ボーナス点ペナルティ点に関係するもの = 1;
+        public int comment_weight_ = 0;
+        public CommentFlag(CommentIdentifier comment_identifier, int work_weight, int popular_weight, int health_weight, int economic_weight, int love_weight, AdviceType advice_type)
+        {
+            comment_identifier_ = comment_identifier;
+            work_weight_ = work_weight;
+            popular_weight_ = popular_weight;
+            health_weight_ = health_weight;
+            economic_weight_ = economic_weight;
+            love_weight_ = love_weight;
+            advice_type_ = advice_type;
+        }
+    }
 
-    //家具の特性リスト(特性の数，ウェイトを数えるために実装 2018年 2月15日)
+    private List<CommentFlag> comment_flag_ = new List<CommentFlag>();
+    private List<string> comment_ = new List<string>(); //コメント ( コメントフラグに応じていくつかのコメントを出力 )
+
+
+    public enum EnergyIdentifier
+    {
+        LampNo, //ランプ関連
+    }
+    private class EnergyFlag
+    {
+
+    }
+
+
     public enum CharacteristicIdentifier
     {
         //家具のタイプ
@@ -118,38 +267,6 @@ public partial class Evaluation : MonoBehaviour
         //その他の特性
         Luxury, Sound, Smell, Light, Hard, Soft, Warm, Cold, Flower, Wind, Western, Clutter
     }
-
-    private int[] elements_ = new int[5] { 0, 0, 0, 0, 0 };  //elements_の各要素について
-    private int yin_yang_ = 0; //陰陽(プラスで陽，マイナスで陰)
-
-    private int energy_strength_ = 0; //気の強さ(max1000 min0, ここは確定するように調整)
-
-    //部屋の中の方位ごとの五行
-    //[0] = 木, [1] = 火, [2] = 土, [3] = 金, [4] = 水
-    // [][0] = 北，[][1] = 北東, [][2] = 東，[][3] = 南東, [][4] = 南, [][5] = 南西, [][6] = 西，[][7] = 北西
-    private int[][] split_elements_ = new int[5][];
-    private int[] split_yin_yang_ = new int[8];  //部屋の中の方位ごとの陰陽
-
-    //ここから評価用のバッファ(これらはすべて気の変化を保存する)----------------------------------------------------------------------------------------------------
-    private int[] sosho_buffer_ = new int[5]; //相生効果によって変化した気の量
-    private int[] sokoku_buffer_ = new int[5];  //相克効果によって変化した気の量
-    //---------------------------------------------------------------------------------------------------------------------------------
-
-
-    private int[] luck_ = new int[5] { 0, 0, 0, 0, 0 };  //運気(旺気と邪気を合わせた最終結果)
-    private int all_luck_ = 0; //総合運
-    private int[] norma_luck_ = new int[5];  //(運気の)ノルマ変数
-    private int all_norma_ = 0; //総合運のノルマ
-    private int[] plus_luck_ = new int[5]; //運気の変化(プラスの運気成分(旺気))
-    private int[] minus_luck_ = new int[5];  //運気の変化(マイナスの運気成分(邪気))
-
-    private Room room_role_; //部屋の種類
-    private Direction room_direction_; //部屋の方角
-
-    private List<FurnitureGrid> furniture_grid_ = new List<FurnitureGrid>(); //FurnitureGrid.csで実装されているクラスのリスト(最大50)
-    private List<int> ignore_index_ = new List<int>(); //この中に入った家具グリッドは評価から除外される (2018年 2月15日)
-
-    //家具の特性の数のクラス(2018年 2月15日追加, 家具の特性の数，ウェイトの合計数を数えるためのクラス)
     private class CharacteristicNumber
     {
         public CharacteristicIdentifier characteristic_identifier_; //特徴の種類
@@ -172,38 +289,38 @@ public partial class Evaluation : MonoBehaviour
             count_ += add_count;
         }
     }
-
     private List<CharacteristicNumber> characteristic_number_ = new List<CharacteristicNumber>();
 
-    //コメント選択用構造体(あとで優先順位準にソートする)
-    private class CommentFlag
-    {
-        public CommentIdentifier comment_identifier_; //コメント識別子
-        public int flag_weight_; //コメントの重要度(数値がおおきいほど重要度が高い)
-        public int luck_identifier_;  //影響を受けた運気の識別子 [0] = 仕事運，[1] = 人気運, [2] = 健康運, [3] = 金運, [4] = 恋愛運
+    private int[] elements_ = new int[5] { 0, 0, 0, 0, 0 };  //elements_の各要素について
+    private int yin_yang_ = 0; //陰陽(プラスで陽，マイナスで陰)
 
-        public CommentFlag(CommentIdentifier comment_identifier, int flag_weight, int luck_identifier)
-        {
-            comment_identifier_ = comment_identifier;
-            flag_weight_ = flag_weight;
-            luck_identifier_ = luck_identifier;
-        }
+    private int energy_strength_ = 0; //気の強さ(max1000 min0, ここは確定するように調整)
 
-        public void WeightAdd(int addend)
-        {
-            flag_weight_ += addend;
-        }
-    }
 
-    private List<CommentFlag> comment_flag_ = new List<CommentFlag>();
-    private List<string> comment_ = new List<string>(); //コメント ( コメントフラグに応じていくつかのコメントを出力 )
+    private int[][] split_elements_ = new int[5][];
+    private int[] split_yin_yang_ = new int[8];  //部屋の中の方位ごとの陰陽
+
+    //ここから評価用のバッファ(これらはすべて気の変化を保存する)----------------------------------------------------------------------------------------------------
+    private int[][] sosho_buffer_ = new int[5][]; //相生効果によって変化した気の量
+    private int[][] sokoku_buffer_ = new int[5][];  //相克効果によって変化した気の量
+    //---------------------------------------------------------------------------------------------------------------------------------
+
+
+    private int[] luck_ = new int[5] { 0, 0, 0, 0, 0 };  //運気(旺気と邪気を合わせた最終結果)
+    private int all_luck_ = 0; //総合運
+    private int[] norma_luck_ = new int[5];  //(運気の)ノルマ変数
+    private int all_norma_ = 0; //総合運のノルマ
+    private int[] plus_luck_ = new int[5]; //運気の変化(プラスの運気成分(旺気))
+    private int[] minus_luck_ = new int[5];  //運気の変化(マイナスの運気成分(邪気))
+
+    private List<FurnitureGrid> furniture_grid_ = new List<FurnitureGrid>(); //FurnitureGrid.csで実装されているクラスのリスト(最大50)
+    private List<int> ignore_index_ = new List<int>(); //この中に入った家具グリッドは評価から除外される (2018年 2月15日)
+
 
     private bool is_finished_game_; //ゲームが終わったかどうかのフラグ (ture = ゲーム終了 false = ゲーム終了せず)
     private int advaice_mode_; //アドバイスモード(0 = 仕事運重視，1 = 人気運重視，2 = 健康運重視，3 = 金運重視，4 = 恋愛運重視, 5 = デフォルト(ノルマ重視))
 
-    private const int limit_elements_ = 500;
-    private const int limit_yin_ = -300;
-    private const int limit_yang_ = 300;
+
 
     //*******************************************************************************************************************************************************************************************
 
@@ -342,6 +459,7 @@ public partial class Evaluation : MonoBehaviour
     }
 
     public Text hint_text_;
+    private bool no_hint = false;
 
     public void Comment_Text(int num)
     {
@@ -351,7 +469,14 @@ public partial class Evaluation : MonoBehaviour
         }
         else
         {
-            hint_text_.text = comment_[num];
+            if (no_hint == false)
+            {
+                hint_text_.text = comment_[num];
+            }
+            else
+            {
+                hint_text_.text = "自力で頑張れ!";
+            }            
         }
     }
 
@@ -385,8 +510,8 @@ public partial class Evaluation : MonoBehaviour
             if (compare < elements_[i])
             {
                 max = i;
-            }
-            compare = elements_[i];
+                compare = elements_[i];
+            }            
         }
 
         if (max == 0)
@@ -411,17 +536,13 @@ public partial class Evaluation : MonoBehaviour
         }
 
         attack_shikigami.SetInteger("Element", max);
+        DataManager.GetComponent<DataManager>().set_advaice_mode(max);
 
         //陰陽ゲージ
-
-        //Debug.Log("陰陽(前) " + yin_yang_);
-
         float yin_yang_temp_ = yin_yang_;
 
         yin_yang_temp_ += (-yin_yang_min_);
         yin_yang_temp_ /= yin_yang_max_ + (-yin_yang_min_);
-
-        //Debug.Log("陰陽(後) " + yin_yang_temp_);
 
         Gage_Value_yang.GetComponent<RectTransform>().localScale = new Vector3(yin_yang_temp_, 1, 1);
         
@@ -437,7 +558,6 @@ public partial class Evaluation : MonoBehaviour
         Gage_Value_yin.GetComponent<RectTransform>().localScale = new Vector3(1 - Gage_Value_yang.GetComponent<RectTransform>().localScale.x, 1, 1);
 
         //運勢ゲージ
-
         int count = 0;
 
         for (int i = 0; i < luck_.Length; i++)
@@ -485,17 +605,43 @@ public partial class Evaluation : MonoBehaviour
     //*******************************************************************************************************************************************************************************************
 
     private DataManager DataManager;
+    private Grid_Manager Grid_Manager;
 
     //初期化関数(この関数は最初に1回だけ実行すること)
-    public void Init(Room room_role, Direction room_direction, int[] norma_luck, int advaice_mode, List<FurnitureGrid> furniture_grid)
+    public void Init(Room room_role, Direction room_direction, int[] norma_luck, int advice_mode, List<FurnitureGrid> furniture_grid)
     {
         DataManager = GameObject.Find("DataManager").GetComponent<DataManager>();
+        Grid_Manager = GameObject.Find("Grid_Manager").GetComponent<Grid_Manager>();
 
         room_role_ = room_role;
         room_direction_ = room_direction;
         norma_luck_ = norma_luck;
-        advaice_mode_ = advaice_mode;
         furniture_grid_ = furniture_grid;
+
+        if (advice_mode == 0)
+        {
+            set_norma(300, 300, 300, 300, 300, 300);
+        }
+        else if (advice_mode == 1)
+        {
+            set_norma(400, 400, 400, 400, 400, 400);
+        }
+        else if (advice_mode == 2)
+        {
+            set_norma(500, 500, 500, 500, 500, 500);
+        }
+        else if (advice_mode == 3)
+        {
+            set_norma(300, 300, 300, 300, 300, 300);
+            no_hint = true;
+        }
+        else if (advice_mode == 4)
+        {
+            set_norma(500, 500, 500, 500, 500, 500);
+            no_hint = true;            
+        }
+
+        advaice_mode_ = 5;
 
         //エラーグリッド無視
         for (int i = 0; i < furniture_grid_.Count; ++i)
@@ -506,22 +652,24 @@ public partial class Evaluation : MonoBehaviour
             }
         }
 
-        //特性を数えるため実装(2018年 2月15日実装)
-        for (int i = 0; i < furniture_grid.Count; ++i)
-        {
-            //エラー家具を無視する処理
-            if (IsIgnored(i))
-            {
-                continue;
-            }
-            CountCharacteristic(furniture_grid_[i]);
-        }
+        ////特性を数えるため実装(2018年 2月15日実装)
+        //for (int i = 0; i < furniture_grid.Count; ++i)
+        //{
+        //    //エラー家具を無視する処理
+        //    if (IsIgnored(i))
+        //    {
+        //        continue;
+        //    }
+        //    CountCharacteristic(furniture_grid_[i]);
+        //}
 
         is_finished_game_ = false;
 
         for (int i = 0; i < 5; ++i)
         {
             split_elements_[i] = new int[8];
+            sosho_buffer_[i] = new int[8];
+            sokoku_buffer_[i] = new int[8];
         }
 
         EvaluationTotal();
@@ -560,16 +708,6 @@ public partial class Evaluation : MonoBehaviour
 
         //特性を数えるため実装(2018年 2月15日実装)
         characteristic_number_.Clear();
-        for (int i = 0; i < furniture_grid.Count; ++i)
-        {
-            //エラー家具を無視する処理
-            if (IsIgnored(i))
-            {
-                continue;
-            }
-
-            CountCharacteristic(furniture_grid_[i]);
-        }
     }
 
     //is_finised_gameに値をセット
@@ -600,12 +738,11 @@ public partial class Evaluation : MonoBehaviour
             plus_luck_[i] = 0;
             minus_luck_[i] = 0;
 
-            sosho_buffer_[i] = 0;
-            sokoku_buffer_[i] = 0;
-
             for (int j = 0; j < 8; ++j)
             {
                 split_elements_[i][j] = 0;
+                sosho_buffer_[i][j] = 0;
+                sokoku_buffer_[i][j] = 0;
             }
 
         }
@@ -653,6 +790,12 @@ public partial class Evaluation : MonoBehaviour
         //ここまで五行の気の強さ, 陰陽加算
 
         FortuneItem();
+        FortuneColor();
+        FortuneMaterial();
+        FortunePattern();
+        FortuneForm();
+        FortuneCharacteristic();
+
         FortuneRoom();
         FortuneDirection();
         FortuneSplitDirection();
@@ -661,31 +804,40 @@ public partial class Evaluation : MonoBehaviour
         //陰陽による運勢補正
         if (yin_yang_ < limit_yin_)
         {
-            minus_luck_[0] -= (yin_yang_ + limit_yin_);
-            minus_luck_[1] -= (yin_yang_ + limit_yin_);
-            minus_luck_[2] -= (yin_yang_ + limit_yin_);
-            minus_luck_[4] -= (yin_yang_ + limit_yin_);
+            int yin_minus_luck = -(yin_yang_ - limit_yin_);
+            minus_luck_[0] += yin_minus_luck;
+            minus_luck_[1] += yin_minus_luck;
+            minus_luck_[2] += yin_minus_luck;
+            minus_luck_[4] += yin_minus_luck;
 
-            //陰気が強すぎて, 仕事，人気，健康，金，下がる
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.OverYin, -(yin_yang_ - limit_yin_), 0));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.OverYin, -(yin_yang_ - limit_yin_), 1));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.OverYin, -(yin_yang_ - limit_yin_), 2));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.OverYin, -(yin_yang_ - limit_yin_), 4));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.OverYin, -(yin_yang_ + limit_yin_) * 4, 5));
-            Debug.Log("OverYin");
+            //陰気が強すぎて, 仕事，人気，健康，恋愛，下がる
+            if (yin_minus_luck > 100)
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.OverYin, 100, 100, 100, 0, 100, AdviceType.ElementGame));
+            }
+            else
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.OverYin, yin_minus_luck, yin_minus_luck, yin_minus_luck, 0, yin_minus_luck, AdviceType.ElementGame));
+            }
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.OverYin, yin_minus_luck, yin_minus_luck, yin_minus_luck, 0, yin_minus_luck, AdviceType.ElementEnd));
         }
         else if (yin_yang_ > limit_yang_)
         {
-            minus_luck_[0] += (yin_yang_ - limit_yang_);
-            minus_luck_[2] += (yin_yang_ - limit_yang_);
-            minus_luck_[3] += (yin_yang_ - limit_yang_);
+            int yang_minus_luck = (yin_yang_ - limit_yang_);
+            minus_luck_[0] += yang_minus_luck;
+            minus_luck_[2] += yang_minus_luck;
+            minus_luck_[4] += yang_minus_luck;
 
             //陽気が強すぎて，仕事，健康，恋愛下がる
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.OverYang, (yin_yang_ - limit_yang_), 0));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.OverYang, (yin_yang_ - limit_yang_), 2));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.OverYang, (yin_yang_ - limit_yang_), 4));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.OverYang, (yin_yang_ - limit_yang_) * 3, 5));
-            Debug.Log("OverYang");
+            if (yang_minus_luck > 100)
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.OverYang, 100, 0, 100, 0, 100, AdviceType.ElementGame));
+            }
+            else
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.OverYang, yang_minus_luck, 0, yang_minus_luck, 0, yang_minus_luck, AdviceType.ElementGame));
+            }
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.OverYang, yang_minus_luck, 0, yang_minus_luck, 0, yang_minus_luck, AdviceType.ElementEnd));
         }
 
         FortuneLast();
@@ -795,17 +947,23 @@ public partial class Evaluation : MonoBehaviour
                 split_elements_[4][7] += furniture_grid_[i].elements_water();
                 split_yin_yang_[7] += furniture_grid_[i].yin_yang();
             }
+
+            if (furniture_grid_[i].material_type().IndexOf(FurnitureGrid.MaterialType.ArtificialFoliage) >= 0
+                || furniture_grid_[i].characteristic().IndexOf(FurnitureGrid.Characteristic.Clutter) >= 0)
+            {
+                for (int j = 0; j < 8; ++j)
+                {
+                    split_yin_yang_[j] -= 125;
+                }
+            }
         }
     }
 
     //部屋評価関数(基本五行と陰陽のみ)
     private void EvaluationRoom()
     {
-        if (room_role_ == Room.Entrance)
-        {
 
-        }
-        else if (room_role_ == Room.Bedroom)
+        if (room_role_ == Room.Bedroom)
         {
 
         }
@@ -817,41 +975,12 @@ public partial class Evaluation : MonoBehaviour
                 split_elements_[2][i] += 12;
             }
         }
-        else if (room_role_ == Room.Kitchen)
-        {
-            //火と水の気，弱い金の気をもつ
-            for (int i = 0; i < 8; ++i)
-            {
-                split_elements_[1][i] += 20;
-                split_elements_[3][i] += 8;
-                split_elements_[4][i] += 20;
-            }
-        }
         else if (room_role_ == Room.Workroom)
         {
             //木の気をもつ
             for (int i = 0; i < 8; ++i)
             {
                 split_elements_[0][i] += 12;
-            }
-        }
-        else if (room_role_ == Room.Bathroom)
-        {
-            //強い水の気をもつ
-            for (int i = 0; i < 8; ++i)
-            {
-                split_elements_[4][i] += 20;
-                split_yin_yang_[i] += 16;
-            }
-
-        }
-        else if (room_role_ == Room.Toilet)
-        {
-            //強い水の気をもつ
-            for (int i = 0; i < 8; ++i)
-            {
-                split_elements_[4][i] += 20;
-                split_yin_yang_[i] += 20;
             }
         }
         else
@@ -994,12 +1123,12 @@ public partial class Evaluation : MonoBehaviour
                 if ((split_elements_[i][j] + sosho_stock[i][j]) < 0)
                 {
                     split_elements_[i][j] = 0;
-                    sosho_buffer_[i] -= split_elements_[i][j];
+                    sosho_buffer_[i][j] -= split_elements_[i][j];
                 }
                 else
                 {
                     split_elements_[i][j] += sosho_stock[i][j];
-                    sosho_buffer_[i] += sosho_stock[i][j];
+                    sosho_buffer_[i][j] += sosho_stock[i][j];
                 }
             }
         }
@@ -1063,12 +1192,12 @@ public partial class Evaluation : MonoBehaviour
                 if ((split_elements_[i][j] + sokoku_stock[i][j]) < 0)
                 {
                     split_elements_[i][j] = 0;
-                    sokoku_buffer_[i] -= split_elements_[i][j];
+                    sokoku_buffer_[i][j] -= split_elements_[i][j];
                 }
                 else
                 {
                     split_elements_[i][j] += sokoku_stock[i][j];
-                    sokoku_buffer_[i] += sokoku_stock[i][j];
+                    sokoku_buffer_[i][j] += sokoku_stock[i][j];
                 }
             }
         }
@@ -1113,40 +1242,57 @@ public partial class Evaluation : MonoBehaviour
                 continue;
             }
 
-            if (furniture_grid_[i].furniture_subtype().IndexOf(FurnitureGrid.FurnitureType.FoliagePlant) >= 0
-                || furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.FoliagePlant)
+            if ((furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.FoliagePlant)
+                && (furniture_grid_[i].material_type().IndexOf(FurnitureGrid.MaterialType.ArtificialFoliage) < 0))
             {
                 if (furniture_grid_[i].placed_direction() == FurnitureGrid.PlacedDirection.North)
                 {
-                    split_yin_yang_stock[0] += split_yin_yang_[0] / 5;
+                    split_yin_yang_stock[7] -= split_yin_yang_[7] / 4;
+                    split_yin_yang_stock[0] -= split_yin_yang_[0] / 2;
+                    split_yin_yang_stock[1] -= split_yin_yang_[1] / 4;
+
                 }
                 else if (furniture_grid_[i].placed_direction() == FurnitureGrid.PlacedDirection.NorthEast)
                 {
-                    split_yin_yang_stock[1] += split_yin_yang_[1] / 5;
+                    split_yin_yang_stock[0] -= split_yin_yang_[0] / 4;
+                    split_yin_yang_stock[1] -= split_yin_yang_[1] / 2;
+                    split_yin_yang_stock[2] -= split_yin_yang_[2] / 4;
                 }
                 else if (furniture_grid_[i].placed_direction() == FurnitureGrid.PlacedDirection.East)
                 {
-                    split_yin_yang_stock[2] += split_yin_yang_[2] / 5;
+                    split_yin_yang_stock[1] -= split_yin_yang_[1] / 4;
+                    split_yin_yang_stock[2] -= split_yin_yang_[2] / 2;
+                    split_yin_yang_stock[3] -= split_yin_yang_[3] / 4;
                 }
                 else if (furniture_grid_[i].placed_direction() == FurnitureGrid.PlacedDirection.SouthEast)
                 {
-                    split_yin_yang_stock[3] += split_yin_yang_[3] / 5;
+                    split_yin_yang_stock[2] -= split_yin_yang_[2] / 4;
+                    split_yin_yang_stock[3] -= split_yin_yang_[3] / 2;
+                    split_yin_yang_stock[4] -= split_yin_yang_[4] / 4;
                 }
                 else if (furniture_grid_[i].placed_direction() == FurnitureGrid.PlacedDirection.South)
                 {
-                    split_yin_yang_stock[4] += split_yin_yang_[4] / 5;
+                    split_yin_yang_stock[3] -= split_yin_yang_[3] / 4;
+                    split_yin_yang_stock[4] -= split_yin_yang_[4] / 2;
+                    split_yin_yang_stock[5] -= split_yin_yang_[5] / 4;
                 }
                 else if (furniture_grid_[i].placed_direction() == FurnitureGrid.PlacedDirection.SouthWest)
                 {
-                    split_yin_yang_stock[5] += split_yin_yang_[5] / 5;
+                    split_yin_yang_stock[4] -= split_yin_yang_[4] / 4;
+                    split_yin_yang_stock[5] -= split_yin_yang_[5] / 2;
+                    split_yin_yang_stock[6] -= split_yin_yang_[6] / 4;
                 }
                 else if (furniture_grid_[i].placed_direction() == FurnitureGrid.PlacedDirection.West)
                 {
-                    split_yin_yang_stock[6] += split_yin_yang_[6] / 5;
+                    split_yin_yang_stock[5] -= split_yin_yang_[5] / 4;
+                    split_yin_yang_stock[6] -= split_yin_yang_[6] / 2;
+                    split_yin_yang_stock[7] -= split_yin_yang_[7] / 4;
                 }
                 else if (furniture_grid_[i].placed_direction() == FurnitureGrid.PlacedDirection.NorthWest)
                 {
-                    split_yin_yang_stock[7] += split_yin_yang_[7] / 5;
+                    split_yin_yang_stock[6] -= split_yin_yang_[6] / 4;
+                    split_yin_yang_stock[7] -= split_yin_yang_[7] / 2;
+                    split_yin_yang_stock[0] -= split_yin_yang_[0] / 4;
                 }
             }
         }
@@ -1162,198 +1308,22 @@ public partial class Evaluation : MonoBehaviour
     //アイテムによる運勢補正
     private void FortuneItem()
     {
-        int[] color_luck_plus_stock = new int[5] { 0, 0, 0, 0, 0 };
-        int[] color_luck_minus_stock = new int[5] { 0, 0, 0, 0, 0 };
-
-        //赤い家具1つでも置くと仕事，人気，健康，恋愛アップ
-        for (int i = 0; i < furniture_grid_.Count; ++i)
-        {
-            //エラー家具を無視する処理
-            if (IsIgnored(i))
-            {
-                continue;
-            }
-
-            if (furniture_grid_[i].color_name().IndexOf(FurnitureGrid.ColorName.Red) >= 0)
-            {
-                color_luck_plus_stock[0] += 10;
-                color_luck_plus_stock[1] += 30;
-                color_luck_plus_stock[2] += 10;
-                color_luck_plus_stock[4] += 10;
-                break;
-            }
-
-            if (i == furniture_grid_.Count)
-            {
-                //赤い家具一つもないので一つ置きましょう
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.RedOne, 10, 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.RedOne, 20, 1));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.RedOne, 10, 2));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.RedOne, 10, 4));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.RedOne, 50, 5));
-                Debug.Log("RedOne");
-            }
-        }
-
-        //ピンクの家具1つでも置くと恋愛アップ
-        bool pink_at_least = false;
-        for (int i = 0; i < furniture_grid_.Count; ++i)
-        {
-            //エラー家具を無視する処理
-            if (IsIgnored(i))
-            {
-                continue;
-            }
-
-            if (furniture_grid_[i].color_name().IndexOf(FurnitureGrid.ColorName.Pink) >= 0)
-            {
-                color_luck_plus_stock[4] += 50;
-                pink_at_least = true;
-                break;
-            }
-
-            if (i == furniture_grid_.Count)
-            {
-                //ピンク家具一つもないので一つ置きましょう
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.PinkOne, 50, 4));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.PinkOne, 50, 5));
-                Debug.Log("PinkOne");
-            }
-        }
-
-        //青の家具1つでも置くと仕事運アップ
-        bool blue_at_least = false;
-        for (int i = 0; i < furniture_grid_.Count; ++i)
-        {
-            //エラー家具を無視する処理
-            if (IsIgnored(i))
-            {
-                continue;
-            }
-
-            if (furniture_grid_[i].color_name().IndexOf(FurnitureGrid.ColorName.Blue) >= 0)
-            {
-                color_luck_plus_stock[0] += 30;
-                blue_at_least = true;
-                break;
-            }
-
-            if (i == furniture_grid_.Count)
-            {
-                //青家具一つもないので一つ置きましょう
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BlueOne, 30, 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BlueOne, 30, 5));
-                Debug.Log("BlueOne");
-            }
-        }
-
-        //オレンジの家具一つでも置くと…
-        bool orange_at_least = false;
-        for (int i = 0; i < furniture_grid_.Count; ++i)
-        {
-            //エラー家具を無視する処理
-            if (IsIgnored(i))
-            {
-                continue;
-            }
-
-            if (furniture_grid_[i].color_name().IndexOf(FurnitureGrid.ColorName.Blue) >= 0)
-            {
-                orange_at_least = true;
-                break;
-            }
-        }
-
-        if (orange_at_least)
-        {
-            if (pink_at_least)
-            {
-                //オレンジとピンクで恋愛運アップ
-                color_luck_plus_stock[4] += 30;
-            }
-            else
-            {
-                //オレンジがあるのでピンクと合わせましょう
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.OrangeNoPink, 30, 4));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.OrangeNoPink, 30, 5));
-                Debug.Log("OrangeNoPink");
-            }
-
-            if (blue_at_least)
-            {
-                //オレンジと黄色で健康運アップ
-                color_luck_plus_stock[0] += 30;
-            }
-            else
-            {
-                //オレンジがあるので青と合わせましょう
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.OrangeNoBlue, 30, 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.OrangeNoBlue, 30, 5));
-                Debug.Log("OrangeNoBlue");
-            }
-        }
-        else if (pink_at_least)
-        {
-            //ピンクがあるのでオレンジと合わせましょう
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.PinkNoOrange, 30, 4));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.PinkNoOrange, 30, 5));
-            Debug.Log("PinkNoOrange");
-        }
-        else if (blue_at_least)
-        {
-            //青があるのでオレンジと合わせましょう
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.BlueNoOrange, 30, 0));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.BlueNoOrange, 30, 5));
-            Debug.Log("BlueNoOrange");
-        }
-
-        //ベージュの家具1つにつき仕事運，恋愛運アップ
-        int beige_item = 0;
-        for (int i = 0; i < furniture_grid_.Count; ++i)
-        {
-            //エラー家具を無視する処理
-            if (IsIgnored(i))
-            {
-                continue;
-            }
-
-            if (furniture_grid_[i].color_name().IndexOf(FurnitureGrid.ColorName.Beige) >= 0)
-            {
-                ++beige_item;
-            }
-        }
-        color_luck_plus_stock[0] += beige_item * 10;
-        color_luck_plus_stock[4] += beige_item * 10;
-
-        if (beige_item < 3)
-        {
-            //ベージュの家具をさらに置けば運気アップにつながる
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.BeigeFew, 30 - beige_item * 10, 0));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.BeigeFew, 30 - beige_item * 10, 4));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.BeigeFew, 60 - beige_item * 20, 5));
-            Debug.Log("BeigeFew");
-        }
-
-        //黒が1つでもあればカラーによる運気補正がさらに高まる(実装がかなり面倒)
-
-        for (int i = 0; i < 5; ++i)
-        {
-            plus_luck_[i] += color_luck_plus_stock[i];
-            minus_luck_[i] += color_luck_minus_stock[i];
-        }
-
-
-
         //家具の特性による評価
 
         //ベッド関連
         int bed_item = 0; //ベッドの数
-        int[] bed_direction_south = new int[2] { 0, 0 }; //ベッドが南枕 仕事運, 健康運
-        int[] bed_direction_west = new int[2] { 0, 0 }; //ベッドが西枕 仕事運, 健康運
-        int bed_connected = 0; //ベッド同士がつながっている 恋愛運
-        int bed_gap_wall = 0; //健康運下がる
-        int bed_to_door = 0; //健康運下がる
-        int bed_near_window = 0; //健康運下がる
+        bool bed_south_to_north = false; //ベッドが南→北
+        bool bed_south_to_east = false; //ベッドが南→東
+        int bed_south_direction = 0; //南向きベッドの数
+        bool bed_west_to_north = false; //ベッドが西→北
+        bool bed_west_to_east = false; //ベッドが西→東
+        int bed_west_direction = 0; //西向きベッドの数
+        bool bed_north_to_east = false; //ベッドが北→東
+        bool bed_east_to_north = false; //ベッドが東→北
+        bool bed_connected = false; //ベッド同士がつながっている 恋愛運
+        bool bed_gap_wall = false; //健康運下がる
+        bool bed_to_door = false; //健康運下がる
+        bool bed_near_window = false; //健康運下がる
         for (int i = 0; i < furniture_grid_.Count; ++i)
         {
             //エラー家具を無視する処理
@@ -1362,8 +1332,7 @@ public partial class Evaluation : MonoBehaviour
                 continue;
             }
 
-            if ((furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.Bed)
-                || (furniture_grid_[i].furniture_subtype().IndexOf(FurnitureGrid.FurnitureType.Bed) >= 0))
+            if (furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.Bed)
             {
                 RaycastHit hit;
 
@@ -1373,6 +1342,8 @@ public partial class Evaluation : MonoBehaviour
                     //ベッドが北枕だと安眠(仕事運，健康運が上がる)
                     plus_luck_[0] += 30;
                     plus_luck_[2] += 60;
+
+                    bed_north_to_east = true;
                 }
                 else if (furniture_grid_[i].up_direction() == Vector3.down)
                 {
@@ -1380,14 +1351,16 @@ public partial class Evaluation : MonoBehaviour
                     minus_luck_[0] += 40;
                     minus_luck_[2] += 60;
 
-                    bed_direction_south[0] += 70;
-                    bed_direction_south[1] += 90;
+                    bed_south_to_north = true;
+                    bed_south_to_east = true;
+                    ++bed_south_direction;
                 }
                 else if (furniture_grid_[i].up_direction() == Vector3.right)
                 {
                     //ベッドが東枕だと(仕事運，健康運上がる)
                     plus_luck_[0] += 40;
                     plus_luck_[2] += 30;
+                    bed_east_to_north = true;
                 }
                 else if (furniture_grid_[i].up_direction() == Vector3.left)
                 {
@@ -1395,41 +1368,42 @@ public partial class Evaluation : MonoBehaviour
                     minus_luck_[0] += 20;
                     minus_luck_[2] += 30;
 
-                    bed_direction_west[0] += 50;
-                    bed_direction_west[1] += 60;
+                    bed_west_to_north = true;
+                    bed_west_to_east = true;
+                    ++bed_west_direction;
                 }
 
                 ////(シングル)ベッドをつなげるとダメ
-                //for (int j = 0; j < furniture_grid_.Count; ++j)
-                //{
-                //    //ベッド
-                //    if (furniture_grid_[i] != furniture_grid_[j])
-                //    {
-                //        if (furniture_grid_[j].furniture_type() == FurnitureGrid.FurnitureType.Bed)
-                //        {
-                //            Vector3 left_down_source = furniture_grid_[i].vertices((int)furniture_grid_[i].parameta(2)) + furniture_grid_[i].grid_position();
-                //            Vector3 left_up_source = furniture_grid_[i].vertices((int)furniture_grid_[i].parameta(3)) + furniture_grid_[i].grid_position();
-                //            Vector3 right_down_source = furniture_grid_[i].vertices((int)furniture_grid_[i].parameta(4)) + furniture_grid_[i].grid_position();
-                //            Vector3 right_up_source = furniture_grid_[i].vertices((int)furniture_grid_[i].parameta(5)) + furniture_grid_[i].grid_position();
+                for (int j = 0; j < furniture_grid_.Count; ++j)
+                {
+                    //ベッド
+                    if (furniture_grid_[i] != furniture_grid_[j])
+                    {
+                        if (furniture_grid_[j].furniture_type() == FurnitureGrid.FurnitureType.Bed)
+                        {
+                            Vector3 left_down_source = furniture_grid_[i].vertices((int)furniture_grid_[i].parameta(2));
+                            Vector3 left_up_source = furniture_grid_[i].vertices((int)furniture_grid_[i].parameta(3));
+                            Vector3 right_down_source = furniture_grid_[i].vertices((int)furniture_grid_[i].parameta(4));
+                            Vector3 right_up_source = furniture_grid_[i].vertices((int)furniture_grid_[i].parameta(5));
 
-                //            Vector3 left_down_target = furniture_grid_[j].vertices((int)furniture_grid_[j].parameta(2)) + furniture_grid_[j].grid_position();
-                //            Vector3 left_up_target = furniture_grid_[j].vertices((int)furniture_grid_[j].parameta(3)) + furniture_grid_[j].grid_position();
-                //            Vector3 right_down_target = furniture_grid_[j].vertices((int)furniture_grid_[j].parameta(4)) + furniture_grid_[j].grid_position();
-                //            Vector3 right_up_target = furniture_grid_[j].vertices((int)furniture_grid_[j].parameta(5)) + furniture_grid_[j].grid_position();
+                            Vector3 left_down_target = furniture_grid_[j].vertices((int)furniture_grid_[j].parameta(2));
+                            Vector3 left_up_target = furniture_grid_[j].vertices((int)furniture_grid_[j].parameta(3));
+                            Vector3 right_down_target = furniture_grid_[j].vertices((int)furniture_grid_[j].parameta(4));
+                            Vector3 right_up_target = furniture_grid_[j].vertices((int)furniture_grid_[j].parameta(5));
 
-                //            if (((left_down_source == right_down_target) &&
-                //                (left_up_source == right_up_target)) ||
-                //                ((right_down_source == left_down_target) &&
-                //                (right_up_source == left_up_target)))
-                //            {
-                //                //つながっていると恋愛運下がる
-                //                minus_luck_[4] += 25;
-                //                bed_connected += 25;
-                //                Debug.Log("つながっている");
-                //            }
-                //        }
-                //    }
-                //}
+                            if (((left_down_source == right_down_target) &&
+                                (left_up_source == right_up_target)) ||
+                                ((right_down_source == left_down_target) &&
+                                (right_up_source == left_up_target)))
+                            {
+                                //つながっていると恋愛運下がる
+                                minus_luck_[4] += 25;
+                                bed_connected = true;
+                                Debug.Log("つながっている");
+                            }
+                        }
+                    }
+                }
 
                 //ベッドと壁の隙間ダメ
                 bool left_down = false;
@@ -1437,59 +1411,59 @@ public partial class Evaluation : MonoBehaviour
                 bool right_down = false;
                 bool right_up = false;
 
-                //for (int l = 0; l < furniture_grid_[i].vertices_number(); l++)
-                //{
-                //    for (int j = Grid_Manager_.Grid_y_min; j < Grid_Manager_.Grid_y_max; j++)
-                //    {
-                //        for (int k = Grid_Manager_.Grid_x_min; k < Grid_Manager_.Grid_x_max; k++)
-                //        {
-                //            if (Grid_Manager_.point(k, j).wall == true)
-                //            {
-                //                float verticesx = furniture_grid_[i].vertices(l).x + furniture_grid_[i].grid_position().x;
-                //                float verticesy = furniture_grid_[i].vertices(l).y + furniture_grid_[i].grid_position().y;
+                for (int l = 0; l < furniture_grid_[i].vertices_number(); l++)
+                {
+                    for (int j = Grid_Manager.Grid_y_min(); j < Grid_Manager.Grid_y_max(); j++)
+                    {
+                        for (int k = Grid_Manager.Grid_x_min(); k < Grid_Manager.Grid_x_max(); k++)
+                        {
+                            if (Grid_Manager.point(k, j).wall == true)
+                            {
+                                float verticesx = furniture_grid_[i].vertices(l).x;
+                                float verticesy = furniture_grid_[i].vertices(l).y;
 
-                //                float grid_x_min = Grid_Manager_.point(k, j).pos.x - (Grid_Manager_.Grid_density / 2.0f);
-                //                float grid_y_min = Grid_Manager_.point(k, j).pos.y - (Grid_Manager_.Grid_density / 2.0f);
-                //                float grid_x_max = Grid_Manager_.point(k, j).pos.x + (Grid_Manager_.Grid_density / 2.0f);
-                //                float grid_y_max = Grid_Manager_.point(k, j).pos.y + (Grid_Manager_.Grid_density / 2.0f);
+                                float grid_x_min = Grid_Manager.point(k, j).pos.x - (Grid_Manager.Grid_density() / 2.0f);
+                                float grid_y_min = Grid_Manager.point(k, j).pos.y - (Grid_Manager.Grid_density() / 2.0f);
+                                float grid_x_max = Grid_Manager.point(k, j).pos.x + (Grid_Manager.Grid_density() / 2.0f);
+                                float grid_y_max = Grid_Manager.point(k, j).pos.y + (Grid_Manager.Grid_density() / 2.0f);
 
-                //                if (grid_x_min < verticesx && verticesx < grid_x_max &&
-                //                    grid_y_min < verticesy && verticesy < grid_y_max)
-                //                {
-                //                    if (furniture_grid_[i].vertices(l) == furniture_grid_[i].vertices(furniture_grid_[i].parameta(2)))
-                //                    {
-                //                        left_down = true;
-                //                    }
-                //                    else if (furniture_grid_[i].vertices(l) == furniture_grid_[i].vertices(furniture_grid_[i].parameta(3)))
-                //                    {
-                //                        left_up = true;
-                //                    }
-                //                    else if (furniture_grid_[i].vertices(l) == furniture_grid_[i].vertices(furniture_grid_[i].parameta(4)))
-                //                    {
-                //                        right_down = true;
-                //                    }
-                //                    else if (furniture_grid_[i].vertices(l) == furniture_grid_[i].vertices(furniture_grid_[i].parameta(5)))
-                //                    {
-                //                        right_up = true;
-                //                    }
-                //                }
-                //            }
-                //        }
-                //    }
-                //}
+                                if (grid_x_min < verticesx && verticesx < grid_x_max &&
+                                    grid_y_min < verticesy && verticesy < grid_y_max)
+                                {
+                                    if (furniture_grid_[i].vertices(l) == furniture_grid_[i].vertices(furniture_grid_[i].parameta(2)))
+                                    {
+                                        left_down = true;
+                                    }
+                                    else if (furniture_grid_[i].vertices(l) == furniture_grid_[i].vertices(furniture_grid_[i].parameta(3)))
+                                    {
+                                        left_up = true;
+                                    }
+                                    else if (furniture_grid_[i].vertices(l) == furniture_grid_[i].vertices(furniture_grid_[i].parameta(4)))
+                                    {
+                                        right_down = true;
+                                    }
+                                    else if (furniture_grid_[i].vertices(l) == furniture_grid_[i].vertices(furniture_grid_[i].parameta(5)))
+                                    {
+                                        right_up = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
 
-                //if ((left_down == true && left_up == true) || (right_down == true && right_up == true))
-                //{
-                //    //隙間なし
-                //    Debug.Log("隙間なし");
-                //}
-                //else
-                //{
-                //    //隙間ありだと健康運下がる
-                //    minus_luck_[2] += 40;
-                //    bed_connected += 40;
-                //    Debug.Log("隙間あり");
-                //}
+                if ((left_down == true && left_up == true) || (right_down == true && right_up == true))
+                {
+                    //隙間なし
+                    Debug.Log("隙間なし");
+                }
+                else
+                {
+                    //隙間ありだと健康運下がる
+                    minus_luck_[2] += 40;
+                    bed_gap_wall = true;
+                    Debug.Log("隙間あり");
+                }
 
                 //ドアが正面            
                 for (int j = 0; j < furniture_grid_.Count; ++j)
@@ -1500,17 +1474,14 @@ public partial class Evaluation : MonoBehaviour
                         continue;
                     }
 
-                    //ドア
-                    if (furniture_grid_[j].furniture_type() == FurnitureGrid.FurnitureType.Door)
+                    //ドア                   
+                    if (Physics.Raycast(furniture_grid_[i].furniture_grid().transform.position, furniture_grid_[i].up_direction(), out hit))
                     {
-                        if (Physics.Raycast(furniture_grid_[i].furniture_grid().transform.position, furniture_grid_[i].up_direction(), out hit))
+                        if (hit.collider.gameObject.tag == "furniture_grid_door")
                         {
-                            if (hit.collider.gameObject == furniture_grid_[j].furniture_grid())
-                            {
-                                //健康運下がる
-                                minus_luck_[2] += 40;
-                                bed_to_door += 40;
-                            }
+                            //健康運下がる
+                            minus_luck_[2] += 40;
+                            bed_to_door = true;
                         }
                     }
                 }
@@ -1524,24 +1495,22 @@ public partial class Evaluation : MonoBehaviour
                         continue;
                     }
 
-                    //窓
-                    if (furniture_grid_[j].furniture_type() == FurnitureGrid.FurnitureType.Window)
+                    //窓                  
+                    if (Physics.Raycast(furniture_grid_[i].furniture_grid().transform.position, furniture_grid_[i].up_direction(), out hit))
                     {
-                        //近く
-                        if (2.0f > Vector3.Distance(furniture_grid_[i].furniture_grid().transform.position, furniture_grid_[j].furniture_grid().transform.position))
+                        if (hit.collider.gameObject.tag == "furniture_grid_window")
                         {
-                            //健康運下がる
-                            minus_luck_[2] += 40;
-                            bed_near_window += 40;
+                            //近く
+                            if (4.0f > Vector3.Distance(furniture_grid_[i].furniture_grid().transform.position, hit.collider.gameObject.transform.position))
+                            {
+                                //健康運下がる
+                                minus_luck_[2] += 40;
+                                bed_near_window = true;
+                            }
                         }
-
                     }
                 }
-
-                if (furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.Bed)
-                {
-                    ++bed_item;
-                }
+                ++bed_item;
             }
         }
 
@@ -1553,68 +1522,107 @@ public partial class Evaluation : MonoBehaviour
                 minus_luck_[0] += 100;
                 minus_luck_[1] += 100;
                 minus_luck_[2] += 100;
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedLiving, 100, 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedLiving, 100, 1));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedLiving, 100, 2));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedLiving, 300, 5));
-                Debug.Log("BedLiving");
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedLiving, 100, 100, 100, 0, 0, AdviceType.Bonus));
             }
             else if (room_role_ == Room.Workroom)
             {
                 //仕事部屋にベッドは置くな(仕事，健康大幅ダウン)
                 minus_luck_[0] += 150;
                 minus_luck_[2] += 150;
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedWorkroom, 150, 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedWorkroom, 150, 2));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedWorkroom, 300, 5));
-                Debug.Log("BedWorkroom");
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedWorkroom, 150, 0, 150, 0, 0, AdviceType.Bonus));
             }
 
-            //南向きのベッド，西向きのベッドが一つでもある場合
-            if ((bed_direction_south[0] > 0) || (bed_direction_west[0] > 0))
+            //ベッドの向き関連
+
+            //北枕から東枕
+            if (bed_north_to_east)
             {
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedPillowDirection, bed_direction_south[0] + bed_direction_west[0], 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedPillowDirection, bed_direction_south[1] + bed_direction_west[1], 2));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedPillowDirection, bed_direction_south.Sum() + bed_direction_west.Sum(), 5));
-                Debug.Log("BedPillowDirection");
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedNorthToEast, 10, 0, -30, 0, 0, AdviceType.BonusGame));
             }
 
-            //ベッド同士がくっついている場合(恋愛運下がる)
-            if (bed_connected > 0)
+            //東から北枕
+            if (bed_east_to_north)
             {
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedConnected, bed_connected, 4));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedConnected, bed_connected, 5));
-                Debug.Log("BedConnected");
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedEastToNorth, -10, 0, 30, 0, 0, AdviceType.BonusGame));
             }
 
-            //ベッドと壁の間に隙間ある場合
-            if (bed_gap_wall > 0)
+            //南枕から北枕
+            if (bed_south_to_north)
             {
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedGapWall, bed_gap_wall, 2));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedGapWall, bed_gap_wall, 5));
-                Debug.Log("BedGapWall");
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedSouthToNorth, 70, 0, 120, 0, 0, AdviceType.BonusGame));
             }
 
-            //ドアがベッドに向けている場合
-            if (bed_to_door > 0)
+            //南枕から東枕
+            if (bed_south_to_east)
             {
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedToDoor, bed_to_door, 2));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedToDoor, bed_to_door, 5));
-                Debug.Log("BedToDoor");
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedSouthToEast, 80, 0, 90, 0, 0, AdviceType.BonusGame));
             }
 
-            //窓がベッドの近くの場合
-            if (bed_near_window > 0)
+            //南枕の数
+            if (bed_south_direction > 0)
             {
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedNearWindow, bed_near_window, 2));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedNearWindow, bed_near_window, 5));
-                Debug.Log("BedNearWindow");
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedSouthDirection, bed_south_direction * 70, 0, bed_south_direction * 90, 0, 0, AdviceType.BonusEnd));
+            }
+
+            //西枕から北枕
+            if (bed_west_to_north)
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedWestToNorth, 50, 0, 90, 0, 0, AdviceType.BonusGame));
+            }
+
+            //西枕から東枕
+            if (bed_west_to_east)
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedWestToEast, 60, 0, 60, 0, 0, AdviceType.BonusGame));
+            }
+
+            //西枕の数
+            if (bed_west_direction > 0)
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedWestDirection, bed_west_direction * 50, 0, bed_west_direction * 60, 0, 0, AdviceType.BonusEnd));
+            }
+
+
+            {
+                ////ベッド同士がくっついている場合(恋愛運下がる)
+                //if (bed_connected > 0)
+                //{
+                //    comment_flag_.Add(new CommentFlag(CommentIdentifier.BedConnected, 0, 0, 0, 0, bed_connected));
+                //    Debug.Log("BedConnected");
+                //}
+
+                ////ベッドと壁の間に隙間ある場合
+                //if (bed_gap_wall > 0)
+                //{
+                //    comment_flag_.Add(new CommentFlag(CommentIdentifier.BedGapWall, 0, 0, bed_gap_wall, 0, 0));
+                //    Debug.Log("BedGapWall");
+                //}
+
+                ////ドアがベッドに向けている場合
+                //if (bed_to_door > 0)
+                //{
+                //    comment_flag_.Add(new CommentFlag(CommentIdentifier.BedToDoor, 0, 0, bed_to_door, 0, 0));
+                //    Debug.Log("BedToDoor");
+                //}
+
+                ////窓がベッドの近くの場合
+                //if (bed_near_window > 0)
+                //{
+                //    comment_flag_.Add(new CommentFlag(CommentIdentifier.BedNearWindow, 0, 0, bed_near_window, 0, 0));
+                //    Debug.Log("BedNearWindow");
+                //}
             }
 
             //ベッドが多すぎる．
-            if (bed_item > 2)
+            if (bed_item > limit_bed_)
             {
-                OverFurniture(bed_item, 2, 100, 100, 100, 100, 100, CommentIdentifier.BedOver, "BedOver");
+                int bed_over_buffer = 100 * (bed_item - limit_bed_);
+                for (int i = 0; i < 5; ++i)
+                {
+                    minus_luck_[i] += bed_over_buffer;
+                }
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedOver, 100, 100, 100, 100, 100, AdviceType.BonusGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedOver, bed_over_buffer, bed_over_buffer, bed_over_buffer, bed_over_buffer, bed_over_buffer, AdviceType.BonusEnd));
             }
         }
         else
@@ -1627,13 +1635,7 @@ public partial class Evaluation : MonoBehaviour
                 minus_luck_[2] += 300;
                 minus_luck_[3] += 50;
                 minus_luck_[4] += 50;
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedNoBedroom, 50, 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedNoBedroom, 50, 1));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedNoBedroom, 300, 2));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedNoBedroom, 50, 3));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedNoBedroom, 50, 4));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedNoBedroom, 500, 5));
-                Debug.Log("BedNoBedroom");
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedNoBedroom, 50, 50, 300, 50, 50, AdviceType.Bonus));
             }
         }
 
@@ -1649,22 +1651,25 @@ public partial class Evaluation : MonoBehaviour
                 continue;
             }
 
-            if ((furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.Cabinet)
-                || (furniture_grid_[i].furniture_subtype().IndexOf(FurnitureGrid.FurnitureType.Cabinet) >= 0))
+            if (furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.Cabinet)
             {
-                if (furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.Cabinet)
-                {
-                    ++cabinet_item;
-                }
+                ++cabinet_item;
             }
         }
 
         if (cabinet_item != 0)
         {
             //タンス置きすぎ
-            if (cabinet_item > 5)
+            if (cabinet_item > limit_cabinet_)
             {
-                OverFurniture(cabinet_item, 5, 100, 100, 100, 100, 100, CommentIdentifier.CabinetOver, "CabinetOver");
+
+                int cabinet_over_buffer = 100 * (cabinet_item - limit_cabinet_);
+                for (int i = 0; i < 5; ++i)
+                {
+                    minus_luck_[i] += cabinet_over_buffer;
+                }
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.CabinetOver, 100, 100, 100, 100, 100, AdviceType.BonusGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.CabinetOver, cabinet_over_buffer, cabinet_over_buffer, cabinet_over_buffer, cabinet_over_buffer, cabinet_over_buffer, AdviceType.BonusEnd));
             }
         }
         else
@@ -1684,23 +1689,26 @@ public partial class Evaluation : MonoBehaviour
                 continue;
             }
 
-            if ((furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.Carpet)
-                || (furniture_grid_[i].furniture_subtype().IndexOf(FurnitureGrid.FurnitureType.Carpet) >= 0))
+            if (furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.Carpet)
             {
-                if (furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.Carpet)
-                {
-                    ++carpet_item;
-                }
+                ++carpet_item;
             }
 
         }
 
         if (carpet_item != 0)
         {
-            //机置きすぎ
-            if (carpet_item > 2)
+            //カーペット置きすぎ
+            if (carpet_item > limit_carpet_)
             {
-                OverFurniture(carpet_item, 2, 100, 100, 100, 100, 100, CommentIdentifier.CarpetOver, "CarpetOver");
+                int carpet_over_buffer = 100 * (carpet_item - limit_carpet_);
+                for (int i = 0; i < 5; ++i)
+                {
+                    minus_luck_[i] += carpet_over_buffer;
+                }
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.CarpetOver, 100, 100, 100, 100, 100, AdviceType.BonusGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.CarpetOver, carpet_over_buffer, carpet_over_buffer, carpet_over_buffer, carpet_over_buffer, carpet_over_buffer, AdviceType.BonusEnd));
+
             }
         }
         else
@@ -1713,9 +1721,9 @@ public partial class Evaluation : MonoBehaviour
 
         //机関連
         int desk_item = 0; //机の数
-        int desk_north_east = 0; //仕事運上げる
-        int desk_south = 0; //人気運上げる
-        int desk_west = 0; //金運上げる
+        int desk_no_north_east = 0; //仕事運上げる
+        int desk_no_south = 0; //人気運上げる
+        int desk_no_west = 0; //金運上げる
         int desk_front_window = 0; //仕事運下げる
         for (int i = 0; i < furniture_grid_.Count; ++i)
         {
@@ -1725,8 +1733,7 @@ public partial class Evaluation : MonoBehaviour
                 continue;
             }
 
-            if ((furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.Desk)
-                || (furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.Desk))
+            if (furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.Desk)
             {
 
                 //北向き, または東向き
@@ -1735,24 +1742,24 @@ public partial class Evaluation : MonoBehaviour
                 {
                     //仕事運アップ
                     plus_luck_[0] += 50;
-                    desk_south += 50;
-                    desk_west += 50;
+                    ++desk_no_south;
+                    ++desk_no_west;
                 }
                 //西向き
                 else if (furniture_grid_[i].up_direction() == Vector3.left)
                 {
                     //金運アップ
                     plus_luck_[3] += 50;
-                    desk_north_east += 50;
-                    desk_south += 50;
+                    ++desk_no_north_east;
+                    ++desk_no_south;
                 }
                 //南向き
                 else if (furniture_grid_[i].up_direction() == Vector3.down)
                 {
                     //人気運アップ
                     plus_luck_[1] += 50;
-                    desk_north_east += 50;
-                    desk_west += 50;
+                    ++desk_no_north_east;
+                    ++desk_no_west;
                 }
 
                 //窓の正面
@@ -1765,26 +1772,18 @@ public partial class Evaluation : MonoBehaviour
                         continue;
                     }
 
-                    //窓
-                    if (furniture_grid_[j].furniture_type() == FurnitureGrid.FurnitureType.Window)
+                    //窓                  
+                    if (Physics.Raycast(furniture_grid_[i].furniture_grid().transform.position, furniture_grid_[i].up_direction(), out hit))
                     {
-                        if (Physics.Raycast(furniture_grid_[i].furniture_grid().transform.position, furniture_grid_[i].up_direction(), out hit))
+                        if (hit.collider.gameObject.tag == "furniture_grid_window")
                         {
-                            if (hit.collider.gameObject == furniture_grid_[j].furniture_grid())
-                            {
-                                //机の座席が窓に対面すると仕事運下がる
-                                minus_luck_[0] += 30;
-                                desk_front_window += 30;
-                            }
+                            //机の座席が窓に対面すると仕事運下がる
+                            minus_luck_[0] += 30;
+                            desk_front_window += 30;
                         }
                     }
                 }
-
-                if (furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.Desk)
-                {
-                    ++desk_item;
-                }
-
+                ++desk_item;
             }
         }
 
@@ -1795,45 +1794,53 @@ public partial class Evaluation : MonoBehaviour
                 //寝室に机は置くな(仕事，健康運ダウン)
                 minus_luck_[0] += 150;
                 minus_luck_[2] += 150;
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskBedroom, 150, 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskBedroom, 150, 2));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskBedroom, 300, 5));
-                Debug.Log("DeskBedroom");
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskBedroom, 150, 0, 150, 0, 0, AdviceType.Bonus));
+            }
+            else if (room_role_ == Room.Workroom)
+            {
+                //机が北, または東向きでない
+                if (desk_no_north_east > 0)
+                {
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskSouthToNorthEast, 50, -50, 0, 0, 0, AdviceType.BonusGame));
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskWestToNorthEast, 50, 0, 0, -50, 0, AdviceType.BonusGame));
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskNoNorthEast, 50 * desk_no_north_east, 0, 0, 0, 0, AdviceType.BonusEnd));
+                }
+
+                //机が南向きでない
+                if (desk_no_south > 0)
+                {
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskNorthEastToSouth, -50, 50, 0, 0, 0, AdviceType.BonusGame));
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskWestToSouth, 0, 50, 0, -50, 0, AdviceType.BonusGame));
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskNoSouth, 0, 50 * desk_no_north_east, 0, 0, 0, AdviceType.BonusEnd));
+                }
+
+                //机が西向きでない
+                if (desk_no_west > 0)
+                {
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskNorthEastToWest, -50, 0, 0, 50, 0, AdviceType.BonusGame));
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskSouthToWest, 0, -50, 0, 50, 0, AdviceType.BonusGame));
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskNoWest, 0, 0, 0, 50 * desk_no_north_east, 0, AdviceType.BonusEnd));
+                }
             }
 
-            //机が北, または東向きでない
-            if (desk_north_east > 0)
-            {
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskNorthEast, desk_north_east, 0));
-                Debug.Log("DeskNorthEast");
-            }
-
-            //机が南向きでない
-            if (desk_south > 0)
-            {
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskSouth, desk_south, 1));
-                Debug.Log("DeskSouth");
-            }
-
-            //机が西向きでない
-            if (desk_west > 0)
-            {
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskWest, desk_west, 3));
-                Debug.Log("DeskWest");
-            }
-
-            //窓と机が正面衝突
-            if (desk_front_window > 0)
-            {
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskFrontWindow, desk_front_window, 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskFrontWindow, desk_front_window, 5));
-                Debug.Log("DeskFrontWindow");
-            }
+            ////窓と机が正面衝突
+            //if (desk_front_window > 0)
+            //{
+            //    comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskFrontWindow, desk_front_window, 0));
+            //    comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskFrontWindow, desk_front_window, 5));
+            //    Debug.Log("DeskFrontWindow");
+            //}
 
             //机置きすぎ
-            if (desk_item > 2)
+            if (desk_item > limit_desk_)
             {
-                OverFurniture(desk_item, 2, 100, 100, 100, 100, 100, CommentIdentifier.DeskOver, "DeskOver");
+                int desk_over_buffer = 100 * (desk_item - limit_desk_);
+                for (int i = 0; i < 5; ++i)
+                {
+                    minus_luck_[i] += desk_over_buffer;
+                }
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskOver, 100, 100, 100, 100, 100, AdviceType.BonusGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskOver, desk_over_buffer, desk_over_buffer, desk_over_buffer, desk_over_buffer, desk_over_buffer, AdviceType.BonusEnd));
             }
         }
         else
@@ -1842,9 +1849,7 @@ public partial class Evaluation : MonoBehaviour
             {
                 //仕事部屋に机置かないのは論外(仕事運に大幅下がる)
                 minus_luck_[0] += 300;
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskNoWorkRoom, 300, 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskNoWorkRoom, 300, 5));
-                Debug.Log("DeskNoWorkRoom");
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.DeskNoWorkRoom, 300, 0, 0, 0, 0, AdviceType.Bonus));
             }
         }
 
@@ -1860,13 +1865,10 @@ public partial class Evaluation : MonoBehaviour
                 continue;
             }
 
-            if ((furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.FoliagePlant)
-                || (furniture_grid_[i].furniture_subtype().IndexOf(FurnitureGrid.FurnitureType.FoliagePlant) >= 0))
+            if (furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.FoliagePlant)
             {
-                if (furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.FoliagePlant)
-                {
-                    ++foliage_item;
-                }
+                ++foliage_item;
+
             }
 
         }
@@ -1874,9 +1876,15 @@ public partial class Evaluation : MonoBehaviour
         if (foliage_item != 0)
         {
             //観葉植物置きすぎ
-            if (foliage_item > 5)
+            if (foliage_item > limit_foliage_)
             {
-                OverFurniture(foliage_item, 5, 100, 100, 100, 100, 100, CommentIdentifier.FoliagePlantOver, "FoliagePlantOver");
+                int foliage_over_buffer = 100 * (foliage_item - limit_foliage_);
+                for (int i = 0; i < 5; ++i)
+                {
+                    minus_luck_[i] += foliage_over_buffer;
+                }
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.FoliagePlantOver, 100, 100, 100, 100, 100, AdviceType.BonusGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.FoliagePlantOver, foliage_over_buffer, foliage_over_buffer, foliage_over_buffer, foliage_over_buffer, foliage_over_buffer, AdviceType.BonusEnd));
             }
         }
         else
@@ -1896,37 +1904,41 @@ public partial class Evaluation : MonoBehaviour
                 continue;
             }
 
-            if ((((furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.CeilLamp)
+            if ((furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.CeilLamp)
                 || (furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.DeskLamp))
-                || (furniture_grid_[i].furniture_subtype().IndexOf(FurnitureGrid.FurnitureType.CeilLamp) >= 0))
-                || furniture_grid_[i].furniture_subtype().IndexOf(FurnitureGrid.FurnitureType.DeskLamp) >= 0)
             {
-                if ((furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.CeilLamp)
-               || (furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.DeskLamp))
-                {
-                    ++lamp_item;
-                }
-
+                ++lamp_item;
             }
         }
 
-        if (foliage_item != 0)
+        if (lamp_item != 0)
         {
             //ランプ置きすぎ
-            if (lamp_item > 4)
+            if (lamp_item > limit_lamp_)
             {
-                OverFurniture(lamp_item, 4, 100, 100, 100, 100, 100, CommentIdentifier.LampOver, "LampOver");
+                int lamp_over_buffer = 100 * (lamp_item - limit_lamp_);
+                for (int i = 0; i < 5; ++i)
+                {
+                    minus_luck_[i] += lamp_over_buffer;
+                }
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.LampOver, 100, 100, 100, 100, 100, AdviceType.BonusGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.LampOver, lamp_over_buffer, lamp_over_buffer, lamp_over_buffer, lamp_over_buffer, lamp_over_buffer, AdviceType.BonusEnd));
             }
         }
         else
         {
-
+            //ランプ0は論外(金運以外大幅ダウン) 改変候補
+            minus_luck_[0] += 200;
+            minus_luck_[1] += 200;
+            minus_luck_[2] += 200;
+            minus_luck_[4] += 200;
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.LampNo, 200, 200, 200, 0, 200, AdviceType.Bonus));
         }
 
 
         //ソファー関連
         int sofa_item = 0; //ソファーの数
-        int[] sofa_split_west = new int[3] { 0, 0, 0 }; //仕事運，人気運，健康運上がる
+        int sofa_split_west = 0; //仕事運，人気運，健康運上がる
         int sofa_to_TV = 0; //健康運上がる
         for (int i = 0; i < furniture_grid_.Count; ++i)
         {
@@ -1936,8 +1948,7 @@ public partial class Evaluation : MonoBehaviour
                 continue;
             }
 
-            if ((furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.Sofa)
-                || (furniture_grid_[i].furniture_subtype().IndexOf(FurnitureGrid.FurnitureType.Sofa) >= 0))
+            if (furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.Sofa)
             {
                 RaycastHit hit;
 
@@ -1948,9 +1959,11 @@ public partial class Evaluation : MonoBehaviour
                     if (furniture_grid_[i].up_direction() == new Vector3(-1, 0, 0))
                     {
                         //西にソファーをおき，座席を東に向けると仕事運，人気運，健康運アップ
-                        plus_luck_[0] += 30;
-                        plus_luck_[1] += 30;
-                        plus_luck_[2] += 30;
+                        plus_luck_[0] += 10;
+                        plus_luck_[1] += 10;
+                        plus_luck_[2] += 10;
+                        plus_luck_[3] += 10;
+                        plus_luck_[4] += 10;
 
                         for (int j = 0; j < furniture_grid_.Count; ++j)
                         {
@@ -1987,9 +2000,7 @@ public partial class Evaluation : MonoBehaviour
                     else
                     {
                         //ソファー西で東に向く以外
-                        sofa_split_west[0] += 30;
-                        sofa_split_west[1] += 30;
-                        sofa_split_west[2] += 30;
+                        ++sofa_split_west;
                     }
                 }
                 ++sofa_item;
@@ -1999,32 +2010,35 @@ public partial class Evaluation : MonoBehaviour
         if (sofa_item != 0)
         {
             //西以外のソファーが一つでもある場合
-            if (sofa_split_west[0] > 0)
+            if (sofa_split_west > 0)
             {
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SofaSplitWest, sofa_split_west[0], 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SofaSplitWest, sofa_split_west[1], 1));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SofaSplitWest, sofa_split_west[2], 2));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SofaSplitWest, sofa_split_west.Sum(), 5));
-                Debug.Log("SofaSplitWest");
-            }
-
-            //西のソファーと東のテレビが向かい合っていない場合
-            if (sofa_to_TV > 0)
-            {
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SofaSplitWest, sofa_to_TV, 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SofaSplitWest, sofa_to_TV, 5));
-                Debug.Log("SofaSplitWest");
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.SofaSplitWest, 10, 10, 10, 10, 10, AdviceType.BonusGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.SofaSplitWest, 10 * sofa_split_west, 10 * sofa_split_west, 10 * sofa_split_west, 10 * sofa_split_west, 10 * sofa_split_west, AdviceType.BonusEnd));
             }
 
             //ソファ置きすぎ
-            if (sofa_item > 3)
+            if (sofa_item > limit_sofa_)
             {
-                OverFurniture(sofa_item, 3, 100, 100, 100, 100, 100, CommentIdentifier.SofaOver, "SofaOver");
+                int sofa_over_buffer = 100 * (sofa_item - limit_sofa_);
+                for (int i = 0; i < 5; ++i)
+                {
+                    minus_luck_[i] += sofa_over_buffer;
+                }
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.SofaOver, 100, 100, 100, 100, 100, AdviceType.BonusGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.SofaOver, sofa_over_buffer, sofa_over_buffer, sofa_over_buffer, sofa_over_buffer, sofa_over_buffer, AdviceType.BonusEnd));
             }
 
         }
         else
         {
+            if (room_role_ == Room.Living)
+            {
+                //リビングでソファー0は論外(仕事運，人気運，健康運ダウン)
+                minus_luck_[0] += 50;
+                minus_luck_[1] += 50;
+                minus_luck_[2] += 150;
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.SofaNoLiving, 50, 50, 150, 0, 0, AdviceType.Bonus));
+            }
         }
 
 
@@ -2038,36 +2052,43 @@ public partial class Evaluation : MonoBehaviour
                 continue;
             }
 
-            if ((furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.Table)
-                || (furniture_grid_[i].furniture_subtype().IndexOf(FurnitureGrid.FurnitureType.Table) >= 0))
+            if (furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.Table)
             {
-
-                if (furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.Table)
-                {
-                    ++table_item;
-                }
+                ++table_item;
             }
-
         }
 
         if (table_item != 0)
         {
             //テーブル置きすぎ
-            if (table_item > 2)
+            if (table_item > limit_table_)
             {
-                OverFurniture(table_item, 2, 100, 100, 100, 100, 100, CommentIdentifier.TableOver, "TableOver");
+                int table_over_buffer = 100 * (table_item - limit_table_);
+                for (int i = 0; i < 5; ++i)
+                {
+                    minus_luck_[i] += table_over_buffer;
+                }
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.TableOver, 100, 100, 100, 100, 100, AdviceType.BonusGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.TableOver, table_over_buffer, table_over_buffer, table_over_buffer, table_over_buffer, table_over_buffer, AdviceType.BonusEnd));
             }
         }
         else
         {
-
+            if (room_role_ == Room.Living)
+            {
+                //リビングでテーブル0は論外(仕事運，人気運，健康運ダウン)
+                minus_luck_[0] += 50;
+                minus_luck_[1] += 50;
+                minus_luck_[2] += 150;
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.TableNoLiving, 50, 50, 150, 0, 0, AdviceType.Bonus));
+            }
         }
 
         //家電関連
         int electronics_item = 0;
-        int[] electronics_south = new int[3] { 0, 0, 0 };
-        int[] electronics_no_east = new int[3] { 0, 0, 0 };
-        int electronics_yang = 0;
+        int electronics_south = 0;
+        int electronics_no_east = 0;
+        int TV_no_to_west = 0;
         for (int i = 0; i < furniture_grid_.Count; ++i)
         {
             //エラー家具を無視する処理
@@ -2086,71 +2107,70 @@ public partial class Evaluation : MonoBehaviour
                     minus_luck_[2] += 30;
                     minus_luck_[4] += 30;
 
-                    electronics_south[0] += 30;
-                    electronics_south[1] += 30;
-                    electronics_south[2] += 30;
+                    ++electronics_south;
                 }
                 //東に配置
                 else if (furniture_grid_[i].placed_direction() == FurnitureGrid.PlacedDirection.East)
                 {
                     //仕事運 人気運 健康運あがる
-                    plus_luck_[0] += 60;
-                    plus_luck_[1] += 30;
-                    plus_luck_[2] += 30;
+                    plus_luck_[0] += 20;
+                    plus_luck_[1] += 15;
+                    plus_luck_[2] += 15;
+
+                    //テレビならば
+                    if (furniture_grid_[i].parameta(0) == 2)
+                    {
+                        //西向き
+                        if (furniture_grid_[i].up_direction() == new Vector3(-1, 0, 0))
+                        {
+                            plus_luck_[0] += 20;
+                            plus_luck_[1] += 20;
+                            plus_luck_[4] += 20;
+                        }
+                        else
+                        {
+                            ++TV_no_to_west;
+                        }
+                    }
                 }
                 else
                 {
-                    electronics_no_east[0] += 60;
-                    electronics_no_east[1] += 30;
-                    electronics_no_east[2] += 30;
+                    ++electronics_no_east;
                 }
-
-                //陽気がある程度強いと
-                if (yin_yang_ > limit_yang_)
-                {
-                    minus_luck_[2] += 60;
-
-                    //健康運下がる
-                    electronics_yang += 60;
-                }
-
-                ++electronics_item;
             }
         }
 
         if (electronics_item != 0)
         {
             //南に配置されている場合
-            if (electronics_south[0] > 0)
+            if (electronics_south > 0)
             {
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.ElectronicsSouth, electronics_south[0], 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.ElectronicsSouth, electronics_south[1], 2));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.ElectronicsSouth, electronics_south[2], 4));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.ElectronicsSouth, electronics_south.Sum(), 5));
-                Debug.Log("ElectronicsSouth");
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.ElectronicsSouth, 30, 0, 30, 0, 30, AdviceType.BonusGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.ElectronicsSouth, 30 * electronics_south, 0, 30 * electronics_south, 0, 30 * electronics_south, AdviceType.BonusEnd));
             }
 
             //東に配置されている場合
-            if (electronics_no_east[0] > 0)
+            if (electronics_no_east > 0)
             {
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.ElectronicsNoEast, electronics_no_east[0], 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.ElectronicsNoEast, electronics_no_east[1], 2));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.ElectronicsNoEast, electronics_no_east[2], 4));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.ElectronicsNoEast, electronics_no_east.Sum(), 5));
-                Debug.Log("ElectronicsNoEast");
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.ElectronicsNoEast, 20, 15, 15, 0, 0, AdviceType.BonusGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.ElectronicsNoEast, 20 * electronics_no_east, 15 * electronics_no_east, 15 * electronics_no_east, 0, 0, AdviceType.BonusEnd));
             }
 
-            //陽気が強い場合
-            if (electronics_yang > 0)
+            if (TV_no_to_west > 0)
             {
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.ElectronicsYang, electronics_yang, 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.ElectronicsYang, electronics_yang, 5));
-                Debug.Log("ElectronicsYang");
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.TVNoToWest, 20, 15, 15, 0, 0, AdviceType.BonusGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.TVNoToWest, 20 * electronics_no_east, 15 * electronics_no_east, 15 * electronics_no_east, 0, 0, AdviceType.BonusEnd));
             }
 
-            if (electronics_item > 4)
+            if (electronics_item > limit_electronics_)
             {
-                OverFurniture(electronics_item, 4, 100, 100, 100, 100, 100, CommentIdentifier.ElectronicsOver, "ElectronicsOver");
+                int electronics_over_buffer = 100 * (electronics_item - limit_electronics_);
+                for (int i = 0; i < 5; ++i)
+                {
+                    minus_luck_[i] += electronics_over_buffer;
+                }
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.ElectronicsOver, 100, 100, 100, 100, 100, AdviceType.BonusGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.ElectronicsOver, electronics_over_buffer, electronics_over_buffer, electronics_over_buffer, electronics_over_buffer, electronics_over_buffer, AdviceType.BonusEnd));
             }
 
         }
@@ -2291,154 +2311,162 @@ public partial class Evaluation : MonoBehaviour
             }
         }
 
-        if ((furniture_grid_.Count - ignore_index_.Count) < 3)
+        if ((furniture_grid_.Count - ignore_index_.Count) < limit_furniture_few_)
         {
             //家具少なすぎ
-            OverFurniture(3, (furniture_grid_.Count - ignore_index_.Count), 100, 100, 100, 100, 100, CommentIdentifier.FurnitureFew, "FurnitureFew");
+            int furniture_few_buffer = 100 * (limit_furniture_few_ - (furniture_grid_.Count - ignore_index_.Count));
+            for (int i = 0; i < 5; ++i)
+            {
+                minus_luck_[i] += furniture_few_buffer;
+            }
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.FurnitureFew, 100, 100, 100, 100, 100, AdviceType.BonusGame));
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.FurnitureFew, furniture_few_buffer, furniture_few_buffer, furniture_few_buffer, furniture_few_buffer, furniture_few_buffer, AdviceType.BonusEnd));
         }
-        else if ((furniture_grid_.Count - ignore_index_.Count) > 10)
+        else if ((furniture_grid_.Count - ignore_index_.Count) > limit_furniture_)
         {
             //家具多すぎ
-            OverFurniture((furniture_grid_.Count - ignore_index_.Count), 10, 100, 100, 100, 100, 100, CommentIdentifier.FurnitureOver, "FurnitureOver");
+            int furniture_over_buffer = 100 * ((furniture_grid_.Count - ignore_index_.Count) - limit_furniture_);
+            for (int i = 0; i < 5; ++i)
+            {
+                minus_luck_[i] += furniture_over_buffer;
+            }
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.FurnitureOver, 100, 100, 100, 100, 100, AdviceType.BonusGame));
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.FurnitureOver, furniture_over_buffer, furniture_over_buffer, furniture_over_buffer, furniture_over_buffer, furniture_over_buffer, AdviceType.BonusEnd));
         }
 
     }
 
+    //色
+    private void FortuneColor()
+    {
+        //黒関連
+        int black_item = 0;
+        int[] black_luck_stock = new int[5] { 0, 0, 0, 0, 0 };
+        for (int i = 0; i < furniture_grid_.Count; ++i)
+        {
+            if (IsIgnored(i))
+            {
+                continue;
+            }
+
+            if (furniture_grid_[i].color_name().IndexOf(FurnitureGrid.ColorName.Black) >= 0)
+            {
+                ++black_item;
+            }
+        }
+
+        plus_luck_[3] += 10 * black_item;
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.BlackInteger, 0, 0, 0, 10, 0, AdviceType.BonusGame));
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.BlackInteger, 0, 0, 0, 10 * (limit_furniture_ - black_item), 0, AdviceType.BonusEnd));
+        if (black_item != 0)
+        {
+            int warm_item = 0;
+            for (int j = 0; j < furniture_grid_.Count; ++j)
+            {
+                if ((furniture_grid_[j].characteristic().IndexOf(FurnitureGrid.Characteristic.Warm) < 0)
+                    && (furniture_grid_[j].color_name().IndexOf(FurnitureGrid.ColorName.Green) < 0))
+                {
+                    minus_luck_[1] += 50;
+                    minus_luck_[2] += 25;
+                    minus_luck_[4] += 25;
+                }
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.BlackNoGreemWarm, 0, 50, 25, 0, 25, AdviceType.Bonus));
+            }
+        }
+
+        //灰色関連
+        int gray_item = 0;
+        int gray_northwest = 0;
+        int gray_no_northwest = 0;
+        for (int i = 0; i < furniture_grid_.Count; ++i)
+        {
+            if (IsIgnored(i))
+            {
+                continue;
+            }
+
+            if (((furniture_grid_[i].color_name().IndexOf(FurnitureGrid.ColorName.Gray) >= 0)
+                || (furniture_grid_[i].color_name().IndexOf(FurnitureGrid.ColorName.DarkGray) >= 0))
+                || (furniture_grid_[i].color_name().IndexOf(FurnitureGrid.ColorName.Silver) >= 0))
+            {
+                if (room_direction_ == Direction.NorthWest || furniture_grid_[i].placed_direction() == FurnitureGrid.PlacedDirection.North)
+                {
+                    plus_luck_[0] += 15;
+                    plus_luck_[4] += 10;
+                    ++gray_northwest;
+                }
+                ++gray_no_northwest;
+            }
+
+            if (furniture_grid_[i].color_name().IndexOf(FurnitureGrid.ColorName.Gray) >= 0)
+            {
+                ++gray_item;
+            }
+        }
+
+        if (black_item > 0)
+        {
+            black_luck_stock[0] += 3 * gray_northwest / 2;
+            black_luck_stock[1] += gray_northwest;
+        }
+
+        if (room_direction_ == Direction.NorthWest)
+        {
+            //北西の部屋にはグレー、ダークグレー、シルバーがいいです
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.GrayNorthWest, 15, 0, 0, 10, 0, AdviceType.BonusGame));
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.GrayNorthWest, 15 * (limit_furniture_ - gray_northwest), 0, 0, 10 * (limit_furniture_ - gray_northwest), 0, AdviceType.BonusEnd));
+        }
+        else
+        {
+            //グレー, 銀色，ダークグレーの家具は北西に
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.GraySplitNorthWest, 15, 0, 0, 10, 0, AdviceType.BonusGame));
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.GraySplitNorthWest, 15 * gray_no_northwest, 0, 0, 10 * gray_no_northwest, 0, AdviceType.BonusEnd));
+        }
+
+        //赤関連
+        int red_item = 0;
+        for (int i = 0; i < furniture_grid_.Count; ++i)
+        {
+
+        }
+
+    }
+
+    //材質
+    private void FortuneMaterial()
+    {
+
+    }
+
+
+    //柄(模様)
+    private void FortunePattern()
+    {
+
+    }
+
+    //形状
+    private void FortuneForm()
+    {
+
+    }
+
+
+    //その他特性
+    private void FortuneCharacteristic()
+    {
+
+    }
 
     //部屋による運勢補正
     private void FortuneRoom()
     {
-        if (room_role_ == Room.Entrance)
+
+        if (room_role_ == Room.Bedroom)
         {
-            if (room_direction_ == Direction.NorthEast)
-            {
-                if (yin_yang_ < -30)
-                {
-                    //鬼門(北東)の場合，陰気が強いと運気ダウン
-                    for (int i = 0; i < 5; ++i)
-                    {
-                        minus_luck_[i] += 40;
-                        comment_flag_.Add(new CommentFlag(CommentIdentifier.EntranceYinNorthEast, 40, i));
-                    }
-                    comment_flag_.Add(new CommentFlag(CommentIdentifier.EntranceYinNorthEast, 200, 5));
-                }
-            }
-            else if (room_direction_ == Direction.SouthWest)
-            {
-                if (yin_yang_ < -30)
-                {
-                    //裏鬼門(北東)の場合，陰気が強いと運気ダウン
-                    for (int i = 0; i < 5; ++i)
-                    {
-                        minus_luck_[i] += 40;
-                        comment_flag_.Add(new CommentFlag(CommentIdentifier.EntranceYinSouthWest, 40, i));
-                    }
-                    comment_flag_.Add(new CommentFlag(CommentIdentifier.EntranceYinSouthWest, 200, 5));
-                }
-            }
-
-            for (int i = 0; i < furniture_grid_.Count; ++i)
-            {
-                if (furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.Carpet)
-                {
-                    break;
-                }
-
-                if (i == furniture_grid_.Count - 1)
-                {
-                    //玄関にカーペットなしは運気ダウン
-                    for (int j = 0; j < 5; ++j)
-                    {
-                        minus_luck_[j] += 50;
-                        comment_flag_.Add(new CommentFlag(CommentIdentifier.EntranceNoCarpet, 50, j));
-                    }
-                    comment_flag_.Add(new CommentFlag(CommentIdentifier.EntranceNoCarpet, 250, 5));
-                }
-            }
-
-            //良い香りのするものを一つでも玄関に置くと運気アップ
-            for (int i = 0; i < furniture_grid_.Count; ++i)
-            {
-                if (furniture_grid_[i].characteristic().IndexOf(FurnitureGrid.Characteristic.Smell) >= 0)
-                {
-                    for (int j = 0; j < 5; ++j)
-                    {
-                        plus_luck_[j] += 20;
-                    }
-                    break;
-                }
-
-                if (i == furniture_grid_.Count)
-                {
-                    for (int j = 0; j < 5; ++j)
-                    {
-                        comment_flag_.Add(new CommentFlag(CommentIdentifier.EntranceSmell, 20, j));
-                    }
-                    comment_flag_.Add(new CommentFlag(CommentIdentifier.EntranceSmell, 100, 5));
-                }
-            }
-
-        }
-        else if (room_role_ == Room.Bedroom)
-        {
-            //木材家具, 天然素材1個につき健康運アップ(両方の特性を持っている場合は1個にカウント)
-            int wood_natural_item = 0;
-            for (int i = 0; i < furniture_grid_.Count; ++i)
-            {
-                //エラー家具を無視する処理
-                if (IsIgnored(i))
-                {
-                    continue;
-                }
-
-                if (furniture_grid_[i].material_type().IndexOf(FurnitureGrid.MaterialType.Wooden) >= 0
-                    || furniture_grid_[i].material_type().IndexOf(FurnitureGrid.MaterialType.NaturalFibre) >= 0)
-                {
-                    ++wood_natural_item;
-                }
-
-            }
-            plus_luck_[2] += wood_natural_item * 10;
-
-            if (wood_natural_item < 3)
-            {
-                //木材家具，天然素材さらに置けば健康運アップにつながる
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedroomWoodNatural, 30 - wood_natural_item * 10, 2));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedroomWoodNatural, 30 - wood_natural_item * 10, 5));
-                Debug.Log("BedroomWoodNatural");
-            }
-
-            //青い家具一個につき安眠で健康運アップ
-            int blue_item = 0;
-            for (int i = 0; i < furniture_grid_.Count; ++i)
-            {
-                //エラー家具を無視する処理
-                if (IsIgnored(i))
-                {
-                    continue;
-                }
-
-                if (furniture_grid_[i].color_name().IndexOf(FurnitureGrid.ColorName.Blue) >= 0)
-                {
-                    ++blue_item;
-                }
-            }
-            plus_luck_[2] += blue_item * 10;
-
-            if (blue_item < 3)
-            {
-                //青い家具さらに置けば健康運アップにつながる
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedroomBlue, 30 - blue_item * 10, 2));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedroomBlue, 30 - blue_item * 10, 5));
-                Debug.Log("BedroomBlue");
-            }
 
         }
         else if (room_role_ == Room.Living)
-        {
-
-        }
-        else if (room_role_ == Room.Kitchen)
         {
 
         }
@@ -2446,16 +2474,7 @@ public partial class Evaluation : MonoBehaviour
         {
 
         }
-        else if (room_role_ == Room.Bathroom)
-        {
-
-        }
-        else if (room_role_ == Room.Toilet)
-        {
-
-        }
     }
-
 
     //部屋の方位による運勢補正
     private void FortuneDirection()
@@ -2483,17 +2502,34 @@ public partial class Evaluation : MonoBehaviour
             if (direction_power < 400)
             {
                 //北の部屋のパワー弱すぎて金運，恋愛運が上がらない
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWeak, (400 - direction_power) / 4, 3));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWeak, (400 - direction_power) / 4, 4));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWeak, (400 - direction_power) / 2, 5));
-                Debug.Log("WeakNorth");
+                if (elements_[4] < 500)
+                {
+                    if (direction_power < 336)
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWeak, 0, 0, 0, 32, 32, AdviceType.ElementGame));
+                    }
+                    else
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWeak, 0, 0, 0, (400 - direction_power) / 2, (400 - direction_power) / 2, AdviceType.ElementGame));
+                    }
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWeak, 0, 0, 0, (400 - direction_power) / 2, (400 - direction_power) / 2, AdviceType.ElementEnd));
+                }
+                else
+                {
+                    if (direction_power < 336)
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWeakOther, 0, 0, 0, 32, 32, AdviceType.ElementGame));
+                    }
+                    else
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWeakOther, 0, 0, 0, (400 - direction_power) / 2, (400 - direction_power) / 2, AdviceType.ElementGame));
+                    }
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWeakOther, 0, 0, 0, (400 - direction_power) / 2, (400 - direction_power) / 2, AdviceType.ElementEnd));
+                }
             }
 
             //元々健康運，人気運に悪影響
-            minus_luck_[1] += 50;
-            minus_luck_[2] += 50;
-
-            //温かみのある家具一つにつき健康運, 人気運アップ
+            //温かみのある家具一つにつき北の気の悪影響緩和
             int warm_item = 0;
             for (int i = 0; i < furniture_grid_.Count; ++i)
             {
@@ -2508,43 +2544,15 @@ public partial class Evaluation : MonoBehaviour
                     ++warm_item;
                 }
             }
-            plus_luck_[1] += warm_item * 10;
-            plus_luck_[2] += warm_item * 10;
 
-            if (warm_item < 5)
+            if (warm_item < 3)
             {
-                //温かみのある家具が少なすぎて健康運，人気運に悪影響
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthCold, 50 - warm_item * 10, 1));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthCold, 50 - warm_item * 10, 2));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthCold, 100 - warm_item * 20, 5));
-                Debug.Log("NorthCold");
+                minus_luck_[1] += 120;
+                minus_luck_[2] += 120;
+
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthCold, 0, 40, 40, 0, 0, AdviceType.BonusGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthCold, 0, 40 * (3 - warm_item), 40 * (3 - warm_item), 0, 0, AdviceType.BonusEnd));
             }
-
-            //ピンクの家具一つにつき恋愛運がアップ
-            int pink_item = 0;
-            for (int i = 0; i < furniture_grid_.Count; ++i)
-            {
-                //エラー家具を無視する処理
-                if (IsIgnored(i))
-                {
-                    continue;
-                }
-
-                if (furniture_grid_[i].color_name().IndexOf(FurnitureGrid.ColorName.Pink) >= 0)
-                {
-                    ++pink_item;
-                }
-            }
-            plus_luck_[4] += pink_item * 10;
-
-            if (pink_item < 3)
-            {
-                //ピンクの家具をもっと多くすれば恋愛運アップにつながる
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthPink, 30 - pink_item * 10, 4));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthPink, 30 - pink_item * 10, 5));
-                Debug.Log("NorthPink");
-            }
-
         }
         else if (room_direction_ == Direction.NorthEast)
         {
@@ -2574,13 +2582,34 @@ public partial class Evaluation : MonoBehaviour
                 if (direction_power < 400)
                 {
                     //北東の部屋のパワー弱すぎて全ての運気が上がらない
-                    comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastWeak, (400 - direction_power) / 10, 0));
-                    comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastWeak, (400 - direction_power) / 10, 1));
-                    comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastWeak, (400 - direction_power) / 10, 2));
-                    comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastWeak, (400 - direction_power) / 10, 3));
-                    comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastWeak, (400 - direction_power) / 10, 4));
-                    comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastWeak, (400 - direction_power) / 2, 5));
-                    Debug.Log("WeakNorthEast");
+                    if (elements_[2] < 500)
+                    {
+                        if (direction_power < 335)
+                        {
+                            comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastWeak, 13, 13, 13, 13, 13, AdviceType.ElementGame));
+                        }
+                        else
+                        {
+                            comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastWeak,
+                               (400 - direction_power) / 5, (400 - direction_power) / 5, (400 - direction_power) / 5, (400 - direction_power) / 5, (400 - direction_power) / 5, AdviceType.ElementGame));
+                        }
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastWeak,
+                            (400 - direction_power) / 5, (400 - direction_power) / 5, (400 - direction_power) / 5, (400 - direction_power) / 5, (400 - direction_power) / 5, AdviceType.ElementEnd));
+                    }
+                    else
+                    {
+                        if (direction_power < 335)
+                        {
+                            comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastWeakOther, 13, 13, 13, 13, 13, AdviceType.ElementGame));
+                        }
+                        else
+                        {
+                            comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastWeakOther,
+                               (400 - direction_power) / 5, (400 - direction_power) / 5, (400 - direction_power) / 5, (400 - direction_power) / 5, (400 - direction_power) / 5, AdviceType.ElementGame));
+                        }
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastWeakOther,
+                            (400 - direction_power) / 5, (400 - direction_power) / 5, (400 - direction_power) / 5, (400 - direction_power) / 5, (400 - direction_power) / 5, AdviceType.ElementEnd));
+                    }
                 }
             }
             else
@@ -2592,47 +2621,10 @@ public partial class Evaluation : MonoBehaviour
                 minus_luck_[4] += direction_power / 10;
 
                 //北東の陰陽バランスが悪いので全ての運気に悪影響
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastMinus, direction_power / 10, 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastMinus, direction_power / 10, 1));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastMinus, direction_power / 10, 2));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastMinus, direction_power / 10, 3));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastMinus, direction_power / 10, 4));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastMinus, direction_power / 2, 5));
-                Debug.Log("MinusNorthEast");
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastMinus,
+                          (400 - direction_power) / 10, (400 - direction_power) / 10, (400 - direction_power) / 10, (400 - direction_power) / 10, (400 - direction_power) / 10, AdviceType.Element));
             }
 
-            //背の高い家具一つにつき運気アップ
-            int high_item = 0;
-            for (int i = 0; i < furniture_grid_.Count; ++i)
-            {
-                //エラー家具を無視する処理
-                if (IsIgnored(i))
-                {
-                    continue;
-                }
-
-                if (furniture_grid_[i].form_type().IndexOf(FurnitureGrid.FormType.High) >= 0)
-                {
-                    ++high_item;
-                }
-            }
-            plus_luck_[0] += high_item * 5;
-            plus_luck_[1] += high_item * 5;
-            plus_luck_[2] += high_item * 5;
-            plus_luck_[3] += high_item * 5;
-            plus_luck_[4] += high_item * 5;
-
-            if (high_item < 3)
-            {
-                //背の高い家具をさらに置けば運気アップにつながる
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastHigh, 15 - high_item * 5, 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastHigh, 15 - high_item * 5, 1));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastHigh, 15 - high_item * 5, 2));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastHigh, 15 - high_item * 5, 3));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastHigh, 15 - high_item * 5, 4));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthEastHigh, 75 - high_item * 25, 5));
-                Debug.Log("NorthEastHigh");
-            }
 
         }
         else if (room_direction_ == Direction.East)
@@ -2656,38 +2648,32 @@ public partial class Evaluation : MonoBehaviour
 
             if (direction_power < 400)
             {
-                //東の部屋のパワー弱すぎて仕事運が上がらない
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.EastWeak, (400 - direction_power) / 2, 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.EastWeak, (400 - direction_power) / 2, 5));
-                Debug.Log("WeakEast");
-            }
-
-            //風関連，または音の出る家具で人気運，恋愛運アップ
-            int wind_sound_item = 0;
-            for (int i = 0; i < furniture_grid_.Count; ++i)
-            {
-                //エラー家具を無視する処理
-                if (IsIgnored(i))
+                if (elements_[0] < 500)
                 {
-                    continue;
+                    //東の部屋のパワー弱すぎて仕事運が上がらない
+                    if (direction_power < 336)
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.EastWeak, 64, 0, 0, 0, 0, AdviceType.ElementGame));
+                    }
+                    else
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.EastWeak, (400 - direction_power), 0, 0, 0, 0, AdviceType.ElementGame));
+                    }
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.EastWeak, (400 - direction_power), 0, 0, 0, 0, AdviceType.ElementEnd));
                 }
-
-                if (furniture_grid_[i].characteristic().IndexOf(FurnitureGrid.Characteristic.Wind) >= 0
-                    || furniture_grid_[i].characteristic().IndexOf(FurnitureGrid.Characteristic.Sound) >= 0)
+                else
                 {
-                    ++wind_sound_item;
+                    //東の部屋のパワー弱すぎて仕事運が上がらない
+                    if (direction_power < 336)
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.EastWeakOther, 64, 0, 0, 0, 0, AdviceType.ElementGame));
+                    }
+                    else
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.EastWeakOther, (400 - direction_power), 0, 0, 0, 0, AdviceType.ElementGame));
+                    }
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.EastWeakOther, (400 - direction_power), 0, 0, 0, 0, AdviceType.ElementEnd));
                 }
-            }
-            plus_luck_[1] += wind_sound_item * 5;
-            plus_luck_[4] += wind_sound_item * 5;
-
-            if (wind_sound_item < 3)
-            {
-                //風を連想させる家具，音の出る家具を置けば，人気運，恋愛運アップにつながる
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.EastWindSound, 15 - wind_sound_item * 5, 1));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.EastWindSound, 15 - wind_sound_item * 5, 4));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.EastWindSound, 30 - wind_sound_item * 10, 5));
-                Debug.Log("EastWindSound");
             }
 
         }
@@ -2714,67 +2700,31 @@ public partial class Evaluation : MonoBehaviour
             if (direction_power < 400)
             {
                 //南東の部屋のパワー弱すぎて人気運，恋愛運が上がらない
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthEastWeak, (400 - direction_power) / 5, 1));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthEastWeak, (400 - direction_power) * 3 / 10, 4));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthEastWeak, (400 - direction_power) / 2, 5));
-                Debug.Log("WeakSouthEast");
-            }
-
-            //風関連，または音の出る家具で人気運，恋愛運アップ
-            int wind_sound_item = 0;
-            for (int i = 0; i < furniture_grid_.Count; ++i)
-            {
-                //エラー家具を無視する処理
-                if (IsIgnored(i))
+                if (elements_[0] < 500)
                 {
-                    continue;
+                    if (direction_power < 335)
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthEastWeak, 0, 26, 0, 0, 39, AdviceType.ElementGame));
+                    }
+                    else
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthEastWeak, 0, (400 - direction_power) * 2 / 5, 0, 0, (400 - direction_power) * 3 / 5, AdviceType.ElementGame));
+                    }
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthEastWeak, 0, (400 - direction_power) * 2 / 5, 0, 0, (400 - direction_power) * 3 / 5, AdviceType.ElementEnd));
                 }
-
-                if (furniture_grid_[i].characteristic().IndexOf(FurnitureGrid.Characteristic.Wind) >= 0
-                    || furniture_grid_[i].characteristic().IndexOf(FurnitureGrid.Characteristic.Sound) >= 0)
+                else
                 {
-                    ++wind_sound_item;
-                }
-            }
-            plus_luck_[1] += wind_sound_item * 5;
-            plus_luck_[4] += wind_sound_item * 5;
-
-            if (wind_sound_item < 3)
-            {
-                //風を連想させる家具，音の出る家具を置けば，人気運，恋愛運アップにつながる
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthEastWindSound, 15 - wind_sound_item * 5, 1));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthEastWindSound, 15 - wind_sound_item * 5, 4));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthEastWindSound, 30 - wind_sound_item * 10, 5));
-                Debug.Log("SouthEastWindSound");
-            }
-
-            //オレンジの家具で人気運，恋愛運アップ
-            int orange_item = 0;
-            for (int i = 0; i < furniture_grid_.Count; ++i)
-            {
-                //エラー家具を無視する処理
-                if (IsIgnored(i))
-                {
-                    continue;
-                }
-
-                if (furniture_grid_[i].color_name().IndexOf(FurnitureGrid.ColorName.Orange) >= 0)
-                {
-                    ++orange_item;
+                    if (direction_power < 335)
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthEastWeakOther, 0, 26, 0, 0, 39, AdviceType.ElementGame));
+                    }
+                    else
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthEastWeakOther, 0, (400 - direction_power) * 2 / 5, 0, 0, (400 - direction_power) * 3 / 5, AdviceType.ElementGame));
+                    }
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthEastWeakOther, 0, (400 - direction_power) * 2 / 5, 0, 0, (400 - direction_power) * 3 / 5, AdviceType.ElementEnd));
                 }
             }
-            plus_luck_[1] += orange_item * 5;
-            plus_luck_[4] += orange_item * 10;
-
-            if (wind_sound_item < 3)
-            {
-                //オレンジの家具を置けば，人気運，恋愛運アップにつながる
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthEastOrange, 15 - wind_sound_item * 5, 1));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthEastOrange, 30 - wind_sound_item * 10, 4));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthEastOrange, 45 - wind_sound_item * 15, 5));
-                Debug.Log("SouthEastOrange");
-            }
-
         }
         else if (room_direction_ == Direction.South)
         {
@@ -2800,11 +2750,30 @@ public partial class Evaluation : MonoBehaviour
             if (direction_power < 400)
             {
                 //南の部屋のパワー弱すぎて人気運，健康運，恋愛運が上がらない
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWeak, (400 - direction_power) * 3 / 10, 1));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWeak, (400 - direction_power) / 10, 2));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWeak, (400 - direction_power) / 10, 4));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWeak, (400 - direction_power) / 2, 5));
-                Debug.Log("WeakSouth");
+                if (elements_[1] < 500)
+                {
+                    if (direction_power < 335)
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWeak, 0, 39, 13, 0, 13, AdviceType.ElementGame));
+                    }
+                    else
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWeak, 0, (400 - direction_power) * 3 / 5, (400 - direction_power) / 5, 0, (400 - direction_power) / 5, AdviceType.ElementGame));
+                    }
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWeak, 0, (400 - direction_power) * 3 / 5, (400 - direction_power) / 5, 0, (400 - direction_power) / 5, AdviceType.ElementEnd));
+                }
+                else
+                {
+                    if (direction_power < 335)
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWeakOther, 0, 39, 13, 0, 13, AdviceType.ElementGame));
+                    }
+                    else
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWeakOther, 0, (400 - direction_power) * 3 / 5, (400 - direction_power) / 5, 0, (400 - direction_power) / 5, AdviceType.ElementGame));
+                    }
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWeakOther, 0, (400 - direction_power) * 3 / 5, (400 - direction_power) / 5, 0, (400 - direction_power) / 5, AdviceType.ElementEnd));
+                }
             }
         }
         else if (room_direction_ == Direction.SouthWest)
@@ -2830,47 +2799,33 @@ public partial class Evaluation : MonoBehaviour
 
             if (direction_power < 400)
             {
-                //南西の部屋のパワー弱すぎて仕事運，人気運，健康運が上がらない
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWestWeak, (400 - direction_power) / 6, 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWestWeak, (400 - direction_power) / 6, 1));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWestWeak, (400 - direction_power) / 6, 2));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWestWeak, (400 - direction_power) / 2, 5));
-                Debug.Log("WeakSouthWest");
-            }
-
-            //背の低い家具一つにつき運気アップ
-            int low_item = 0;
-            for (int i = 0; i < furniture_grid_.Count; ++i)
-            {
-                //エラー家具を無視する処理
-                if (IsIgnored(i))
+                if (elements_[2] < 500)
                 {
-                    continue;
+                    //南西の部屋のパワー弱すぎて仕事運，人気運，健康運が上がらない
+                    if (direction_power < 336)
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWestWeak, 21, 22, 21, 0, 0, AdviceType.ElementGame));
+                    }
+                    else
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWestWeak, (400 - direction_power) / 3, (400 - direction_power) / 3, (400 - direction_power) / 3, 0, 0, AdviceType.ElementGame));
+                    }
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWestWeak, (400 - direction_power) / 3, (400 - direction_power) / 3, (400 - direction_power) / 3, 0, 0, AdviceType.ElementEnd));
                 }
-
-                if (furniture_grid_[i].form_type().IndexOf(FurnitureGrid.FormType.Low) >= 0)
+                else
                 {
-                    ++low_item;
+                    //南西の部屋のパワー弱すぎて仕事運，人気運，健康運が上がらない
+                    if (direction_power < 336)
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWestWeakOther, 21, 22, 21, 0, 0, AdviceType.ElementGame));
+                    }
+                    else
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWestWeakOther, (400 - direction_power) / 3, (400 - direction_power) / 3, (400 - direction_power) / 3, 0, 0, AdviceType.ElementGame));
+                    }
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWestWeakOther, (400 - direction_power) / 3, (400 - direction_power) / 3, (400 - direction_power) / 3, 0, 0, AdviceType.ElementEnd));
                 }
             }
-            plus_luck_[0] += low_item * 5;
-            plus_luck_[1] += low_item * 5;
-            plus_luck_[2] += low_item * 5;
-            plus_luck_[3] += low_item * 5;
-            plus_luck_[4] += low_item * 5;
-
-            if (low_item < 3)
-            {
-                //背の低い家具をさらに置けば運気アップにつながる
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWestLow, 15 - low_item * 5, 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWestLow, 15 - low_item * 5, 1));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWestLow, 15 - low_item * 5, 2));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWestLow, 15 - low_item * 5, 3));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWestLow, 15 - low_item * 5, 4));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthWestLow, 75 - low_item * 25, 5));
-                Debug.Log("SouthWestLow");
-            }
-
         }
         else if (room_direction_ == Direction.West)
         {
@@ -2894,63 +2849,33 @@ public partial class Evaluation : MonoBehaviour
 
             if (direction_power < 400)
             {
-                //西の部屋のパワー弱すぎて金運，恋愛運が上がらない
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.WestWeak, (400 - direction_power) / 4, 3));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.WestWeak, (400 - direction_power) / 4, 4));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.WestWeak, (400 - direction_power) / 2, 5));
-                Debug.Log("WeakWest");
-            }
-
-            //西洋風家具一つにつき金運アップ
-            int western_item = 0;
-            for (int i = 0; i < furniture_grid_.Count; ++i)
-            {
-                //エラー家具を無視する処理
-                if (IsIgnored(i))
+                if (elements_[3] < 500)
                 {
-                    continue;
+                    //西の部屋のパワー弱すぎて金運，恋愛運が上がらない
+                    if (direction_power < 336)
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.WestWeak, 0, 0, 0, 32, 32, AdviceType.ElementGame));
+                    }
+                    else
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.WestWeak, 0, 0, 0, (400 - direction_power) / 2, (400 - direction_power) / 2, AdviceType.ElementGame));
+                    }
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.WestWeak, 0, 0, 0, (400 - direction_power) / 2, (400 - direction_power) / 2, AdviceType.ElementEnd));
                 }
-
-                if (furniture_grid_[i].characteristic().IndexOf(FurnitureGrid.Characteristic.Western) >= 0)
+                else
                 {
-                    ++western_item;
-                }
-            }
-            plus_luck_[3] += western_item * 10;
-
-            if (western_item < 3)
-            {
-                //西洋風家具をさらに置けば金運アップにつながる
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.WestWestern, 30 - western_item * 10, 3));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.WestWestern, 30 - western_item * 10, 5));
-                Debug.Log("WestWestern");
-            }
-
-            //高級家具一つにつき金運アップ
-            int luxury_item = 0;
-            for (int i = 0; i < furniture_grid_.Count; ++i)
-            {
-                //エラー家具を無視する処理
-                if (IsIgnored(i))
-                {
-                    continue;
-                }
-
-                if (furniture_grid_[i].characteristic().IndexOf(FurnitureGrid.Characteristic.Luxury) >= 0)
-                {
-                    ++luxury_item;
+                    //西の部屋のパワー弱すぎて金運，恋愛運が上がらない
+                    if (direction_power < 336)
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.WestWeakOther, 0, 0, 0, 32, 32, AdviceType.ElementGame));
+                    }
+                    else
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.WestWeakOther, 0, 0, 0, (400 - direction_power) / 2, (400 - direction_power) / 2, AdviceType.ElementGame));
+                    }
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.WestWeakOther, 0, 0, 0, (400 - direction_power) / 2, (400 - direction_power) / 2, AdviceType.ElementEnd));
                 }
             }
-            plus_luck_[3] += luxury_item * 10;
-
-            if (luxury_item < 3)
-            {
-                //高級家具をさらに置けば金運アップにつながる
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.WestLuxury, 30 - luxury_item * 10, 3));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.WestLuxury, 30 - luxury_item * 10, 5));
-                Debug.Log("WestLuxury");
-            }
-
         }
         else if (room_direction_ == Direction.NorthWest)
         {
@@ -2975,81 +2900,29 @@ public partial class Evaluation : MonoBehaviour
             if (direction_power < 400)
             {
                 //北西の部屋のパワー弱すぎて仕事運，金運が上がらない
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWestWeak, (400 - direction_power) / 4, 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWestWeak, (400 - direction_power) / 4, 3));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWestWeak, (400 - direction_power) / 2, 5));
-                Debug.Log("WeakNorthWest");
-            }
-
-            //高級家具一つにつき仕事運，金運アップ
-            int luxury_item = 0;
-            for (int i = 0; i < furniture_grid_.Count; ++i)
-            {
-                //エラー家具を無視する処理
-                if (IsIgnored(i))
+                if (elements_[3] < 500)
                 {
-                    continue;
+                    if (direction_power < 336)
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWestWeak, 32, 0, 0, 32, 0, AdviceType.ElementGame));
+                    }
+                    else
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWestWeak, (400 - direction_power) / 2, 0, 0, (400 - direction_power) / 2, 0, AdviceType.ElementGame));
+                    }
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWestWeak, (400 - direction_power) / 2, 0, 0, (400 - direction_power) / 2, 0, AdviceType.ElementEnd));
                 }
-
-                if (furniture_grid_[i].characteristic().IndexOf(FurnitureGrid.Characteristic.Luxury) >= 0)
+                else
                 {
-                    ++luxury_item;
-                }
-            }
-
-            if (luxury_item > 0)
-            {
-                plus_luck_[0] += luxury_item * 10;
-                plus_luck_[3] += luxury_item * 5;
-
-                if (luxury_item < 3)
-                {
-                    //高級家具をもっと置けば仕事運，金運アップ
-                    comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWestLuxury, 30 - luxury_item * 10, 0));
-                    comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWestLuxury, 15 - luxury_item * 5, 3));
-                    comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWestLuxury, 45 - luxury_item * 15, 5));
-                    Debug.Log("NorthWestLuxury");
-                }
-            }
-            else
-            {
-                minus_luck_[0] += 40;
-                minus_luck_[3] += 20;
-
-                //高級家具を置かなければ仕事運，金運ダウン
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWestLuxuryZero, 40, 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWestLuxuryZero, 20, 3));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWestLuxuryZero, 60, 5));
-                Debug.Log("NorthWestLuxuryZero");
-            }
-
-            //銀 灰の家具一つにつき仕事運アップ
-            int silver_gray_item = 0;
-            for (int i = 0; i < furniture_grid_.Count; ++i)
-            {
-                //エラー家具を無視する処理
-                if (IsIgnored(i))
-                {
-                    continue;
-                }
-
-                if (furniture_grid_[i].color_name().IndexOf(FurnitureGrid.ColorName.Silver) >= 0
-                    || furniture_grid_[i].color_name().IndexOf(FurnitureGrid.ColorName.Gray) >= 0)
-                {
-                    ++silver_gray_item;
-                }
-            }
-
-            if (silver_gray_item > 0)
-            {
-                plus_luck_[0] += silver_gray_item * 10;
-
-                if (silver_gray_item < 3)
-                {
-                    //銀 灰の家具をもっと置けば仕事運アップ
-                    comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWestSilverGray, 30 - silver_gray_item * 10, 0));
-                    comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWestSilverGray, 30 - silver_gray_item * 10, 5));
-                    Debug.Log("NorthWestSilverGray");
+                    if (direction_power < 336)
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWestWeakOther, 32, 0, 0, 32, 0, AdviceType.ElementGame));
+                    }
+                    else
+                    {
+                        comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWestWeakOther, (400 - direction_power) / 2, 0, 0, (400 - direction_power) / 2, 0, AdviceType.ElementGame));
+                    }
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWestWeakOther, (400 - direction_power) / 2, 0, 0, (400 - direction_power) / 2, 0, AdviceType.ElementEnd));
                 }
             }
 
@@ -3059,18 +2932,10 @@ public partial class Evaluation : MonoBehaviour
                 minus_luck_[0] = elements_[3] - limit_elements_;
                 minus_luck_[1] = elements_[3] - limit_elements_;
 
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWestVain, elements_[3] - limit_elements_, 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWestVain, elements_[3] - limit_elements_, 1));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWestVain, (elements_[3] - limit_elements_) * 2, 5));
-                Debug.Log("NorthWestVain");
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.NorthWestVain, (400 - direction_power) / 2, (400 - direction_power) / 2, 0, 0, 0, AdviceType.Element));
             }
         }
-        else
-        {
-            Debug.Log("そのような方位は存在しない");
-        }
     }
-
 
     //部屋の小方位による運勢補正(部屋の中の方位)
     private void FortuneSplitDirection()
@@ -3097,10 +2962,15 @@ public partial class Evaluation : MonoBehaviour
         if (direction_power < 100)
         {
             //北の部屋のパワー弱すぎて金運，恋愛運が上がらない
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthWeak, (100 - direction_power) / 2, 3));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthWeak, (100 - direction_power) / 2, 4));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthWeak, (100 - direction_power), 5));
-            Debug.Log("SpritNorthWeak");
+            if (elements_[4] - direction_power + 100 > limit_elements_)
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthWeak, 0, 0, 0, (limit_elements_ - elements_[4]) / 2, (limit_elements_ - elements_[4]) / 2, AdviceType.ElementGame));
+            }
+            else
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthWeak, 0, 0, 0, (100 - direction_power) / 2, (100 - direction_power) / 2, AdviceType.ElementGame));
+            }
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthWeak, 0, 0, 0, (100 - direction_power) / 2, (100 - direction_power) / 2, AdviceType.ElementEnd));
         }
 
         //北東は土の気でパワーアップ
@@ -3117,7 +2987,7 @@ public partial class Evaluation : MonoBehaviour
             direction_power = 100;
         }
 
-        if (yin_yang_ >= limit_yin_ && yin_yang_ <= limit_yang_)
+        if (split_yin_yang_[1] >= -125 && split_yin_yang_[1] <= 125)
         {
             plus_luck_[0] += direction_power / 5;
             plus_luck_[1] += direction_power / 5;
@@ -3125,16 +2995,21 @@ public partial class Evaluation : MonoBehaviour
             plus_luck_[3] += direction_power / 5;
             plus_luck_[4] += direction_power / 5;
 
-            if (direction_power < 500)
+            if (direction_power < 125)
             {
                 //北東の部屋のパワー弱すぎて全ての運気が上がらない
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthEastWeak, (100 - direction_power) / 5, 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthEastWeak, (100 - direction_power) / 5, 1));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthEastWeak, (100 - direction_power) / 5, 2));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthEastWeak, (100 - direction_power) / 5, 3));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthEastWeak, (100 - direction_power) / 5, 4));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthEastWeak, 100 - direction_power, 5));
-                Debug.Log("SplitNorthEastWeak");
+                if (elements_[2] - direction_power + 100 > limit_elements_)
+                {
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthEastWeak,
+                        (limit_elements_ - elements_[2]) / 5, (limit_elements_ - elements_[2]) / 5, (limit_elements_ - elements_[2]) / 5, (limit_elements_ - elements_[2]) / 5, (limit_elements_ - elements_[2]) / 5, AdviceType.ElementGame));
+                }
+                else
+                {
+                    comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthEastWeak,
+                       (100 - direction_power) / 5, (100 - direction_power) / 5, (100 - direction_power) / 5, (100 - direction_power) / 5, (100 - direction_power) / 5, AdviceType.ElementGame));
+                }
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthEastWeak,
+                        (100 - direction_power) / 5, (100 - direction_power) / 5, (100 - direction_power) / 5, (100 - direction_power) / 5, (100 - direction_power) / 5, AdviceType.ElementEnd));
             }
         }
         else
@@ -3146,13 +3021,8 @@ public partial class Evaluation : MonoBehaviour
             minus_luck_[4] += direction_power / 10;
 
             //北東の陰陽バランスが悪いので全ての運気に悪影響
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthEastMinus, direction_power / 10, 0));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthEastMinus, direction_power / 10, 1));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthEastMinus, direction_power / 10, 2));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthEastMinus, direction_power / 10, 3));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthEastMinus, direction_power / 10, 4));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthEastMinus, direction_power / 2, 5));
-            Debug.Log("SplitNorthEastMinus");
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthEastMinus,
+                         (100 - direction_power) / 10, (100 - direction_power) / 10, (100 - direction_power) / 10, (100 - direction_power) / 10, (100 - direction_power) / 10, AdviceType.Element));
         }
 
         //東は木の気でパワーアップ
@@ -3174,9 +3044,15 @@ public partial class Evaluation : MonoBehaviour
         if (direction_power < 100)
         {
             //東の部屋のパワー弱すぎて仕事運が上がらない
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitEastWeak, 100 - direction_power, 0));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitEastWeak, 100 - direction_power, 5));
-            Debug.Log("SplitEastWeak");
+            if (elements_[0] - direction_power + 100 > limit_elements_)
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitEastWeak, (limit_elements_ - elements_[0]), 0, 0, 0, 0, AdviceType.ElementGame));
+            }
+            else
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitEastWeak, (100 - direction_power), 0, 0, 0, 0, AdviceType.ElementGame));
+            }
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitEastWeak, (100 - direction_power), 0, 0, 0, 0, AdviceType.ElementEnd));
         }
 
         //南東は木の気でパワーアップ
@@ -3199,10 +3075,15 @@ public partial class Evaluation : MonoBehaviour
         if (direction_power < 100)
         {
             //南東の部屋のパワー弱すぎて人気運，恋愛運が上がらない
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitSouthEastWeak, (100 - direction_power) * 2 / 5, 1));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitSouthEastWeak, (100 - direction_power) * 3 / 5, 4));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitSouthEastWeak, 100 - direction_power, 5));
-            Debug.Log("SplitSouthEastWeak");
+            if (elements_[0] - direction_power + 100 > limit_elements_)
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitSouthEastWeak, 0, (limit_elements_ - elements_[0]) * 2 / 5, 0, 0, (limit_elements_ - elements_[0]) * 3 / 5, AdviceType.ElementGame));
+            }
+            else
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitSouthEastWeak, 0, (100 - direction_power) * 2 / 5, 0, 0, (100 - direction_power) * 3 / 5, AdviceType.ElementGame));
+            }
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitSouthEastWeak, 0, (100 - direction_power) * 2 / 5, 0, 0, (100 - direction_power) * 3 / 5, AdviceType.ElementEnd));
         }
 
         //南は火の気でパワーアップ
@@ -3226,11 +3107,15 @@ public partial class Evaluation : MonoBehaviour
         if (direction_power < 100)
         {
             //南の部屋のパワー弱すぎて人気運，健康運，恋愛運が上がらない
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitSouthWeak, (100 - direction_power) * 3 / 5, 1));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitSouthWeak, (100 - direction_power) / 5, 2));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitSouthWeak, (100 - direction_power) / 5, 4));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitSouthWeak, 100 - direction_power, 5));
-            Debug.Log("SplitSouthWeak");
+            if (elements_[1] - direction_power + 100 > limit_elements_)
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitSouthWeak, 0, (limit_elements_ - elements_[1]) * 3 / 5, (limit_elements_ - elements_[1]) / 5, 0, (limit_elements_ - elements_[1]) / 5, AdviceType.ElementGame));
+            }
+            else
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitSouthWeak, 0, (100 - direction_power) * 3 / 5, (100 - direction_power) / 5, 0, (100 - direction_power) / 5, AdviceType.ElementGame));
+            }
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitSouthWeak, 0, (100 - direction_power) * 3 / 5, (100 - direction_power) / 5, 0, (100 - direction_power) / 5, AdviceType.ElementEnd));
         }
 
         //南西は土の気でパワーアップ
@@ -3254,11 +3139,16 @@ public partial class Evaluation : MonoBehaviour
         if (direction_power < 100)
         {
             //南西の部屋のパワー弱すぎて仕事運，人気運，健康運が上がらない
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitSouthWestWeak, (100 - direction_power) / 3, 0));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitSouthWestWeak, (100 - direction_power) / 3, 1));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitSouthWestWeak, (100 - direction_power) / 3, 2));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitSouthWestWeak, 100 - direction_power, 5));
-            Debug.Log("SplitSouthWest");
+            if (elements_[2] - direction_power + 100 > limit_elements_)
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitSouthWestWeak, (limit_elements_ - elements_[2]) / 3, (limit_elements_ - elements_[2]) / 3, (limit_elements_ - elements_[2]) / 3, 0, 0, AdviceType.ElementGame));
+            }
+
+            else
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitSouthWestWeak, (100 - direction_power) / 3, (100 - direction_power) / 3, (100 - direction_power) / 3, 0, 0, AdviceType.ElementGame));
+            }
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitSouthWestWeak, (100 - direction_power) / 3, (100 - direction_power) / 3, (100 - direction_power) / 3, 0, 0, AdviceType.ElementEnd));
         }
 
         //西は金の気でパワーアップ
@@ -3281,10 +3171,15 @@ public partial class Evaluation : MonoBehaviour
         if (direction_power < 100)
         {
             //西の部屋のパワー弱すぎて金運，恋愛運が上がらない
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitWestWeak, (100 - direction_power) / 2, 3));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitWestWeak, (100 - direction_power) / 2, 4));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitWestWeak, 100 - direction_power, 5));
-            Debug.Log("SplitWestWeak");
+            if (elements_[3] - direction_power + 100 > limit_elements_)
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitWestWeak, 0, 0, 0, (limit_elements_ - elements_[3]) / 2, (limit_elements_ - elements_[3]) / 2, AdviceType.ElementGame));
+            }
+            else
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitWestWeak, 0, 0, 0, (100 - direction_power) / 2, (100 - direction_power) / 2, AdviceType.ElementGame));
+            }
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitWestWeak, 0, 0, 0, (100 - direction_power) / 2, (100 - direction_power) / 2, AdviceType.ElementEnd));
         }
 
         //北西は金の気でパワーアップ
@@ -3307,10 +3202,16 @@ public partial class Evaluation : MonoBehaviour
         if (direction_power < 100)
         {
             //北西の部屋のパワー弱すぎて仕事運，金運が上がらない
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthWestWeak, (100 - direction_power) / 2, 0));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthWestWeak, (100 - direction_power) / 2, 3));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthWestWeak, 100 - direction_power, 5));
-            Debug.Log("SplitNorthWeatWeak");
+            if (elements_[3] - direction_power + 100 > limit_elements_)
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthWestWeak, (limit_elements_ - elements_[3]) / 2, 0, 0, (limit_elements_ - elements_[3]) / 2, 0, AdviceType.ElementGame));
+            }
+            else
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthWestWeak, (100 - direction_power) / 2, 0, 0, (100 - direction_power) / 2, 0, AdviceType.ElementGame));
+            }
+
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.SplitNorthWestWeak, (100 - direction_power) / 2, 0, 0, (100 - direction_power) / 2, 0, AdviceType.ElementEnd));
         }
 
     }
@@ -3318,61 +3219,32 @@ public partial class Evaluation : MonoBehaviour
     //五行による補正
     private void FortuneFiveElement()
     {
-        int lost_buffer;
         //木の気の影響
         if (elements_[0] <= limit_elements_)
         {
             plus_luck_[0] += elements_[0] * 4 / 5;
             plus_luck_[2] += elements_[0] / 5;
-
-
-            //木の気が弱すぎて仕事運と健康運が上がらない
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodWeak, (limit_elements_ - elements_[0]) * 2 / 5, 0));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodWeak, (limit_elements_ - elements_[0]) / 10, 2));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodWeak, (limit_elements_ - elements_[0]) / 2, 5));
-            Debug.Log("WeakWood");
-
-            //相生によるコメント
-            if ((limit_elements_ - elements_[0]) > -sosho_buffer_[0])
-            {
-                lost_buffer = -sosho_buffer_[0];
-            }
-            else
-            {
-                lost_buffer = limit_elements_ - elements_[0];
-            }
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodWeakSosho, lost_buffer * 4 / 5, 0));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodWeakSosho, lost_buffer / 5, 2));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodWeakSosho, lost_buffer, 5));
-            Debug.Log("WoodWeakSosho");
-
-            //相克によるコメント
-            if ((limit_elements_ - elements_[0]) > -sokoku_buffer_[0])
-            {
-                lost_buffer = -sokoku_buffer_[0];
-            }
-            else
-            {
-                lost_buffer = limit_elements_ - elements_[0];
-            }
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodWeakSokoku, lost_buffer * 4 / 5, 0));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodWeakSokoku, lost_buffer / 5, 2));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodWeakSokoku, lost_buffer, 5));
-            Debug.Log("WoodWeakSokoku");
         }
         else
         {
             plus_luck_[0] += limit_elements_ * 4 / 5;
             plus_luck_[2] += limit_elements_ / 5;
 
-            //木の気が強すぎて仕事運に悪影響
-            minus_luck_[0] += (elements_[0] - limit_elements_);
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodOver, elements_[0] - limit_elements_, 0));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodOver, elements_[0] - limit_elements_, 5));
-            Debug.Log("WoodOver");
+            //木の気が強すぎて仕事運、悪影響
+            int wood_over = (elements_[0] - limit_elements_);
+
+            minus_luck_[0] += wood_over;
+
+            if (wood_over > 100)
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodOver, 100, 0, 0, 0, 0, AdviceType.ElementGame));
+            }
+            else
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodOver, wood_over, 0, 0, 0, 0, AdviceType.ElementGame));
+            }
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodOver, wood_over, 0, 0, 0, 0, AdviceType.ElementEnd));
         }
-
-
 
         //火の気の影響
         if (elements_[1] <= limit_elements_)
@@ -3380,45 +3252,6 @@ public partial class Evaluation : MonoBehaviour
             plus_luck_[1] += elements_[1] * 3 / 5;
             plus_luck_[2] += elements_[1] / 5;
             plus_luck_[4] += elements_[1] / 5;
-
-            //火の気が弱すぎて人気運，健康運，恋愛運が上がらない
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.FireWeak, (limit_elements_ - elements_[1]) * 3 / 10, 1));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.FireWeak, (limit_elements_ - elements_[1]) / 10, 2));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.FireWeak, (limit_elements_ - elements_[1]) / 10, 4));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.FireWeak, (limit_elements_ - elements_[1]) / 2, 5));
-            Debug.Log("FireWeak");
-
-
-            //相生によるコメント
-            if ((limit_elements_ - elements_[1]) > -sosho_buffer_[1])
-            {
-                lost_buffer = -sosho_buffer_[1];
-            }
-            else
-            {
-                lost_buffer = limit_elements_ - elements_[1];
-            }
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.FireWeakSosho, lost_buffer * 3 / 5, 1));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.FireWeakSosho, lost_buffer / 5, 2));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.FireWeakSosho, lost_buffer / 5, 4));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.FireWeakSosho, lost_buffer, 5));
-            Debug.Log("FireWeakSosho");
-
-            //相克によるコメント
-            if ((limit_elements_ - elements_[1]) > -sokoku_buffer_[1])
-            {
-                lost_buffer = -sokoku_buffer_[1];
-            }
-            else
-            {
-                lost_buffer = limit_elements_ - elements_[1];
-            }
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.FireWeakSokoku, lost_buffer * 3 / 5, 1));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.FireWeakSokoku, lost_buffer / 5, 2));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.FireWeakSokoku, lost_buffer / 5, 4));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.FireWeakSokoku, lost_buffer, 5));
-            Debug.Log("FireWeakSokoku");
-
         }
         else
         {
@@ -3427,14 +3260,21 @@ public partial class Evaluation : MonoBehaviour
             plus_luck_[4] += limit_elements_ / 5;
 
             //火の気が強すぎて仕事運，健康運，恋愛運に悪影響
-            minus_luck_[0] += (elements_[1] - limit_elements_) / 3;
-            minus_luck_[2] += (elements_[1] - limit_elements_) / 3;
-            minus_luck_[4] += (elements_[1] - limit_elements_) / 3;
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.FireOver, (elements_[1] - limit_elements_) / 3, 0));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.FireOver, (elements_[1] - limit_elements_) / 3, 2));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.FireOver, (elements_[1] - limit_elements_) / 3, 4));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.FireOver, elements_[1] - limit_elements_, 5));
-            Debug.Log("FireOver");
+            int fire_over = (elements_[1] - limit_elements_);
+
+            minus_luck_[0] += fire_over / 3;
+            minus_luck_[2] += fire_over / 3;
+            minus_luck_[4] += fire_over / 3;
+
+            if (fire_over > 100)
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.FireOver, 0, 34, 33, 0, 33, AdviceType.ElementGame));
+            }
+            else
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.FireOver, 0, fire_over / 3, fire_over / 3, 0, fire_over / 3, AdviceType.ElementGame));
+            }
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.FireOver, 0, fire_over / 3, fire_over / 3, 0, fire_over / 3, AdviceType.ElementEnd));
         }
 
         //土の気の影響
@@ -3446,49 +3286,6 @@ public partial class Evaluation : MonoBehaviour
             plus_luck_[3] += elements_[3] / 5;
             plus_luck_[4] += elements_[4] / 5;
 
-            //土の気が弱すぎて仕事運，人気運，健康運，金運，恋愛運が上がらない
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeak, (limit_elements_ - elements_[2]) / 10, 0));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeak, (limit_elements_ - elements_[2]) / 10, 1));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeak, (limit_elements_ - elements_[2]) / 10, 2));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeak, (limit_elements_ - elements_[2]) / 10, 3));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeak, (limit_elements_ - elements_[2]) / 10, 4));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeak, (limit_elements_ - elements_[2]) / 2, 5));
-            Debug.Log("EarthWeak");
-
-            //相生によるコメント
-            if ((limit_elements_ - elements_[2]) > -sosho_buffer_[2])
-            {
-                lost_buffer = -sosho_buffer_[2];
-            }
-            else
-            {
-                lost_buffer = limit_elements_ - elements_[2];
-            }
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeakSosho, lost_buffer/ 5, 0));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeakSosho, lost_buffer / 5, 1));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeakSosho, lost_buffer / 5, 2));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeakSosho, lost_buffer / 5, 3));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeakSosho, lost_buffer / 5, 4));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeakSosho, lost_buffer, 5));
-            Debug.Log("EarthWeakSosho");
-
-            //相克によるコメント
-            if ((limit_elements_ - elements_[2]) > -sokoku_buffer_[2])
-            {
-                lost_buffer = -sokoku_buffer_[2];
-            }
-            else
-            {
-                lost_buffer = limit_elements_ - elements_[2];
-            }
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeakSokoku, lost_buffer / 5, 0));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeakSokoku, lost_buffer / 5, 1));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeakSokoku, lost_buffer / 5, 2));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeakSokoku, lost_buffer / 5, 3));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeakSokoku, lost_buffer / 5, 4));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeakSokoku, lost_buffer, 5));
-            Debug.Log("EarthWeakSokoku");
-
         }
         else
         {
@@ -3499,10 +3296,19 @@ public partial class Evaluation : MonoBehaviour
             plus_luck_[4] += limit_elements_ / 5;
 
             //土の気が強すぎて健康運に悪影響
-            minus_luck_[2] += (elements_[2] - limit_elements_);
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthOver, elements_[2] - limit_elements_, 2));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthOver, elements_[2] - limit_elements_, 5));
-            Debug.Log("EarthOver");
+            int earth_over = (elements_[2] - limit_elements_);
+
+            minus_luck_[2] += earth_over;
+
+            if (earth_over > 100)
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthOver, 0, 0, 100, 0, 0, AdviceType.ElementGame));
+            }
+            else
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthOver, 0, 0, earth_over, 0, 0, AdviceType.ElementGame));
+            }
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthOver, 0, 0, earth_over, 0, 0, AdviceType.ElementEnd));
         }
 
         //金の気の影響
@@ -3510,47 +3316,25 @@ public partial class Evaluation : MonoBehaviour
         {
             plus_luck_[3] += elements_[3];
 
-            //金の気が弱すぎて金運が上がらない
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalWeak, (limit_elements_ - elements_[3]) / 2, 3));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalWeak, (limit_elements_ - elements_[3]) / 2, 5));
-            Debug.Log("MetalWeak");
-
-            //相生によるコメント
-            if ((limit_elements_ - elements_[3]) > -sosho_buffer_[3])
-            {
-                lost_buffer = -sosho_buffer_[3];
-            }
-            else
-            {
-                lost_buffer = limit_elements_ - elements_[3];
-            }
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalWeakSosho, lost_buffer, 3));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalWeakSosho, lost_buffer, 5));
-            Debug.Log("MetalWeakSosho");
-
-            //相克によるコメント
-            if ((limit_elements_ - elements_[3]) > -sokoku_buffer_[3])
-            {
-                lost_buffer = -sokoku_buffer_[3];
-            }
-            else
-            {
-                lost_buffer = limit_elements_ - elements_[3];
-            }
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalWeakSokoku, lost_buffer, 3));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalWeakSokoku, lost_buffer, 5));
-            Debug.Log("MetalWeakSokoku");
-
         }
         else
         {
             plus_luck_[3] += limit_elements_;
 
             //金の気が強すぎて金運に悪影響
-            minus_luck_[3] += (elements_[3] - limit_elements_);
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalOver, elements_[3] - limit_elements_, 3));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalOver, elements_[3] - limit_elements_, 5));
-            Debug.Log("MetalOver");
+            int metal_over = (elements_[3] - limit_elements_);
+
+            minus_luck_[3] += metal_over;
+
+            if (metal_over > 100)
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalOver, 0, 0, 0, 100, 0, AdviceType.ElementGame));
+            }
+            else
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalOver, 0, 0, 0, metal_over, 0, AdviceType.ElementGame));
+            }
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalOver, 0, 0, 0, metal_over, 0, AdviceType.ElementEnd));
         }
 
         //水の気の影響
@@ -3559,44 +3343,6 @@ public partial class Evaluation : MonoBehaviour
             plus_luck_[0] += elements_[4] / 5;
             plus_luck_[3] += elements_[4] / 5;
             plus_luck_[4] += elements_[4] * 3 / 5;
-
-            //水の気が弱すぎて仕事運，金運，恋愛運が上がらない
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterWeak, (limit_elements_ - elements_[4]) / 10, 0));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterWeak, (limit_elements_ - elements_[4]) / 10, 3));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterWeak, (limit_elements_ - elements_[4]) * 3 / 10, 4));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterWeak, (limit_elements_ - elements_[4]) / 2, 5));
-            Debug.Log("WaterWeak");
-
-            //相生によるコメント
-            if ((limit_elements_ - elements_[4]) > -sosho_buffer_[4])
-            {
-                lost_buffer = -sosho_buffer_[4];
-            }
-            else
-            {
-                lost_buffer = limit_elements_ - elements_[4];
-            }
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterWeakSosho, lost_buffer / 5, 0));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterWeakSosho, lost_buffer / 5, 3));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterWeakSosho, lost_buffer * 3 / 5, 4));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterWeakSosho, lost_buffer, 5));
-            Debug.Log("WaterWeakSosho");
-
-            //相克によるコメント
-            if ((limit_elements_ - elements_[4]) > -sokoku_buffer_[4])
-            {
-                lost_buffer = -sokoku_buffer_[4];
-            }
-            else
-            {
-                lost_buffer = limit_elements_ - elements_[4];
-            }
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterWeakSokoku, lost_buffer / 5, 0));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterWeakSokoku, lost_buffer / 5, 3));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterWeakSokoku, lost_buffer * 3 / 5, 4));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterWeakSokoku, lost_buffer, 5));
-            Debug.Log("WaterWeakSokoku");
-
         }
         else
         {
@@ -3605,24 +3351,557 @@ public partial class Evaluation : MonoBehaviour
             plus_luck_[4] += limit_elements_ * 3 / 5;
 
             //水の気が強すぎて健康運，金運, 恋愛運に悪影響
-            minus_luck_[2] += (elements_[4] - limit_elements_) / 5;
-            minus_luck_[3] += (elements_[4] - limit_elements_) * 2 / 5;
-            minus_luck_[4] += (elements_[4] - limit_elements_) * 2 / 5;
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterOver, (elements_[4] - limit_elements_) / 5, 2));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterOver, (elements_[4] - limit_elements_) * 2 / 5, 3));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterOver, (elements_[4] - limit_elements_) * 2 / 5, 4));
-            comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterOver, elements_[4] - limit_elements_, 5));
-            Debug.Log("OverWater");
+            int water_over = (elements_[4] - limit_elements_);
+            minus_luck_[2] += water_over / 5;
+            minus_luck_[3] += water_over * 2 / 5;
+            minus_luck_[4] += water_over * 2 / 5;
+            if (water_over > 100)
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterOver, 0, 0, 20, 40, 40, AdviceType.ElementGame));
+            }
+            else
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterOver, 0, 0, water_over / 5, water_over * 2 / 5, water_over * 2 / 5, AdviceType.ElementGame));
+            }
+
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterOver, 0, 0, water_over / 5, water_over * 2 / 5, water_over * 2 / 5, AdviceType.ElementEnd));
         }
+
+        //相生で消された木(ゲーム中)
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodSoshoNorth,
+           sosho_buffer_[0][0] * 4 / 5, -sosho_buffer_[0][0] * 6 / 5, (sosho_buffer_[0][0] / 5 - sosho_buffer_[0][0] * 2 / 5), 0, -sosho_buffer_[0][0] * 2 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodSoshoNorthEast,
+          sosho_buffer_[0][1] * 4 / 5, -sosho_buffer_[0][1] * 6 / 5, (sosho_buffer_[0][1] / 5 - sosho_buffer_[0][1] * 2 / 5), 0, -sosho_buffer_[0][1] * 2 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodSoshoEast,
+         sosho_buffer_[0][2] * 4 / 5, -sosho_buffer_[0][2] * 6 / 5, (sosho_buffer_[0][2] / 5 - sosho_buffer_[0][2] * 2 / 5), 0, -sosho_buffer_[0][2] * 2 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodSoshoSouthEast,
+          sosho_buffer_[0][3] * 4 / 5, -sosho_buffer_[0][3] * 6 / 5, (sosho_buffer_[0][3] / 5 - sosho_buffer_[0][3] * 2 / 5), 0, -sosho_buffer_[0][3] * 2 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodSoshoSouth,
+          sosho_buffer_[0][4] * 4 / 5, -sosho_buffer_[0][4] * 6 / 5, (sosho_buffer_[0][4] / 5 - sosho_buffer_[0][4] * 2 / 5), 0, -sosho_buffer_[0][4] * 2 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodSoshoSouthWest,
+         sosho_buffer_[0][5] * 4 / 5, -sosho_buffer_[0][5] * 6 / 5, (sosho_buffer_[0][5] / 5 - sosho_buffer_[0][5] * 2 / 5), 0, -sosho_buffer_[0][5] * 2 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodSoshoWest,
+         sosho_buffer_[0][6] * 4 / 5, -sosho_buffer_[0][6] * 6 / 5, (sosho_buffer_[0][6] / 5 - sosho_buffer_[0][6] * 2 / 5), 0, -sosho_buffer_[0][6] * 2 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodSoshoNorthWest,
+         sosho_buffer_[0][7] * 4 / 5, -sosho_buffer_[0][7] * 6 / 5, (sosho_buffer_[0][7] / 5 - sosho_buffer_[0][7] * 2 / 5), 0, -sosho_buffer_[0][7] * 2 / 5, AdviceType.ElementGame));
+
+
+        //相生で消された火(ゲーム中)
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.FireSoshoNorth, -sosho_buffer_[1][0] * 2 / 5, (sosho_buffer_[1][0] * 3 / 5 - sosho_buffer_[1][0] * 2 / 5),
+            (sosho_buffer_[1][0] / 5 - sosho_buffer_[1][0] * 2 / 5), -sosho_buffer_[1][0] * 2 / 5, (sosho_buffer_[1][0] / 5 - sosho_buffer_[1][0] * 2 / 5), AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.FireSoshoNorthEast, -sosho_buffer_[1][1] * 2 / 5, (sosho_buffer_[1][1] * 3 / 5 - sosho_buffer_[1][1] * 2 / 5),
+          (sosho_buffer_[1][1] / 5 - sosho_buffer_[1][1] * 2 / 5), -sosho_buffer_[1][1] * 2 / 5, (sosho_buffer_[1][1] / 5 - sosho_buffer_[1][1] * 2 / 5), AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.FireSoshoEast, -sosho_buffer_[1][2] * 2 / 5, (sosho_buffer_[1][2] * 3 / 5 - sosho_buffer_[1][2] * 2 / 5),
+           (sosho_buffer_[1][2] / 5 - sosho_buffer_[1][2] * 2 / 5), -sosho_buffer_[1][2] * 2 / 5, (sosho_buffer_[1][2] / 5 - sosho_buffer_[1][2] * 2 / 5), AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.FireSoshoSouthEast, -sosho_buffer_[1][3] * 2 / 5, (sosho_buffer_[1][3] * 3 / 5 - sosho_buffer_[1][3] * 2 / 5),
+          (sosho_buffer_[1][3] / 5 - sosho_buffer_[1][3] * 2 / 5), -sosho_buffer_[1][3] * 2 / 5, (sosho_buffer_[1][3] / 5 - sosho_buffer_[1][3] * 2 / 5), AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.FireSoshoSouth, -sosho_buffer_[1][4] * 2 / 5, (sosho_buffer_[1][4] * 3 / 5 - sosho_buffer_[1][4] * 2 / 5),
+           (sosho_buffer_[1][4] / 5 - sosho_buffer_[1][4] * 2 / 5), -sosho_buffer_[1][4] * 2 / 5, (sosho_buffer_[1][4] / 5 - sosho_buffer_[1][4] * 2 / 5), AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.FireSoshoSouthWest, -sosho_buffer_[1][5] * 2 / 5, (sosho_buffer_[1][5] * 3 / 5 - sosho_buffer_[1][5] * 2 / 5),
+          (sosho_buffer_[1][5] / 5 - sosho_buffer_[1][5] * 2 / 5), -sosho_buffer_[1][5] * 2 / 5, (sosho_buffer_[1][5] / 5 - sosho_buffer_[1][5] * 2 / 5), AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.FireSoshoWest, -sosho_buffer_[1][6] * 2 / 5, (sosho_buffer_[1][6] * 3 / 5 - sosho_buffer_[1][6] * 2 / 5),
+           (sosho_buffer_[1][6] / 5 - sosho_buffer_[1][6] * 2 / 5), -sosho_buffer_[1][6] * 2 / 5, (sosho_buffer_[1][6] / 5 - sosho_buffer_[1][6] * 2 / 5), AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.FireSoshoNorthWest, -sosho_buffer_[1][7] * 2 / 5, (sosho_buffer_[1][7] * 3 / 5 - sosho_buffer_[1][7] * 2 / 5),
+          (sosho_buffer_[1][7] / 5 - sosho_buffer_[1][7] * 2 / 5), -sosho_buffer_[1][7] * 2 / 5, (sosho_buffer_[1][7] / 5 - sosho_buffer_[1][7] * 2 / 5), AdviceType.ElementGame));
+
+
+        //相生で消された土(ゲーム中)
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthSoshoNorth,
+            sosho_buffer_[2][0] / 5, sosho_buffer_[2][0] / 5, sosho_buffer_[2][0] / 5, (sosho_buffer_[2][0] / 5 - sosho_buffer_[2][0] * 2), sosho_buffer_[2][0] * 2 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthSoshoNorthEast,
+           sosho_buffer_[2][1] / 5, sosho_buffer_[2][1] / 5, sosho_buffer_[2][1] / 5, (sosho_buffer_[2][1] / 5 - sosho_buffer_[2][1] * 2), sosho_buffer_[2][1] * 2 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthSoshoEast,
+           sosho_buffer_[2][2] / 5, sosho_buffer_[2][2] / 5, sosho_buffer_[2][2] / 5, (sosho_buffer_[2][2] / 5 - sosho_buffer_[2][2] * 2), sosho_buffer_[2][2] * 2 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthSoshoSouthEast,
+           sosho_buffer_[2][3] / 5, sosho_buffer_[2][3] / 5, sosho_buffer_[2][3] / 5, (sosho_buffer_[2][3] / 5 - sosho_buffer_[2][3] * 2), sosho_buffer_[2][3] * 2 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthSoshoSouth,
+           sosho_buffer_[2][4] / 5, sosho_buffer_[2][4] / 5, sosho_buffer_[2][4] / 5, (sosho_buffer_[2][4] / 5 - sosho_buffer_[2][4] * 2), sosho_buffer_[2][4] * 2 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthSoshoSouthWest,
+          sosho_buffer_[2][5] / 5, sosho_buffer_[2][5] / 5, sosho_buffer_[2][5] / 5, (sosho_buffer_[2][5] / 5 - sosho_buffer_[2][5] * 2), sosho_buffer_[2][5] * 2 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthSoshoWest,
+           sosho_buffer_[2][6] / 5, sosho_buffer_[2][6] / 5, sosho_buffer_[2][6] / 5, (sosho_buffer_[2][6] / 5 - sosho_buffer_[2][6] * 2), sosho_buffer_[2][6] * 2 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthSoshoNorthWest,
+           sosho_buffer_[2][7] / 5, sosho_buffer_[2][7] / 5, sosho_buffer_[2][7] / 5, (sosho_buffer_[2][7] / 5 - sosho_buffer_[2][7] * 2), sosho_buffer_[2][7] * 2 / 5, AdviceType.ElementGame));
+
+
+        //相生で消された金(ゲーム中)
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalSoshoNorth,
+            -sosho_buffer_[3][0] * 2 / 5, 0, 0, (sosho_buffer_[3][0] - sosho_buffer_[3][0] * 2 / 5), -sosho_buffer_[3][0] * 6 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalSoshoNorthEast,
+          -sosho_buffer_[3][1] * 2 / 5, 0, 0, (sosho_buffer_[3][1] - sosho_buffer_[3][1] * 2 / 5), -sosho_buffer_[3][1] * 6 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalSoshoEast,
+          -sosho_buffer_[3][2] * 2 / 5, 0, 0, (sosho_buffer_[3][2] - sosho_buffer_[3][2] * 2 / 5), -sosho_buffer_[3][2] * 6 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalSoshoSouthEast,
+          -sosho_buffer_[3][3] * 2 / 5, 0, 0, (sosho_buffer_[3][3] - sosho_buffer_[3][3] * 2 / 5), -sosho_buffer_[3][3] * 6 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalSoshoSouth,
+          -sosho_buffer_[3][4] * 2 / 5, 0, 0, (sosho_buffer_[3][4] - sosho_buffer_[3][4] * 2 / 5), -sosho_buffer_[3][4] * 6 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalSoshoSouthWest,
+          -sosho_buffer_[3][5] * 2 / 5, 0, 0, (sosho_buffer_[3][5] - sosho_buffer_[3][5] * 2 / 5), -sosho_buffer_[3][5] * 6 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalSoshoWest,
+        -sosho_buffer_[3][6] * 2 / 5, 0, 0, (sosho_buffer_[3][6] - sosho_buffer_[3][6] * 2 / 5), -sosho_buffer_[3][6] * 6 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalSoshoNorthWest,
+          -sosho_buffer_[3][7] * 2 / 5, 0, 0, (sosho_buffer_[3][7] - sosho_buffer_[3][7] * 2 / 5), -sosho_buffer_[3][7] * 6 / 5, AdviceType.ElementGame));
+
+
+        //相生で消された水(ゲーム中)
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterSoshoNorth,
+            (sosho_buffer_[4][0] / 5 - sosho_buffer_[4][0] * 8 / 5), 0, -sosho_buffer_[4][0] * 2 / 5, sosho_buffer_[4][0] / 5, sosho_buffer_[4][0] * 3 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterSoshoNorthEast,
+            (sosho_buffer_[4][1] / 5 - sosho_buffer_[4][1] * 8 / 5), 0, -sosho_buffer_[4][1] * 2 / 5, sosho_buffer_[4][1] / 5, sosho_buffer_[4][1] * 3 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterSoshoEast,
+           (sosho_buffer_[4][2] / 5 - sosho_buffer_[4][2] * 8 / 5), 0, -sosho_buffer_[4][2] * 2 / 5, sosho_buffer_[4][2] / 5, sosho_buffer_[4][2] * 3 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterSoshoSouthEast,
+            (sosho_buffer_[4][3] / 5 - sosho_buffer_[4][3] * 8 / 5), 0, -sosho_buffer_[4][3] * 2 / 5, sosho_buffer_[4][3] / 5, sosho_buffer_[4][3] * 3 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterSoshoSouth,
+           (sosho_buffer_[4][4] / 5 - sosho_buffer_[4][4] * 8 / 5), 0, -sosho_buffer_[4][4] * 2 / 5, sosho_buffer_[4][4] / 5, sosho_buffer_[4][4] * 3 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterSoshoSouthWest,
+            (sosho_buffer_[4][5] / 5 - sosho_buffer_[4][5] * 8 / 5), 0, -sosho_buffer_[4][5] * 2 / 5, sosho_buffer_[4][5] / 5, sosho_buffer_[4][5] * 3 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterSoshoWest,
+           (sosho_buffer_[4][6] / 5 - sosho_buffer_[4][6] * 8 / 5), 0, -sosho_buffer_[4][6] * 2 / 5, sosho_buffer_[4][6] / 5, sosho_buffer_[4][6] * 3 / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterSoshoNorthWest,
+            (sosho_buffer_[4][7] / 5 - sosho_buffer_[4][7] * 8 / 5), 0, -sosho_buffer_[4][7] * 2 / 5, sosho_buffer_[4][7] / 5, sosho_buffer_[4][7] * 3 / 5, AdviceType.ElementGame));
+
+
+        //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+        //相克で消された気(木)
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodSokokuNorth,
+          sokoku_buffer_[0][0] * 4 / 5, 0, sokoku_buffer_[0][0] / 5, 0, 0, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodSokokuNorthEast,
+         sokoku_buffer_[0][1] * 4 / 5, 0, sokoku_buffer_[0][1] / 5, 0, 0, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodSokokuEast,
+         sokoku_buffer_[0][2] * 4 / 5, 0, sokoku_buffer_[0][2] / 5, 0, 0, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodSokokuSouthEast,
+         sokoku_buffer_[0][3] * 4 / 5, 0, sokoku_buffer_[0][3] / 5, 0, 0, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodSokokuSouth,
+         sokoku_buffer_[0][4] * 4 / 5, 0, sokoku_buffer_[0][4] / 5, 0, 0, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodSokokuSouthWest,
+         sokoku_buffer_[0][5] * 4 / 5, 0, sokoku_buffer_[0][5] / 5, 0, 0, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodSokokuWest,
+         sokoku_buffer_[0][6] * 4 / 5, 0, sokoku_buffer_[0][6] / 5, 0, 0, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodSokokuNorthWest,
+         sokoku_buffer_[0][7] * 4 / 5, 0, sokoku_buffer_[0][7] / 5, 0, 0, AdviceType.ElementGame));
+
+
+        //相克で消された気(火)
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.FireSokokuNorth,
+          0, sokoku_buffer_[1][0] * 3 / 5, sokoku_buffer_[1][0] / 5, 0, sokoku_buffer_[1][0] / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.FireSokokuNorthEast,
+           0, sokoku_buffer_[1][1] * 3 / 5, sokoku_buffer_[1][1] / 5, 0, sokoku_buffer_[1][1] / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.FireSokokuEast,
+        0, sokoku_buffer_[1][2] * 3 / 5, sokoku_buffer_[1][2] / 5, 0, sokoku_buffer_[1][2] / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.FireSokokuSouthEast,
+           0, sokoku_buffer_[1][3] * 3 / 5, sokoku_buffer_[1][3] / 5, 0, sokoku_buffer_[1][3] / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.FireSokokuSouth,
+       0, sokoku_buffer_[1][4] * 3 / 5, sokoku_buffer_[1][4] / 5, 0, sokoku_buffer_[1][4] / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.FireSokokuSouthWest,
+           0, sokoku_buffer_[1][5] * 3 / 5, sokoku_buffer_[1][5] / 5, 0, sokoku_buffer_[1][5] / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.FireSokokuWest,
+        0, sokoku_buffer_[1][6] * 3 / 5, sokoku_buffer_[1][6] / 5, 0, sokoku_buffer_[1][6] / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.FireSokokuNorthWest,
+           0, sokoku_buffer_[1][7] * 3 / 5, sokoku_buffer_[1][7] / 5, 0, sokoku_buffer_[1][7] / 5, AdviceType.ElementGame));
+
+
+        //相克で消された気(土)
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthSokokuNorth,
+          sokoku_buffer_[2][0] / 5, sokoku_buffer_[2][0] / 5, sokoku_buffer_[2][0] / 5, sokoku_buffer_[2][0] / 5, sokoku_buffer_[2][0] / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthSokokuNorthEast,
+           sokoku_buffer_[2][1] / 5, sokoku_buffer_[2][1] / 5, sokoku_buffer_[2][1] / 5, sokoku_buffer_[2][1] / 5, sokoku_buffer_[2][1] / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthSokokuEast,
+         sokoku_buffer_[2][2] / 5, sokoku_buffer_[2][2] / 5, sokoku_buffer_[2][2] / 5, sokoku_buffer_[2][2] / 5, sokoku_buffer_[2][2] / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthSokokuSouthEast,
+           sokoku_buffer_[2][3] / 5, sokoku_buffer_[2][3] / 5, sokoku_buffer_[2][3] / 5, sokoku_buffer_[2][3] / 5, sokoku_buffer_[2][3] / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthSokokuSouth,
+         sokoku_buffer_[2][4] / 5, sokoku_buffer_[2][4] / 5, sokoku_buffer_[2][4] / 5, sokoku_buffer_[2][4] / 5, sokoku_buffer_[2][4] / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthSokokuSouthWest,
+           sokoku_buffer_[2][5] / 5, sokoku_buffer_[2][5] / 5, sokoku_buffer_[2][5] / 5, sokoku_buffer_[2][5] / 5, sokoku_buffer_[2][5] / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthSokokuWest,
+         sokoku_buffer_[2][6] / 5, sokoku_buffer_[2][6] / 5, sokoku_buffer_[2][6] / 5, sokoku_buffer_[2][6] / 5, sokoku_buffer_[2][6] / 5, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthSokokuNorthWest,
+           sokoku_buffer_[2][7] / 5, sokoku_buffer_[2][7] / 5, sokoku_buffer_[2][7] / 5, sokoku_buffer_[2][7] / 5, sokoku_buffer_[2][7] / 5, AdviceType.ElementGame));
+
+
+        //相克で消された気(金)
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalSokokuNorth, 0, 0, 0, sokoku_buffer_[3][0], 0, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalSokokuNorthEast, 0, 0, 0, sokoku_buffer_[3][1], 0, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalSokokuEast, 0, 0, 0, sokoku_buffer_[3][2], 0, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalSokokuSouthEast, 0, 0, 0, sokoku_buffer_[3][3], 0, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalSokokuSouth, 0, 0, 0, sokoku_buffer_[3][4], 0, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalSokokuSouthWest, 0, 0, 0, sokoku_buffer_[3][5], 0, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalSokokuWest, 0, 0, 0, sokoku_buffer_[3][6], 0, AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalSokokuNorthWest, 0, 0, 0, sokoku_buffer_[3][7], 0, AdviceType.ElementGame));
+
+
+        //相克で消された気(水)
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterSokokuNorth,
+          sokoku_buffer_[4][0] / 5, 0, 0, sokoku_buffer_[4][0] / 5, sokoku_buffer_[4][0], AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterSokokuNorthEast,
+         sokoku_buffer_[4][1] / 5, 0, 0, sokoku_buffer_[4][1] / 5, sokoku_buffer_[4][1], AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterSokokuEast,
+         sokoku_buffer_[4][2] / 5, 0, 0, sokoku_buffer_[4][2] / 5, sokoku_buffer_[4][2], AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterSokokuSouthEast,
+         sokoku_buffer_[4][3] / 5, 0, 0, sokoku_buffer_[4][3] / 5, sokoku_buffer_[4][3], AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterSokokuSouth,
+         sokoku_buffer_[4][4] / 5, 0, 0, sokoku_buffer_[4][4] / 5, sokoku_buffer_[4][4], AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterSokokuSouthWest,
+         sokoku_buffer_[4][5] / 5, 0, 0, sokoku_buffer_[4][5] / 5, sokoku_buffer_[4][5], AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterSokokuWest,
+         sokoku_buffer_[4][6] / 5, 0, 0, sokoku_buffer_[4][6] / 5, sokoku_buffer_[4][6], AdviceType.ElementGame));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterSokokuNorthWest,
+         sokoku_buffer_[4][7] / 5, 0, 0, sokoku_buffer_[4][7] / 5, sokoku_buffer_[4][7], AdviceType.ElementGame));
+
+
+        //相乗で消された気(最終評価)
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodSosho,
+            sokoku_buffer_[0].Sum() * 4 / 5, -sokoku_buffer_[0].Sum() * 6 / 5, (sokoku_buffer_[0].Sum() / 5 - sokoku_buffer_[0].Sum() * 2 / 5), 0, -sokoku_buffer_[0].Sum() * 2 / 5, AdviceType.ElementEnd));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.FireSosho, -sokoku_buffer_[1].Sum() * 2 / 5, (sokoku_buffer_[1].Sum() * 3 / 5 - sokoku_buffer_[1].Sum() * 2 / 5),
+         (sokoku_buffer_[1].Sum() / 5 - sokoku_buffer_[1].Sum() * 2 / 5), -sokoku_buffer_[1].Sum() * 2 / 5, (sokoku_buffer_[1].Sum() / 5 - sokoku_buffer_[1].Sum() * 2 / 5), AdviceType.ElementEnd));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthSosho,
+         sokoku_buffer_[2].Sum() / 5, sokoku_buffer_[2].Sum() / 5, sokoku_buffer_[2].Sum() / 5, (sokoku_buffer_[2].Sum() / 5 - sokoku_buffer_[2].Sum() * 2), sokoku_buffer_[2].Sum() * 2 / 5, AdviceType.ElementEnd));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalSosho,
+                   -sokoku_buffer_[3].Sum() * 2 / 5, 0, 0, (sokoku_buffer_[3].Sum() - sokoku_buffer_[3].Sum() * 2 / 5), -sokoku_buffer_[3].Sum() * 6 / 5, AdviceType.ElementEnd));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterSosho,
+        (sokoku_buffer_[4].Sum() / 5 - sokoku_buffer_[4].Sum() * 8 / 5), 0, -sokoku_buffer_[4].Sum() * 2 / 5, sokoku_buffer_[4].Sum() / 5, sokoku_buffer_[4].Sum() * 3 / 5, AdviceType.ElementEnd));
+
+
+        //相克で消された気(最終評価)
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodSokoku,
+        sokoku_buffer_[0].Sum() * 4 / 5, 0, sokoku_buffer_[0].Sum() / 5, 0, 0, AdviceType.ElementEnd));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.FireSokoku,
+        0, sokoku_buffer_[1].Sum() * 3 / 5, sokoku_buffer_[1].Sum() / 5, 0, sokoku_buffer_[1].Sum() / 5, AdviceType.ElementEnd));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthSokoku,
+      sokoku_buffer_[2].Sum() / 5, sokoku_buffer_[2].Sum() / 5, sokoku_buffer_[2].Sum() / 5, sokoku_buffer_[2].Sum() / 5, sokoku_buffer_[2].Sum() / 5, AdviceType.ElementEnd));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalSokoku, 0, 0, 0, sokoku_buffer_[3].Sum(), 0, AdviceType.ElementEnd));
+
+        comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterSokoku,
+         sokoku_buffer_[4].Sum() / 5, 0, 0, sokoku_buffer_[4].Sum() / 5, sokoku_buffer_[4].Sum(), AdviceType.ElementEnd));
+
+        //部屋の気を上げましょう-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+        int[][][] expected_elements = new int[5][][];
+
+        //k = 評価したい五行，i = 各方位の五行, j = 方位
+        for (int k = 0; k < 5; ++k)
+        {
+            expected_elements[k] = new int[5][];
+            for (int i = 0; i < 5; ++i)
+            {
+                expected_elements[k][i] = new int[8] { split_elements_[i][0], split_elements_[i][1], split_elements_[i][2], split_elements_[i][3],
+               split_elements_[i][4], split_elements_[i][5], split_elements_[i][6], split_elements_[i][7], };
+                for (int j = 0; j < 5; ++j)
+                {
+                    expected_elements[k][i][j] -= (sosho_buffer_[i][j] + sokoku_buffer_[i][j]);
+                    if (k == i)
+                    {
+                        expected_elements[k][i][j] += 100;
+                    }
+                }
+            }
+
+            //ここから相生の処理
+            int[][] sosho_stock = new int[5][];
+            for (int i = 0; i < 5; ++i)
+            {
+                sosho_stock[i] = new int[8] { 0, 0, 0, 0, 0, 0, 0, 0 };
+            }
+
+            for (int j = 0; j < 8; ++j)
+            {
+                for (int i = 0; i < 5; ++i)
+                {
+                    //同じ方位
+                    if (expected_elements[k][i][j] / 2 <= expected_elements[k][(i + 1) % 5][j])
+                    {
+                        sosho_stock[(i + 1) % 5][j] += expected_elements[k][i][j] / 2;
+                        sosho_stock[i][j] -= expected_elements[k][i][j] / 4;
+                    }
+                    else
+                    {
+                        sosho_stock[(i + 1) % 5][j] += expected_elements[k][(i + 1) % 5][j];
+                        sosho_stock[i][j] -= expected_elements[k][(i + 1) % 5][j] / 2;
+                    }
+
+                    //時計隣
+                    if (expected_elements[k][i][j] / 4 <= expected_elements[k][(i + 1) % 5][(j + 1) % 8])
+                    {
+                        sosho_stock[(i + 1) % 5][(j + 1) % 8] += expected_elements[k][i][j] / 4;
+                        sosho_stock[i][j] -= expected_elements[k][i][j] / 8;
+                    }
+                    else
+                    {
+                        sosho_stock[(i + 1) % 5][(j + 1) % 8] += expected_elements[k][(i + 1) % 5][(j + 1) % 8];
+                        sosho_stock[i][j] -= expected_elements[k][(i + 1) % 5][(j + 1) % 8] / 2;
+                    }
+
+                    //反時計隣
+                    if (expected_elements[k][i][j] / 4 <= expected_elements[k][(i + 1) % 5][(j + 7) % 8])
+                    {
+                        sosho_stock[(i + 1) % 5][(j + 7) % 8] += expected_elements[k][i][j] / 4;
+                        sosho_stock[i][j] -= expected_elements[k][i][j] / 8;
+                    }
+                    else
+                    {
+                        sosho_stock[(i + 1) % 5][(j + 7) % 8] += expected_elements[k][(i + 1) % 5][(j + 7) % 8];
+                        sosho_stock[i][j] -= expected_elements[k][(i + 1) % 5][(j + 7) % 8] / 2;
+                    }
+                }
+            }
+
+            for (int j = 0; j < 8; ++j)
+            {
+                for (int i = 0; i < 5; ++i)
+                {
+                    if ((expected_elements[k][i][j] + sosho_stock[i][j]) < 0)
+                    {
+                        expected_elements[k][i][j] = 0;
+                    }
+                    else
+                    {
+                        expected_elements[k][i][j] += sosho_stock[i][j];
+                    }
+                }
+            }
+
+            //ここから相克の処理
+            int[][] sokoku_stock = new int[5][];
+            for (int i = 0; i < 5; ++i)
+            {
+                sokoku_stock[i] = new int[8] { 0, 0, 0, 0, 0, 0, 0, 0 };
+            }
+
+            for (int j = 0; j < 8; ++j)
+            {
+                for (int i = 0; i < 5; ++i)
+                {
+
+                    //同じ方位
+                    if (expected_elements[k][i][j] / 2 <= expected_elements[k][(i + 2) % 5][j])
+                    {
+                        sokoku_stock[(i + 2) % 5][j] -= expected_elements[k][i][j] / 2;
+                        sokoku_stock[i][j] -= expected_elements[k][i][j] / 4;
+                    }
+                    else
+                    {
+                        sokoku_stock[(i + 2) % 5][j] -= expected_elements[k][(i + 2) % 5][j];
+                        sokoku_stock[i][j] -= expected_elements[k][(i + 2) % 5][j] / 2;
+                    }
+
+                    //時計隣
+                    if (expected_elements[k][i][j] / 4 <= expected_elements[k][(i + 2) % 5][(j + 1) % 8])
+                    {
+                        sokoku_stock[(i + 2) % 5][(j + 1) % 8] -= expected_elements[k][i][j] / 4;
+                        sokoku_stock[i][j] -= expected_elements[k][i][j] / 8;
+                    }
+                    else
+                    {
+                        sokoku_stock[(i + 2) % 5][(j + 1) % 8] -= expected_elements[k][(i + 2) % 5][(j + 1) % 8];
+                        sokoku_stock[i][j] -= expected_elements[k][(i + 2) % 5][(j + 1) % 8] / 2;
+                    }
+
+                    //反時計隣
+                    if (expected_elements[k][i][j] / 4 <= expected_elements[k][(i + 2) % 5][(j + 7) % 8])
+                    {
+                        sokoku_stock[(i + 2) % 5][(j + 7) % 8] -= expected_elements[k][i][j] / 4;
+                        sokoku_stock[i][j] -= expected_elements[k][i][j] / 8;
+                    }
+                    else
+                    {
+                        sokoku_stock[(i + 2) % 5][(j + 7) % 8] -= expected_elements[k][(i + 2) % 5][(j + 7) % 8];
+                        sokoku_stock[i][j] -= expected_elements[k][(i + 2) % 5][(j + 7) % 8] / 2;
+                    }
+
+                }
+
+            }
+
+
+            for (int j = 0; j < 8; ++j)
+            {
+                for (int i = 0; i < 5; ++i)
+                {
+                    if ((expected_elements[k][i][j] + sokoku_stock[i][j]) < 0)
+                    {
+                        expected_elements[k][i][j] = 0;
+                    }
+                    else
+                    {
+                        expected_elements[k][i][j] += sokoku_stock[i][j];
+                    }
+                }
+            }
+
+            for (int i = 0; i < 5; ++i)
+            {
+                for (int j = 0; j < 8; ++j)
+                {
+                    expected_elements[k][i][j] -= split_elements_[i][j];
+                }
+            }
+
+            int[][] expected_luck = new int[5][];
+            for (int i = 0; i < 5; ++i)
+            {
+                expected_luck[i] = new int[8] { 0, 0, 0, 0, 0, 0, 0, 0 };
+            }
+
+            for (int j = 0; j < 8; ++j)
+            {
+                expected_luck[0][j] += expected_elements[k][0][j] * 4 / 5 + expected_elements[k][2][j] / 5 + expected_elements[k][4][j] / 5;
+                expected_luck[1][j] += expected_elements[k][1][j] * 3 / 5 + expected_elements[k][2][j] / 5;
+                expected_luck[2][j] += expected_elements[k][0][j] / 5 + expected_elements[k][1][j] / 5 + expected_elements[k][2][j] / 5;
+                expected_luck[3][j] += expected_elements[k][2][j] / 5 + expected_elements[k][3][j] + expected_elements[k][4][j] / 5;
+                expected_luck[4][j] += expected_elements[k][1][j] / 5 + expected_elements[k][2][j] / 5 + expected_elements[k][4][j] * 3 / 5;
+            }
+
+            if (k == 0)
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodWeakNorth, expected_luck[0][0], expected_luck[1][0], expected_luck[2][0], expected_luck[3][0], expected_luck[4][0], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodWeakNorthEast, expected_luck[0][1], expected_luck[1][1], expected_luck[2][1], expected_luck[3][1], expected_luck[4][1], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodWeakEast, expected_luck[0][2], expected_luck[1][2], expected_luck[2][2], expected_luck[3][2], expected_luck[4][2], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodWeakSouthEast, expected_luck[0][3], expected_luck[1][3], expected_luck[2][3], expected_luck[3][3], expected_luck[4][3], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodWeakSouth, expected_luck[0][4], expected_luck[1][4], expected_luck[2][4], expected_luck[3][4], expected_luck[4][4], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodWeakSouthWest, expected_luck[0][5], expected_luck[1][5], expected_luck[2][5], expected_luck[3][5], expected_luck[4][5], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodWeakWest, expected_luck[0][6], expected_luck[1][6], expected_luck[2][6], expected_luck[3][6], expected_luck[4][6], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodWeakNorthWest, expected_luck[0][7], expected_luck[1][7], expected_luck[2][7], expected_luck[3][7], expected_luck[4][7], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WoodWeak, expected_luck[0].Sum(), expected_luck[1].Sum(), expected_luck[2].Sum(), expected_luck[3].Sum(), expected_luck[4].Sum(), AdviceType.ElementEnd));
+            }
+            else if (k == 1)
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.FireWeakNorth, expected_luck[0][0], expected_luck[1][0], expected_luck[2][0], expected_luck[3][0], expected_luck[4][0], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.FireWeakNorthEast, expected_luck[0][1], expected_luck[1][1], expected_luck[2][1], expected_luck[3][1], expected_luck[4][1], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.FireWeakEast, expected_luck[0][2], expected_luck[1][2], expected_luck[2][2], expected_luck[3][2], expected_luck[4][2], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.FireWeakSouthEast, expected_luck[0][3], expected_luck[1][3], expected_luck[2][3], expected_luck[3][3], expected_luck[4][3], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.FireWeakSouth, expected_luck[0][4], expected_luck[1][4], expected_luck[2][4], expected_luck[3][4], expected_luck[4][4], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.FireWeakSouthWest, expected_luck[0][5], expected_luck[1][5], expected_luck[2][5], expected_luck[3][5], expected_luck[4][5], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.FireWeakWest, expected_luck[0][6], expected_luck[1][6], expected_luck[2][6], expected_luck[3][6], expected_luck[4][6], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.FireWeakNorthWest, expected_luck[0][7], expected_luck[1][7], expected_luck[2][7], expected_luck[3][7], expected_luck[4][7], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.FireWeak, expected_luck[0].Sum(), expected_luck[1].Sum(), expected_luck[2].Sum(), expected_luck[3].Sum(), expected_luck[4].Sum(), AdviceType.ElementEnd));
+            }
+            else if (k == 2)
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeakNorth, expected_luck[0][0], expected_luck[1][0], expected_luck[2][0], expected_luck[3][0], expected_luck[4][0], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeakNorthEast, expected_luck[0][1], expected_luck[1][1], expected_luck[2][1], expected_luck[3][1], expected_luck[4][1], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeakEast, expected_luck[0][2], expected_luck[1][2], expected_luck[2][2], expected_luck[3][2], expected_luck[4][2], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeakSouthEast, expected_luck[0][3], expected_luck[1][3], expected_luck[2][3], expected_luck[3][3], expected_luck[4][3], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeakSouth, expected_luck[0][4], expected_luck[1][4], expected_luck[2][4], expected_luck[3][4], expected_luck[4][4], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeakSouthWest, expected_luck[0][5], expected_luck[1][5], expected_luck[2][5], expected_luck[3][5], expected_luck[4][5], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeakWest, expected_luck[0][6], expected_luck[1][6], expected_luck[2][6], expected_luck[3][6], expected_luck[4][6], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeakNorthWest, expected_luck[0][7], expected_luck[1][7], expected_luck[2][7], expected_luck[3][7], expected_luck[4][7], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.EarthWeak, expected_luck[0].Sum(), expected_luck[1].Sum(), expected_luck[2].Sum(), expected_luck[3].Sum(), expected_luck[4].Sum(), AdviceType.ElementEnd));
+            }
+            else if (k == 3)
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalWeakNorth, expected_luck[0][0], expected_luck[1][0], expected_luck[2][0], expected_luck[3][0], expected_luck[4][0], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalWeakNorthEast, expected_luck[0][1], expected_luck[1][1], expected_luck[2][1], expected_luck[3][1], expected_luck[4][1], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalWeakEast, expected_luck[0][2], expected_luck[1][2], expected_luck[2][2], expected_luck[3][2], expected_luck[4][2], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalWeakSouthEast, expected_luck[0][3], expected_luck[1][3], expected_luck[2][3], expected_luck[3][3], expected_luck[4][3], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalWeakSouth, expected_luck[0][4], expected_luck[1][4], expected_luck[2][4], expected_luck[3][4], expected_luck[4][4], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalWeakSouthWest, expected_luck[0][5], expected_luck[1][5], expected_luck[2][5], expected_luck[3][5], expected_luck[4][5], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalWeakWest, expected_luck[0][6], expected_luck[1][6], expected_luck[2][6], expected_luck[3][6], expected_luck[4][6], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalWeakNorthWest, expected_luck[0][7], expected_luck[1][7], expected_luck[2][7], expected_luck[3][7], expected_luck[4][7], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.MetalWeak, expected_luck[0].Sum(), expected_luck[1].Sum(), expected_luck[2].Sum(), expected_luck[3].Sum(), expected_luck[4].Sum(), AdviceType.ElementEnd));
+            }
+            else
+            {
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterWeakNorth, expected_luck[0][0], expected_luck[1][0], expected_luck[2][0], expected_luck[3][0], expected_luck[4][0], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterWeakNorthEast, expected_luck[0][1], expected_luck[1][1], expected_luck[2][1], expected_luck[3][1], expected_luck[4][1], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterWeakEast, expected_luck[0][2], expected_luck[1][2], expected_luck[2][2], expected_luck[3][2], expected_luck[4][2], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterWeakSouthEast, expected_luck[0][3], expected_luck[1][3], expected_luck[2][3], expected_luck[3][3], expected_luck[4][3], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterWeakSouth, expected_luck[0][4], expected_luck[1][4], expected_luck[2][4], expected_luck[3][4], expected_luck[4][4], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterWeakSouthWest, expected_luck[0][5], expected_luck[1][5], expected_luck[2][5], expected_luck[3][5], expected_luck[4][5], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterWeakWest, expected_luck[0][6], expected_luck[1][6], expected_luck[2][6], expected_luck[3][6], expected_luck[4][6], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterWeakNorthWest, expected_luck[0][7], expected_luck[1][7], expected_luck[2][7], expected_luck[3][7], expected_luck[4][7], AdviceType.ElementGame));
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.WaterWeak, expected_luck[0].Sum(), expected_luck[1].Sum(), expected_luck[2].Sum(), expected_luck[3].Sum(), expected_luck[4].Sum(), AdviceType.ElementEnd));
+            }
+        }
+
     }
 
 
     //仕上げの運勢補正(鏡による運勢増減など)
     private void FortuneLast()
     {
-        int[] displacement_plus_stock = new int[5] { 0, 0, 0, 0, 0 };
+        int[] plus_luck_stock = new int[5] { 0, 0, 0, 0, 0 };
 
-        int[] displacement_minus_stock = new int[5] { 0, 0, 0, 0, 0 };
+        int[] minus_luck_stock = new int[5] { 0, 0, 0, 0, 0 };
 
 
 
@@ -3639,56 +3918,56 @@ public partial class Evaluation : MonoBehaviour
 
             if (furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.Sofa)
             {
-                RaycastHit hit;
+                //RaycastHit hit;
 
-                //ドアの真正面
-                for (int j = 0; j < furniture_grid_.Count; ++j)
-                {
-                    //エラー家具を無視する処理
-                    if (IsIgnored(j))
-                    {
-                        continue;
-                    }
+                ////ドアの真正面
+                //for (int j = 0; j < furniture_grid_.Count; ++j)
+                //{
+                //    //エラー家具を無視する処理
+                //    if (IsIgnored(j))
+                //    {
+                //        continue;
+                //    }
 
-                    //ドア
-                    if (furniture_grid_[j].furniture_type() == FurnitureGrid.FurnitureType.Door)
-                    {
-                        if (Physics.Raycast(furniture_grid_[i].furniture_grid().transform.position, furniture_grid_[i].up_direction(), out hit))
-                        {
-                            if (hit.collider.gameObject == furniture_grid_[j].furniture_grid())
-                            {
-                                for (int k = 0; k < 5; ++k)
-                                {
-                                    //旺気1.2倍, 邪気1.5倍
-                                    displacement_plus_stock[k] += plus_luck_[k] / 5;
-                                    displacement_minus_stock[k] += minus_luck_[k] / 2;
-                                    sofa_to_door[k] += minus_luck_[k] / 2 - plus_luck_[k] / 2;
-                                }
-                            }
-                        }
-                    }
-                }
-                ++sofa_item;
+                //    //ドア
+                //    if (furniture_grid_[j].furniture_type() == FurnitureGrid.FurnitureType.Door)
+                //    {
+                //        if (Physics.Raycast(furniture_grid_[i].furniture_grid().transform.position, furniture_grid_[i].up_direction(), out hit))
+                //        {
+                //            if (hit.collider.gameObject == furniture_grid_[j].furniture_grid())
+                //            {
+                //                for (int k = 0; k < 5; ++k)
+                //                {
+                //                    //旺気1.2倍, 邪気1.5倍
+                //                    displacement_plus_stock[k] += plus_luck_[k] / 5;
+                //                    displacement_minus_stock[k] += minus_luck_[k] / 2;
+                //                    sofa_to_door[k] += minus_luck_[k] / 2 - plus_luck_[k] / 2;
+                //                }
+                //            }
+                //        }
+                //    }
+                //}
+                //++sofa_item;
             }
         }
 
         if (sofa_item != 0)
         {
-            for (int i = 0; i < 5; ++i)
-            {
-                if (sofa_to_door[i] > 0)
-                {
-                    //寝室の邪気が高く，悪い運気を取り込みやすくなっている．
-                    comment_flag_.Add(new CommentFlag(CommentIdentifier.SofaToDoor, sofa_to_door[i], i));
-                }
-            }
+            //for (int i = 0; i < 5; ++i)
+            //{
+            //    if (sofa_to_door[i] > 0)
+            //    {
+            //        //寝室の邪気が高く，悪い運気を取り込みやすくなっている．
+            //        comment_flag_.Add(new CommentFlag(CommentIdentifier.SofaToDoor, sofa_to_door[i], i));
+            //    }
+            //}
 
-            int sofa_to_door_sum = sofa_to_door.Sum();
-            if (sofa_to_door_sum > 0)
-            {
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SofaToDoor, sofa_to_door_sum, 5));
-                Debug.Log("SofaToDoor");
-            }
+            //int sofa_to_door_sum = sofa_to_door.Sum();
+            //if (sofa_to_door_sum > 0)
+            //{
+            //    comment_flag_.Add(new CommentFlag(CommentIdentifier.SofaToDoor, sofa_to_door_sum, 5));
+            //    Debug.Log("SofaToDoor");
+            //}
         }
 
 
@@ -3697,170 +3976,104 @@ public partial class Evaluation : MonoBehaviour
 
         for (int i = 0; i < furniture_grid_.Count; ++i)
         {
-            //エラー家具を無視する処理
-            if (IsIgnored(i))
-            {
-                continue;
-            }
+            ////エラー家具を無視する処理
+            //if (IsIgnored(i))
+            //{
+            //    continue;
+            //}
 
-            if (furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.ConsumerElectronics)
-            {
-                //窓やドアの真正面
-                RaycastHit hit;
+            //if (furniture_grid_[i].furniture_type() == FurnitureGrid.FurnitureType.ConsumerElectronics)
+            //{
+            //    //窓やドアの真正面
+            //    RaycastHit hit;
 
-                for (int j = 0; j < furniture_grid_.Count; ++j)
-                {
-                    //エラー家具を無視する処理
-                    if (IsIgnored(i))
-                    {
-                        continue;
-                    }
+            //    for (int j = 0; j < furniture_grid_.Count; ++j)
+            //    {
+            //        //エラー家具を無視する処理
+            //        if (IsIgnored(i))
+            //        {
+            //            continue;
+            //        }
 
-                    //窓，ドア
-                    if ((furniture_grid_[j].furniture_type() == FurnitureGrid.FurnitureType.Door)
-                        || furniture_grid_[j].furniture_type() == FurnitureGrid.FurnitureType.Window)
-                    {
-                        if (Physics.Raycast(furniture_grid_[i].furniture_grid().transform.position, furniture_grid_[i].up_direction(), out hit))
-                        {
-                            if (hit.collider.gameObject == furniture_grid_[j].furniture_grid())
-                            {
-                                //ダメ
-                            }
-                        }
-                    }
+            //        //窓，ドア
+            //        if ((furniture_grid_[j].furniture_type() == FurnitureGrid.FurnitureType.Door)
+            //            || furniture_grid_[j].furniture_type() == FurnitureGrid.FurnitureType.Window)
+            //        {
+            //            if (Physics.Raycast(furniture_grid_[i].furniture_grid().transform.position, furniture_grid_[i].up_direction(), out hit))
+            //            {
+            //                if (hit.collider.gameObject == furniture_grid_[j].furniture_grid())
+            //                {
+            //                    //ダメ
+            //                }
+            //            }
+            //        }
 
-                    //ベッド
-                    if (furniture_grid_[j].furniture_type() == FurnitureGrid.FurnitureType.Window)
-                    {
-                        if (Physics.Raycast(furniture_grid_[i].furniture_grid().transform.position, furniture_grid_[i].up_direction(), out hit))
-                        {
-                            if (hit.collider.gameObject == furniture_grid_[j].furniture_grid())
-                            {
-                                luck_[2] -= 10;
-                                luck_[4] -= 5;
-                                luck_[0] -= 5;
-                                luck_[1] -= 5;
-                                luck_[3] -= 5;
-                            }
-                        }
-                    }
-                }
-                ++electronics_item;
-            }
+            //        //ベッド
+            //        if (furniture_grid_[j].furniture_type() == FurnitureGrid.FurnitureType.Window)
+            //        {
+            //            if (Physics.Raycast(furniture_grid_[i].furniture_grid().transform.position, furniture_grid_[i].up_direction(), out hit))
+            //            {
+            //                if (hit.collider.gameObject == furniture_grid_[j].furniture_grid())
+            //                {
+            //                    luck_[2] -= 10;
+            //                    luck_[4] -= 5;
+            //                    luck_[0] -= 5;
+            //                    luck_[1] -= 5;
+            //                    luck_[3] -= 5;
+            //                }
+            //            }
+            //        }
+            //    }
+            //    ++electronics_item;
+            //}
         }
 
 
-
-        //方角関連
-        if (room_role_ == Room.Entrance)
+        //部屋の種類関連
+        if (room_role_ == Room.Bedroom)
         {
+            //寝室でプラスの運気，邪気共に1.2倍
             int[] displacement = new int[5] { 0, 0, 0, 0, 0 };
-
-            //玄関でプラスの運気，邪気共に1.5倍
             for (int i = 0; i < 5; ++i)
             {
-                displacement_plus_stock[i] += plus_luck_[i] / 2;
-                displacement_minus_stock[i] += minus_luck_[i] / 2;
-                displacement[i] = minus_luck_[i] / 2 - plus_luck_[i] / 2;
-                if (displacement[i] > 0)
-                {
-                    //玄関の邪気が高く，悪い運気を取り込みやすくなっている．
-                    comment_flag_.Add(new CommentFlag(CommentIdentifier.EntranceMulti, displacement[i], i));
-                }
+                plus_luck_stock[i] += plus_luck_[i] * 1 / 5;
+                minus_luck_stock[i] += minus_luck_[i] * 1 / 5;
+                displacement[i] = minus_luck_[i] * 1 / 5 - plus_luck_[i] * 1 / 5;
             }
 
-            int displacement_all = displacement[0] + displacement[1] + displacement[2] + displacement[3] + displacement[4];
-            if (displacement_all > 0)
-            {
-                //玄関の邪気が高く，悪い運気を取り込みやすくなっている．
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.EntranceMulti, displacement_all, 5));
-            }
-        }
-        else if (room_role_ == Room.Bedroom)
-        {
-            int[] displacement = new int[5] { 0, 0, 0, 0, 0 };
-
-            //寝室でプラスの運気，邪気共に1.3倍
-            for (int i = 0; i < 5; ++i)
-            {
-                displacement_plus_stock[i] += plus_luck_[i] * 3 / 10;
-                displacement_minus_stock[i] += minus_luck_[i] * 3 / 10;
-                displacement[i] = minus_luck_[i] * 3 / 10 - plus_luck_[i] * 3 / 10;
-                if (displacement[i] > 0)
-                {
-                    //寝室の邪気が高く，悪い運気を取り込みやすくなっている．
-                    comment_flag_.Add(new CommentFlag(CommentIdentifier.BedroomMulti, displacement[i], i));
-                }
-            }
-
-            int displacement_all = displacement.Sum();
-            if (displacement_all > 0)
-            {
-                //寝室の邪気が高く，悪い運気を取り込みやすくなっている．
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.BedroomMulti, displacement_all, 5));
-                Debug.Log("BedroomMulti");
-            }
+            //寝室の邪気が高く，悪い運気を取り込みやすくなっている．
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.BedroomMulti, displacement[0], displacement[1], displacement[2], displacement[3], displacement[4], AdviceType.BonusEnd));
 
         }
         else if (room_role_ == Room.Living)
         {
             int[] displacement = new int[3] { 0, 0, 0 };
-
-            //リビングで家庭運(仕事運, 人気運, 健康運)の良い運気，悪い運気共に1.1倍
+            //リビングで家庭運(仕事運, 人気運, 健康運)の良い運気，悪い運気共に1.2倍
             for (int i = 0; i < 3; ++i)
             {
-                displacement_plus_stock[i] += plus_luck_[i] / 10;
-                displacement_minus_stock[i] += minus_luck_[i] / 10;
-                displacement[i] = minus_luck_[i] / 10 - plus_luck_[i] / 10;
-                if (displacement[i] > 0)
-                {
-                    //リビングの邪気が高く，悪い仕事運，人気運，健康運を取り込みやすくなっている．
-                    comment_flag_.Add(new CommentFlag(CommentIdentifier.LivingMulti, displacement[i], i));
-                }
-
+                plus_luck_stock[i] += plus_luck_[i] / 5;
+                minus_luck_stock[i] += minus_luck_[i] / 5;
+                displacement[i] = minus_luck_[i] / 5 - plus_luck_[i] / 5;
             }
 
-            int displacement_all = displacement.Sum();
-            if (displacement_all > 0)
-            {
-                //リビングの邪気が高く，悪い仕事運，人気運，健康運を取り込みやすくなっている．
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.LivingMulti, displacement_all, 5));
-                Debug.Log("LivingMulti");
-            }
-
-        }
-        else if (room_role_ == Room.Kitchen)
-        {
+            //リビングの邪気が高く，悪い仕事運，人気運，健康運を取り込みやすくなっている．
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.LivingMulti, displacement[0], displacement[1], displacement[2], 0, 0, AdviceType.BonusEnd));
 
         }
         else if (room_role_ == Room.Workroom)
         {
             int displacement = 0;
+            //仕事部屋で仕事運のプラスの運気，邪気共に1.2倍
+            plus_luck_stock[0] += plus_luck_[0] / 5;
+            minus_luck_stock[0] += minus_luck_[0] / 5;
+            displacement = minus_luck_[0] / 5 - plus_luck_[0] / 5;
 
-            //仕事部屋で仕事運のプラスの運気，邪気共に1.3倍
-            displacement_plus_stock[0] += plus_luck_[0] * 3 / 10;
-            displacement_minus_stock[0] += minus_luck_[0] * 3 / 10;
-            displacement = minus_luck_[0] * 3 / 10 - plus_luck_[0] * 3 / 10;
-            if (displacement > 0)
-            {
-                //寝室の邪気が高く，悪い運気を取り込みやすくなっている．
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.WorkroomMulti, displacement, 0));
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.WorkroomMulti, displacement, 5));
-                Debug.Log("WorkroomMulti");
-            }
-
-        }
-        else if (room_role_ == Room.Bathroom)
-        {
-
-        }
-        else if (room_role_ == Room.Toilet)
-        {
-
+            //仕事部屋の邪気が高く，悪い運気を取り込みやすくなっている．
+            comment_flag_.Add(new CommentFlag(CommentIdentifier.WorkroomMulti, displacement, 0, 0, 0, 0, AdviceType.BonusEnd));
         }
 
 
-
+        //部屋の方角関連
         if (room_direction_ == Direction.North)
         {
 
@@ -3879,29 +4092,24 @@ public partial class Evaluation : MonoBehaviour
         }
         else if (room_direction_ == Direction.South)
         {
-            int[] displacement = new int[5] { 0, 0, 0, 0, 0 };
 
-            //邪気(悪い運気)0.9倍
+            int[] displacement = new int[5] { 0, 0, 0, 0, 0 };
+            //邪気(悪い運気)0.8倍
             for (int i = 0; i < 5; ++i)
             {
-                if (elements_[1] > 250)
+                if (energy_strength_ > 2000)
                 {
-                    displacement_minus_stock[i] -= minus_luck_[i] / 10;
+                    minus_luck_stock[i] -= minus_luck_[i] / 10;
                 }
                 else
                 {
-                    //南の火の気をある程度強めることで悪い運気を浄化することができます
                     displacement[i] = minus_luck_[i] / 10;
-                    comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthPurification, displacement[i], i));
                 }
             }
 
-            if (elements_[1] <= 250)
+            if (elements_[1] <= 2000)
             {
-                //南の火の気をある程度強めることで悪い運気を浄化することができます
-                int displacement_all = displacement.Sum();
-                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthPurification, displacement_all, 5));
-                Debug.Log("SouthPurification");
+                comment_flag_.Add(new CommentFlag(CommentIdentifier.SouthPurification, displacement[0], displacement[1], displacement[2], displacement[3], displacement[4], AdviceType.Element));
             }
 
         }
@@ -3921,614 +4129,12 @@ public partial class Evaluation : MonoBehaviour
         //最後に元の運勢に補正を加算
         for (int i = 0; i < 5; ++i)
         {
-            plus_luck_[i] += displacement_plus_stock[i];
-            minus_luck_[i] += displacement_minus_stock[i];
+            plus_luck_[i] += plus_luck_stock[i];
+            minus_luck_[i] += minus_luck_stock[i];
         }
     }
 
     //**********************************************************************************************************************************************************************************************
-
-    //家具の特徴をカウントする関数 (2018年 2月15日追加)
-    private void CountCharacteristic(FurnitureGrid furniture_grid)
-    {
-        switch (furniture_grid.furniture_type())
-        {
-            case FurnitureGrid.FurnitureType.Bed: //ベッド
-                {
-                    SubCountCharacteristic(CharacteristicIdentifier.BedFurniture, 1);
-                    break;
-                }
-            case FurnitureGrid.FurnitureType.Cabinet: //タンス
-                {
-                    SubCountCharacteristic(CharacteristicIdentifier.CabinetFurniture, 1);
-                    break;
-                }
-            case FurnitureGrid.FurnitureType.Carpet: //カーペット
-                {
-                    SubCountCharacteristic(CharacteristicIdentifier.CarpetFurniture, 1);
-                    break;
-                }
-            case FurnitureGrid.FurnitureType.Desk: //机
-                {
-                    SubCountCharacteristic(CharacteristicIdentifier.DeskFurniture, 1);
-                    break;
-                }
-            case FurnitureGrid.FurnitureType.FoliagePlant: //観葉植物
-                {
-                    SubCountCharacteristic(CharacteristicIdentifier.FoliagePlantFurniture, 1);
-                    break;
-                }
-            case FurnitureGrid.FurnitureType.CeilLamp: //天井ランプ
-                {
-                    SubCountCharacteristic(CharacteristicIdentifier.CeilLampFurniture, 1);
-                    break;
-                }
-            case FurnitureGrid.FurnitureType.DeskLamp: //机ランプ
-                {
-                    SubCountCharacteristic(CharacteristicIdentifier.DeskLampFurniture, 1);
-                    break;
-                }
-            case FurnitureGrid.FurnitureType.Sofa: //ソファー
-                {
-                    SubCountCharacteristic(CharacteristicIdentifier.SofaFurniture, 1);
-                    break;
-                }
-            case FurnitureGrid.FurnitureType.Table: //テーブル
-                {
-                    SubCountCharacteristic(CharacteristicIdentifier.TableFurniture, 1);
-                    break;
-                }
-            case FurnitureGrid.FurnitureType.ConsumerElectronics: //家電
-                {
-                    SubCountCharacteristic(CharacteristicIdentifier.ConsumerElectronicsFurniture, 1);
-                    break;
-                }
-            case FurnitureGrid.FurnitureType.Curtain: //カーテン
-                {
-                    SubCountCharacteristic(CharacteristicIdentifier.CurtainFurniture, 1);
-                    break;
-                }
-            case FurnitureGrid.FurnitureType.Dresser: //鏡
-                {
-                    SubCountCharacteristic(CharacteristicIdentifier.DresserFurniture, 1);
-                    break;
-                }
-            default: //その他
-                {
-                    Debug.Log("この家具はその他です．");
-                    break;
-                }
-        }
-
-        for (int i = 0; i < furniture_grid.furniture_subtype().Count; ++i)
-        {
-            switch (furniture_grid.furniture_subtype()[i])
-            {
-                case FurnitureGrid.FurnitureType.Bed: //ベッド
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.BedFurniture, 1);
-                        break;
-                    }
-                case FurnitureGrid.FurnitureType.Cabinet: //タンス
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.CabinetFurniture, 1);
-                        break;
-                    }
-                case FurnitureGrid.FurnitureType.Carpet: //カーペット
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.CarpetFurniture, 1);
-                        break;
-                    }
-                case FurnitureGrid.FurnitureType.Desk: //机
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.DeskFurniture, 1);
-                        break;
-                    }
-                case FurnitureGrid.FurnitureType.FoliagePlant: //観葉植物
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.FoliagePlantFurniture, 1);
-                        break;
-                    }
-                case FurnitureGrid.FurnitureType.CeilLamp: //天井ランプ
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.CeilLampFurniture, 1);
-                        break;
-                    }
-                case FurnitureGrid.FurnitureType.DeskLamp: //机ランプ
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.DeskLampFurniture, 1);
-                        break;
-                    }
-                case FurnitureGrid.FurnitureType.Sofa: //ソファー
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.SofaFurniture, 1);
-                        break;
-                    }
-                case FurnitureGrid.FurnitureType.Table: //テーブル
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.TableFurniture, 1);
-                        break;
-                    }
-                case FurnitureGrid.FurnitureType.ConsumerElectronics: //家電
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.ConsumerElectronicsFurniture, 1);
-                        break;
-                    }
-                case FurnitureGrid.FurnitureType.Curtain: //カーテン
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.CurtainFurniture, 1);
-                        break;
-                    }
-                case FurnitureGrid.FurnitureType.Dresser: //鏡
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.DresserFurniture, 1);
-                        break;
-                    }
-                default: //その他
-                    {
-                        break;
-                    }
-            }
-        }
-
-        for (int i = 0; i < furniture_grid.color_name().Count; ++i)
-        {
-            switch (furniture_grid.color_name()[i])
-            {
-
-                case FurnitureGrid.ColorName.White: //白
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.WhiteColor, furniture_grid.color_name_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.ColorName.Black: //黒
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.BlackColor, furniture_grid.color_name_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.ColorName.Gray: //灰
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.GrayColor, furniture_grid.color_name_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.ColorName.DarkGray: //濃い灰色
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.DarkGrayColor, furniture_grid.color_name_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.ColorName.Red: //赤
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.RedColor, furniture_grid.color_name_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.ColorName.Pink: //ピンク
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.PinkColor, furniture_grid.color_name_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.ColorName.Blue: //青
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.BlueColor, furniture_grid.color_name_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.ColorName.LightBlue: //水色
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.LightBlueColor, furniture_grid.color_name_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.ColorName.Orange: //オレンジ
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.OrangeColor, furniture_grid.color_name_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.ColorName.Yellow: //黄
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.YellowColor, furniture_grid.color_name_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.ColorName.Green: //緑
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.GreenColor, furniture_grid.color_name_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.ColorName.LightGreen: //黄緑
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.LightGreenColor, furniture_grid.color_name_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.ColorName.Beige: //ベージュ
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.BeigeColor, furniture_grid.color_name_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.ColorName.Cream: //クリーム色
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.CreamColor, furniture_grid.color_name_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.ColorName.Brown: //茶
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.BrownColor, furniture_grid.color_name_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.ColorName.Ocher: //黄土色
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.OcherColor, furniture_grid.color_name_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.ColorName.Gold: //金
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.GoldColor, furniture_grid.color_name_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.ColorName.Silver: //銀
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.SilverColor, furniture_grid.color_name_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.ColorName.Purple: //紫
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.PurpleColor, furniture_grid.color_name_weight()[i]);
-                        break;
-                    }
-                default:
-                    {
-
-                        break;
-                    }
-            }
-
-        }
-
-        for (int i = 0; i < furniture_grid.material_type().Count; ++i)
-        {
-            switch (furniture_grid.material_type()[i])
-            {
-                case FurnitureGrid.MaterialType.ArtificialFoliage: //人工観葉植物
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.ArtificialFoliageMaterial, furniture_grid.material_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.MaterialType.Wooden: //木材
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.WoodenMaterial, furniture_grid.material_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.MaterialType.Paper: //紙
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.PaperMaterial, furniture_grid.material_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.MaterialType.Leather: //革
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.PaperMaterial, furniture_grid.material_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.MaterialType.NaturalFibre: //天然素材
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.NaturalFibreMaterial, furniture_grid.material_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.MaterialType.ChemicalFibre: //化学素材
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.ChemicalFibreMaterial, furniture_grid.material_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.MaterialType.Cotton: //綿
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.CottonMaterial, furniture_grid.material_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.MaterialType.Plastic: //プラスチック
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.PlasticMaterial, furniture_grid.material_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.MaterialType.Ceramic: //陶磁器
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.CeramicMaterial, furniture_grid.material_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.MaterialType.Marble: //大理石
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.MarbleMaterial, furniture_grid.material_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.MaterialType.Metal: //金属
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.MetalMaterial, furniture_grid.material_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.MaterialType.Mineral: //鉱物
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.MineralMaterial, furniture_grid.material_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.MaterialType.Glass: //ガラス
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.GlassMaterial, furniture_grid.material_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.MaterialType.Water: //水
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.WaterMaterial, furniture_grid.material_type_weight()[i]);
-                        break;
-                    }
-                default: //その他
-                    {
-
-                        break;
-                    }
-            }
-        }
-
-        for (int i = 0; i < furniture_grid.pattern_type().Count; ++i)
-        {
-
-            switch (furniture_grid.pattern_type()[i])
-            {
-                case FurnitureGrid.PatternType.Stripe: //ストライプ
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.StripePattern, furniture_grid.pattern_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.PatternType.Leaf: //リーフ
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.LeafPattern, furniture_grid.pattern_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.PatternType.Flower: //花柄
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.FlowerPattern, furniture_grid.pattern_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.PatternType.Star: //星柄
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.StarPattern, furniture_grid.pattern_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.PatternType.Diamond: //ダイヤ柄
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.DiamondPattern, furniture_grid.pattern_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.PatternType.Animal: //アニマル柄
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.AnimalPattern, furniture_grid.pattern_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.PatternType.Zigzag: //ジグザグ柄
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.ZigzagPattern, furniture_grid.pattern_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.PatternType.Novel: //奇抜
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.NovelPattern, furniture_grid.pattern_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.PatternType.Border: //ボーダー
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.BorderPattern, furniture_grid.pattern_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.PatternType.Check: //チェック
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.CheckPattern, furniture_grid.pattern_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.PatternType.Tile: //タイル
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.TilePattern, furniture_grid.pattern_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.PatternType.Dot: //ドット
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.DotPattern, furniture_grid.pattern_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.PatternType.Round: //●柄
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.RoundPattern, furniture_grid.pattern_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.PatternType.Arch: //アーチ
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.ArchPattern, furniture_grid.pattern_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.PatternType.Fruits: //フルーツ
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.FruitsPattern, furniture_grid.pattern_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.PatternType.Luster: //光沢
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.LusterPattern, furniture_grid.pattern_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.PatternType.Wave: //ウェーブストライプ
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.WavePattern, furniture_grid.pattern_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.PatternType.Irregularity: //不規則パターン
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.IrregularityPattern, furniture_grid.pattern_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.PatternType.Cloud: //雲柄
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.CloudPattern, furniture_grid.pattern_type_weight()[i]);
-                        break;
-                    }
-                default:
-                    {
-
-                        break;
-                    }
-            }
-        }
-
-        for (int i = 0; i < furniture_grid.form_type().Count; ++i)
-        {
-            switch (furniture_grid.form_type()[i])
-            {
-                case FurnitureGrid.FormType.High: //背が高い
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.HighForm, furniture_grid.form_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.FormType.Low: //背が低い
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.LowForm, furniture_grid.form_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.FormType.Vertical: //縦長
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.VerticalForm, furniture_grid.form_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.FormType.Oblong: //横長
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.OblongForm, furniture_grid.form_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.FormType.Square: //正方形
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.SquareForm, furniture_grid.form_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.FormType.Rectangle: //長方形
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.RectangleForm, furniture_grid.form_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.FormType.Round: //円形
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.RoundForm, furniture_grid.form_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.FormType.Ellipse: //楕円形
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.EllipseForm, furniture_grid.form_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.FormType.Triangle: //三角形
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.TriangleForm, furniture_grid.form_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.FormType.Sharp: //尖っている
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.SharpForm, furniture_grid.form_type_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.FormType.Novel: //奇抜
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.NovelForm, furniture_grid.form_type_weight()[i]);
-                        break;
-                    }
-                default: //その他
-                    {
-
-                        break;
-                    }
-            }
-        }
-
-        for (int i = 0; i < furniture_grid.characteristic().Count; ++i)
-        {
-            switch (furniture_grid.characteristic()[i])
-            {
-                case FurnitureGrid.Characteristic.Luxury: //高級そう
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.Luxury, furniture_grid.characteristic_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.Characteristic.Sound: //音が出る
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.Sound, furniture_grid.characteristic_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.Characteristic.Smell: //いいにおい
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.Smell, furniture_grid.characteristic_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.Characteristic.Light: //発光
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.Light, furniture_grid.characteristic_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.Characteristic.Hard: //硬い
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.Hard, furniture_grid.characteristic_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.Characteristic.Soft: //やわらかい
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.Soft, furniture_grid.characteristic_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.Characteristic.Warm: //温かみ
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.Warm, furniture_grid.characteristic_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.Characteristic.Cold: //冷たさ
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.Cold, furniture_grid.characteristic_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.Characteristic.Flower: //花関連
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.Flower, furniture_grid.characteristic_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.Characteristic.Wind: //風関連
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.Wind, furniture_grid.characteristic_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.Characteristic.Western: //西洋風
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.Western, furniture_grid.characteristic_weight()[i]);
-                        break;
-                    }
-                case FurnitureGrid.Characteristic.Clutter: //乱雑
-                    {
-                        SubCountCharacteristic(CharacteristicIdentifier.Clutter, furniture_grid.characteristic_weight()[i]);
-                        break;
-                    }
-                default: //その他
-                    {
-
-                        break;
-                    }
-            }
-        }
-    }
-
-    //家具の特徴をカウントする関数の補助  (2018年 2月15日追加)
-    private void SubCountCharacteristic(CharacteristicIdentifier characteristic_identifier, int weight)
-    {
-        for (int i = 0; i < characteristic_number_.Count; ++i)
-        {
-            if (characteristic_number_[i].characteristic_identifier_ == characteristic_identifier)
-            {
-                characteristic_number_[i].WeightPlus(weight);
-                characteristic_number_[i].CountPlus(1);
-                break;
-            }
-
-            if (i == characteristic_number_.Count - 1)
-            {
-                characteristic_number_.Add(new CharacteristicNumber(characteristic_identifier, weight, 1));
-            }
-        }
-
-    }
 
     //家具を無視するかどうか
     private bool IsIgnored(int index)
@@ -4541,26 +4147,6 @@ public partial class Evaluation : MonoBehaviour
             }
         }
         return false;
-    }
-
-    //家具置きすぎ関数
-    private void OverFurniture(int furniture_count, int tolerance, int work_weight, int popular_weight, int health_weight, int economic_weight, int love_weight,
-    CommentIdentifier comment_identifier, string identifier_name)
-    {
-        int[] weight = new int[5] { work_weight, popular_weight, health_weight, economic_weight, love_weight };
-
-        for (int i = 0; i < 5; ++i)
-        {
-            weight[i] *= (furniture_count - tolerance);
-            if (weight[i] <= 0)
-            {
-                continue;
-            }
-            minus_luck_[i] += weight[i];
-            comment_flag_.Add(new CommentFlag(comment_identifier, weight[i], i));
-        }
-        comment_flag_.Add(new CommentFlag(comment_identifier, weight.Sum(), 5));
-        Debug.Log(identifier_name);
     }
 
     partial void EvaluationTotaTestDummy();
