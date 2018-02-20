@@ -130,7 +130,7 @@ public class LevelManager : MonoBehaviour
 
         Timer.GetComponent<Text>().text = counter.ToString("f2");
         dist_counter = counter;
-        comment_value = 1;
+        comment_value = 0;
 
         for (int i = 0; i < 10; i++)
         {
@@ -144,17 +144,26 @@ public class LevelManager : MonoBehaviour
         {            
             counter -= Time.deltaTime;
 
-            if (dist_counter - counter > 5)
+            if (dist_counter - counter > 4)
             {                
                 dist_counter = counter;
 
-                if (comment_value % 2 == 0)
+                if (comment_value == 0)
                 {
                     evaluation.Comment_Text(0);
                 }
-                else
+                else if(comment_value == 1)
+                {
+                    evaluation.Comment_Text(2);
+                }
+                else if (comment_value == 2)
                 {
                     evaluation.Comment_Text(1);
+                }
+                else if (comment_value == 3)
+                {
+                    evaluation.Comment_Text(3);
+                    comment_value = 0;
                 }
 
                 comment_value++;

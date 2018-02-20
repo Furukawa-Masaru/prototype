@@ -6,11 +6,10 @@ using UnityEngine;
 //ゲーム途中のワンポイントアドバイス
 public partial class Evaluation : MonoBehaviour
 {
-
     partial void CommentMini()
     {
-        int comment_num_elements = 1; //五行陰陽関係コメント数
-        int comment_num_bonus = 1; //ボーナス点関係コメント数
+        int comment_num_elements = 2; //五行陰陽関係コメント数
+        int comment_num_bonus = 2; //ボーナス点関係コメント数
 
         //アドバイスのモードによりコメントの重み変更．
         if (advaice_mode_ == 0)
