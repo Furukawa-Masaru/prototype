@@ -18,6 +18,8 @@ public class DataManager : MonoBehaviour
     //アドバイスモード(0 = 仕事運重視，1 = 人気運重視，2 = 健康運重視，3 = 金運重視，4 = 恋愛運重視, 5 = デフォルト(ノルマ重視))
     private int advaice_mode_;
 
+    private int max_;
+
     private List<string> comment_;
 
     private bool[] current_scene = new bool[5];
@@ -62,6 +64,16 @@ public class DataManager : MonoBehaviour
     public void set_advaice_mode(int advaice_mode)
     {
         advaice_mode_ = advaice_mode;
+    }
+
+    public int read_max()
+    {
+        return max_;
+    }
+
+    public void set_max(int max)
+    {
+        max_ = max;
     }
 
     public List<string> read_comment()

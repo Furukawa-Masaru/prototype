@@ -536,7 +536,7 @@ public partial class Evaluation : MonoBehaviour
         }
 
         attack_shikigami.SetInteger("Element", max);
-        DataManager.GetComponent<DataManager>().set_advaice_mode(max);
+        DataManager.GetComponent<DataManager>().set_max(max);
 
         //陰陽ゲージ
         float yin_yang_temp_ = yin_yang_;
@@ -615,7 +615,7 @@ public partial class Evaluation : MonoBehaviour
 
         room_role_ = room_role;
         room_direction_ = room_direction;
-        norma_luck_ = norma_luck;
+        //norma_luck_ = norma_luck;
         furniture_grid_ = furniture_grid;
 
         if (advice_mode == 0)

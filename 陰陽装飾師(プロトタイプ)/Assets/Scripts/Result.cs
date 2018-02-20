@@ -28,10 +28,10 @@ public class Result : MonoBehaviour {
             BG.sprite = Resources.Load<Sprite>("Background/lose");
             Condition.sprite = Resources.Load<Sprite>("Effect/lose");
             DataManager.GetComponent<AudioSource>().PlayOneShot(Resources.Load<AudioClip>("Sound/SE/lose"));
-            Shikigami[DataManager.GetComponent<DataManager>().read_advaice_mode()].GetComponent<RectTransform>().localScale = new Vector3(0.6f, 0.6f, 1);
+            Shikigami[DataManager.GetComponent<DataManager>().read_max()].GetComponent<RectTransform>().localScale = new Vector3(0.6f, 0.6f, 1);
         }
 
-        Shikigami[DataManager.GetComponent<DataManager>().read_advaice_mode()].SetActive(true);
+        Shikigami[DataManager.GetComponent<DataManager>().read_max()].SetActive(true);
         Youkai[DataManager.GetComponent<DataManager>().read_advaice_mode()].SetActive(true);
     }
 	
@@ -55,7 +55,7 @@ public class Result : MonoBehaviour {
     // コルーチン  
     private IEnumerator Sample(string name)
     {
-        yield return new WaitForSeconds(3.0f);
+        yield return new WaitForSeconds(1.0f);
 
         SceneManager.LoadScene(name);
     }

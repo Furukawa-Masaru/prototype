@@ -49,7 +49,7 @@ public class LevelManager : MonoBehaviour
 	{
         DataManager = GameObject.Find("DataManager");
         advaice_mode = DataManager.GetComponent<DataManager>().read_advaice_mode();
-
+        Debug.Log("LevelManager " + advaice_mode);
         game.SetActive(true);
 
         if (DataManager.GetComponent<DataManager>().read_room() == Evaluation.Room.Bedroom)
@@ -286,7 +286,7 @@ public class LevelManager : MonoBehaviour
             yield return null;
         }
 
-        yield return new WaitForSeconds(3.0f);
+        yield return new WaitForSeconds(2.0f);
 
         SceneManager.LoadScene(name);
     }

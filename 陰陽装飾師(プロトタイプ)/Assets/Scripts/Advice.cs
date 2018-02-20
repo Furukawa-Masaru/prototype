@@ -19,27 +19,27 @@ public class Advice : MonoBehaviour {
 
         DataManager = GameObject.Find("DataManager");
 
-        if (DataManager.GetComponent<DataManager>().read_advaice_mode() == 0)
+        if (DataManager.GetComponent<DataManager>().read_max() == 0)
         {
             shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/wood/body");
             StartCoroutine(Delay("shikigami/wood/voice"));
         }
-        else if (DataManager.GetComponent<DataManager>().read_advaice_mode() == 1)
+        else if (DataManager.GetComponent<DataManager>().read_max() == 1)
         {
             shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/fire/body");
             StartCoroutine(Delay("shikigami/fire/voice"));
         }
-        else if (DataManager.GetComponent<DataManager>().read_advaice_mode() == 2)
+        else if (DataManager.GetComponent<DataManager>().read_max() == 2)
         {
             shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/earth/body");
             StartCoroutine(Delay("shikigami/earth/voice"));
         }
-        else if (DataManager.GetComponent<DataManager>().read_advaice_mode() == 3)
+        else if (DataManager.GetComponent<DataManager>().read_max() == 3)
         {
             shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/metal/body");
             StartCoroutine(Delay("shikigami/metal/voice"));
         }
-        else if (DataManager.GetComponent<DataManager>().read_advaice_mode() == 4)
+        else if (DataManager.GetComponent<DataManager>().read_max() == 4)
         {
             shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/water/body");
             StartCoroutine(Delay("shikigami/water/voice"));
