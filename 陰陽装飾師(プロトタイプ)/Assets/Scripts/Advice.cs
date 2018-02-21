@@ -44,7 +44,7 @@ public class Advice : MonoBehaviour {
             shikigami.GetComponent<Image>().sprite = Resources.Load<Sprite>("shikigami/water/body");
             StartCoroutine(Delay("shikigami/water/voice"));
         }
-
+        Debug.Log(DataManager.GetComponent<DataManager>().read_comment().Count);
         for (int i = 0; i < DataManager.GetComponent<DataManager>().read_comment().Count; i++)
         {
             comment.Add(DataManager.GetComponent<DataManager>().read_comment()[i]);

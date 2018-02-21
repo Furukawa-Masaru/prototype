@@ -180,6 +180,12 @@ public class LevelManager : MonoBehaviour
                 }               
             }
 
+            if (Input.GetKeyDown(KeyCode.H))
+            {
+                counter = 0;
+                FinishGame(true);
+            }
+
             //敗北
             if (counter < 0)
             {

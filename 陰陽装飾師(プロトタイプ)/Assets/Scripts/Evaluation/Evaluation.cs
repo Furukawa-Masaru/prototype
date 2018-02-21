@@ -463,6 +463,8 @@ public partial class Evaluation : MonoBehaviour
 
     public void Comment_Text(int num)
     {
+        Debug.Log(comment_.Count);
+
         if (is_finished_game_ == true)
         {
             DataManager.set_comment(comment_);
@@ -595,7 +597,7 @@ public partial class Evaluation : MonoBehaviour
                 }
             }
         }
-
+        
         if (count == luck_.Length)
         {
             GameObject.Find("LevelManager").GetComponent<LevelManager>().FinishGame(true);
@@ -620,24 +622,24 @@ public partial class Evaluation : MonoBehaviour
 
         if (advice_mode == 0)
         {
-            set_norma(300, 300, 300, 300, 300, 300);
+            set_norma(0, 0, 0, 0, 0, 0);
         }
         else if (advice_mode == 1)
         {
-            set_norma(400, 400, 400, 400, 400, 400);
+            set_norma(100, 100, 100, 100, 100, 100);
         }
         else if (advice_mode == 2)
         {
-            set_norma(500, 500, 500, 500, 500, 500);
+            set_norma(200, 200, 200, 200, 200, 200);
         }
         else if (advice_mode == 3)
         {
-            set_norma(300, 300, 300, 300, 300, 300);
+            set_norma(0, 0, 0, 0, 0, 0);
             no_hint = true;
         }
         else if (advice_mode == 4)
         {
-            set_norma(500, 500, 500, 500, 500, 500);
+            set_norma(200, 200, 200, 200, 200, 200);
             no_hint = true;            
         }
 
