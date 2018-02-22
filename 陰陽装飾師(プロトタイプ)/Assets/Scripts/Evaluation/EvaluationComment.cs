@@ -155,6 +155,7 @@ public partial class Evaluation : MonoBehaviour
                         string comment_buffer = "部屋の陰気がつよく，仕事運，人気運，健康運，恋愛運が下がっています．";
                         bool bad_flag = false;
                         bool foliage_flag = false;
+                        bool white_flag = false;
                         for (int j = 0; j < furniture_grid_.Count; ++j)
                         {
 
@@ -182,12 +183,22 @@ public partial class Evaluation : MonoBehaviour
                             {
                                 foliage_flag = true;
                             }
+
+                            if (furniture_grid_[j].color_name().IndexOf(FurnitureGrid.ColorName.White) >= 0)
+                            {
+                                white_flag = true;
+                            }
                         }
 
                         if ((bad_flag == false) && (foliage_flag == false))
                         {
                             comment_buffer += "観葉植物は周囲の陰陽のバランスを整えますので是非置きましょう. ";
                         }
+                        else if ((bad_flag == false) && (white_flag == false))
+                        {
+                            comment_buffer += "白い家具は部屋全体の陰陽のバランスを整えますので是非置きましょう. ";
+                        }
+
                         comment_.Add(comment_buffer);
                     }
                     break;
@@ -195,17 +206,27 @@ public partial class Evaluation : MonoBehaviour
                     {
                         string comment_buffer = "部屋の陽気がつよく，仕事運，健康運，恋愛運が下がっています．";
                         bool foliage_flag = false;
+                        bool white_flag = false;
                         for (int j = 0; j < furniture_grid_.Count; ++j)
                         {
                             if (furniture_grid_[j].furniture_type() == FurnitureGrid.FurnitureType.FoliagePlant)
                             {
                                 foliage_flag = true;
                             }
+
+                            if (furniture_grid_[j].color_name().IndexOf(FurnitureGrid.ColorName.White) >= 0)
+                            {
+                                white_flag = true;
+                            }
                         }
 
                         if (foliage_flag == false)
                         {
                             comment_buffer += "観葉植物は周囲の陰陽のバランスを整えますので是非置きましょう. ";
+                        }
+                        else if ((white_flag == false))
+                        {
+                            comment_buffer += "白い家具は部屋全体の陰陽のバランスを整えますので是非置きましょう. ";
                         }
                         comment_.Add(comment_buffer);
                     }
@@ -442,6 +463,9 @@ public partial class Evaluation : MonoBehaviour
                 case CommentIdentifier.BedNoBedroom:
                     comment_.Add("寝室にベッドがないと健康運を中心に運気が大きく下がりますので最低1個は置くようにしましょう．");
                     break;
+                case CommentIdentifier.BedNatural:
+                    comment_.Add("化学繊維，プラスチックが使われているベッドでは，ベッドが持っている健康運上昇のパワーを受けることができません．");
+                    break;
                 case CommentIdentifier.BedGapWall:
                     comment_.Add("ベッドと壁の隙間を開けないようにしましょう");
                     break;
@@ -504,7 +528,7 @@ public partial class Evaluation : MonoBehaviour
 
                 //ここから観葉植物の内容
                 case CommentIdentifier.FoliagePurification:
-                    comment_.Add("観葉植物を置きましょう");
+                    comment_.Add("部屋に悪い運気が流れ込んできているので，観葉植物で悪い運気を浄化しましょう．");
                     break;
                 case CommentIdentifier.FoliagePlantOver:
                     comment_.Add("観葉植物が多すぎて運気が全体的に大きく下がっています．観葉植物の数は" + limit_foliage_.ToString() + "個までにしましょう．");
@@ -571,18 +595,21 @@ public partial class Evaluation : MonoBehaviour
                 //ここから色特性
                 //白関連
                 case CommentIdentifier.WhiteColorPurification:
-                    comment_.Add("白い家具を置きましょう");
+                    comment_.Add("部屋に悪い運気が流れ込んできているので，白い家具を最低限1個置いて，悪い運気を浄化しましょう．");
                     break;
                 case CommentIdentifier.WhiteColorResetYinYang:
                     comment_.Add("白い家具で部屋の陰陽を中和しましょう");
                     break;
 
                 //黒関連
-                case CommentIdentifier.BlackColorStrengthening:
-                    comment_.Add("黒い家具は置けば");
+                case CommentIdentifier.BlackStrengthening:
+                    comment_.Add("家具の色によって悪い運気が生み出され，それが黒い家具によって増幅されています．色の取り扱いに注意しましょう．");
+                    break;
+                case CommentIdentifier.BlackNoStrengthening:
+                    comment_.Add("家具の色によって生み出された良い運気は，黒い家具を置くことで増幅させることができます．");
                     break;
                 case CommentIdentifier.BlackNoGreemWarm:
-                    comment_.Add("黒い家具を1つでも置くと人気運，健康運，恋愛運を下げてしまいますが緑，または温かみのある家具を置くことでその悪い効果を打ち消すことができます．");
+                    comment_.Add("黒や青の家具を1つでも置くと人気運，健康運，恋愛運を下げてしまいますが緑，または温かみのある家具を置くことでその悪い効果を打ち消すことができます．");
                     break;
                 case CommentIdentifier.BlackInteger:
                     comment_.Add("黒い家具は置けば置くほど金運を少しずつ上げることができます．");
@@ -594,60 +621,66 @@ public partial class Evaluation : MonoBehaviour
                     comment_.Add("北西の部屋では，灰色，濃い灰色，銀色の家具を置けば置くほど仕事運，金運を少しずつ上げることができます．");
                     break;
                 case CommentIdentifier.GraySplitNorthWest:
-                    comment_.Add("灰色，濃い灰色，銀色の家具は部屋の北西側に置くと仕事運，金運を少しずつ上げることができます．");
+                    comment_.Add("灰色や濃い灰色，銀色の家具は部屋の北西側に置くと仕事運，金運が上がります．");
                     break;
 
                 //赤関連
-                case CommentIdentifier.RedColorOne:
-                    comment_.Add("赤い家具を最低限1個置きましょう");
+                case CommentIdentifier.RedOne:
+                    comment_.Add("赤い家具を1つでも置けば，仕事運，健康運を上げることができます．");
                     break;
                 case CommentIdentifier.RedOver:
-                    comment_.Add("赤い家具が多すぎます");
+                    comment_.Add("赤い家具が多すぎて仕事運，健康運に悪影響がでています．赤い家具は" + limit_red_color_.ToString() + "個までにしましょう．");
                     break;
 
                 //ピンク関連
                 case CommentIdentifier.PinkColorOne:
-                    comment_.Add("ピンクの家具を最低限1個置きましょう");
+                    comment_.Add("ピンクの家具を1つでも置けば，恋愛運を大きく上げることができます．");
                     break;
                 case CommentIdentifier.PinkColorNoOrange:
-                    comment_.Add("ピンクの家具とオレンジの家具を合わせましょう");
+                    comment_.Add("ピンクとオレンジを合わせることで恋愛運が上がります．せっかくピンクの家具がありますのでオレンジの家具を置きましょう．");
                     break;
-                case CommentIdentifier.PinkColorNorth:
-                    comment_.Add("ピンクの家具を増やしましょう");
+                case CommentIdentifier.PinkBed:
+                    comment_.Add("寝室では，ピンクの家具を置けば置くほど恋愛運を少しずつ上げることができます．");
+                    break;
+                case CommentIdentifier.PinkNorth:
+                    comment_.Add("北の部屋では，ピンクの家具を置けば置くほど恋愛運を少しずつ上げることができます．");
+                    break;
+                case CommentIdentifier.PinkSplitNorth:
+                    comment_.Add("ピンクの家具は部屋の北側に置くと恋愛運が上がります．");
                     break;
 
                 //青関連
                 case CommentIdentifier.BlueColorOne:
-                    comment_.Add("青い家具を最低限1個置きましょう");
+                    comment_.Add("青い家具を1つでも置けば，仕事運を上げることができます．");
                     break;
-                case CommentIdentifier.BlueBedroom:
-                    comment_.Add("青い家具を増やしましょう");
-                    break;
-                case CommentIdentifier.BlueNoGreenWarm:
-                    comment_.Add("青い家具を置くときは温かみのある家具や緑の家具と合わせましょう");
+                case CommentIdentifier.BlueInteger:
+                    comment_.Add("青や水色の家具は置けば置くほど健康運を少しずつ上げることができます．");
                     break;
 
 
                 //水色関連
                 case CommentIdentifier.LightBlueColorNoOrange:
-                    comment_.Add("水色の家具とオレンジの家具を合わせましょう");
+                    comment_.Add("水色とオレンジを合わせることで健康運が上がります．せっかく水色の家具がありますのでオレンジの家具を置きましょう．");
                     break;
 
 
                 //オレンジ関連
                 case CommentIdentifier.OrangeColorNoPink:
-                    comment_.Add("ピンクの家具とオレンジの家具を合わせましょう");
+                    comment_.Add("ピンクとオレンジを合わせることで恋愛運が上がります．せっかくオレンジの家具がありますのでピンクの家具を置きましょう．");
                     break;
                 case CommentIdentifier.OrangeColorNoLightBlue:
-                    comment_.Add("水色の家具とオレンジの家具を合わせましょう");
+                    comment_.Add("水色とオレンジを合わせることで健康運が上がります．せっかくオレンジの家具がありますので水色の家具を置きましょう．");
                     break;
                 case CommentIdentifier.OrangeSouthEast:
-                    comment_.Add("オレンジの家具を増やしましょう");
+                    comment_.Add("南東の部屋では，オレンジの家具を置けば置くほど人気運，恋愛運を少しずつ上げることができます．");
+                    break;
+                case CommentIdentifier.OrangeSplitSouthEast:
+                    comment_.Add("オレンジの家具は部屋の南東側に置くと人気運，恋愛運が上がります．");
                     break;
 
                 //黄色関連
                 case CommentIdentifier.YellowBrownOcherOne:
-                    comment_.Add("");
+                    comment_.Add("黄色か茶色か黄土色の家具を最低限1個置くことで，部屋の良い運気をさらに増幅できます．");
                     break;
 
                 //緑
@@ -655,22 +688,29 @@ public partial class Evaluation : MonoBehaviour
                 //黄緑
 
                 //ベージュ関連
-                case CommentIdentifier.BeigeInteger:
-                    comment_.Add("ベージュの家具を増やしましょう");
+                case CommentIdentifier.BeigeCreamNorthWest:
+                    comment_.Add("北西の部屋では，ベージュ，クリーム色の家具を置けば置くほど仕事運，金運を少しずつ上げることができます．");
                     break;
-
-                //クリーム色
-                case CommentIdentifier.CreamColor:
-                    comment_.Add("");
+                case CommentIdentifier.BeigeCreamSplitNorthWest:
+                    comment_.Add("ベージュ，クリーム色の家具は部屋の北西側に置くと仕事運，金運が上がります．");
                     break;
-
+                //クリーム
                 //茶
                 //黄土色
                 //金
                 case CommentIdentifier.GoldOne:
-                    comment_.Add("");
+                    comment_.Add("金色の家具を最低限1個おくことで，金運を中心に，部屋の良い運気をさらに増幅できます．");
                     break;
+                case CommentIdentifier.GoldBad:
+                    comment_.Add("金運を中心とした部屋の悪い気が，金色の家具によって増幅されてますので，悪い運気を消すか，金色の家具をなくしましょう．");
+                    break;
+
+
                 //銀
+                case CommentIdentifier.SilverInteger:
+                    comment_.Add("銀色の家具は置けば置くほど金運を少しずつ上げることができます．");
+                    break;
+
                 //紫
 
                 //材質関連
@@ -722,7 +762,10 @@ public partial class Evaluation : MonoBehaviour
                 //形状関連
                 //背が高い
                 case CommentIdentifier.HighFormNorthEast:
-                    comment_.Add("背が高い家具を増やしましょう");
+                    comment_.Add("北東の部屋では，背の高い家具を置けば置くほど運気を全体的に少しずつ上げることができます．");
+                    break;
+                case CommentIdentifier.HighFormSplitNorthEast:
+                    comment_.Add("背の高い家具は部屋の北東側に置くと運気が全体的に少し上がります．");
                     break;
                 case CommentIdentifier.HighOver:
                     comment_.Add("背が高い家具が多すぎます");
@@ -730,14 +773,20 @@ public partial class Evaluation : MonoBehaviour
 
                 //背が低い
                 case CommentIdentifier.LowFormSouthWest:
-                    comment_.Add("背の低い家具を増やしましょう");
+                    comment_.Add("南西の部屋では，背の低い家具を置けば置くほど仕事運，人気運，健康運を少しずつ上げることができます．");
+                    break;
+                case CommentIdentifier.LowFormSplitSouthWest:
+                    comment_.Add("背の低い家具は部屋の南西側に置くと仕事運，人気運，健康運が上がります．");
                     break;
                 //縦長
                 //横長
 
                 //正方形
-                case CommentIdentifier.SquareMulti:
-                    comment_.Add("");
+                case CommentIdentifier.SquareOne:
+                    comment_.Add("正方形，または長方形の家具を最低限1個置くことで，部屋の良い運気をさらに浄化できます．");
+                    break;
+                case CommentIdentifier.SquareBad:
+                    comment_.Add("部屋の悪い気が，正方形，長方形の家具によって増幅されてますので，悪い運気を消すか，正方形，長方形の家具をなくしましょう．");
                     break;
 
                 //長方形
@@ -746,10 +795,12 @@ public partial class Evaluation : MonoBehaviour
                     break;
 
                 //円形
-                case CommentIdentifier.RoundMulti:
-                    comment_.Add("");
+                case CommentIdentifier.RoundBad:
+                    comment_.Add("丸，または楕円形の家具を最低限1個置くことで，部屋の悪い運気をさらに浄化できます．");
                     break;
-
+                case CommentIdentifier.RoundOne:
+                    comment_.Add("部屋の良い気が，丸，楕円形の家具によって縮小されてますので，丸，楕円形の家具をなくしましょう．");
+                    break;
                 //楕円形
                 case CommentIdentifier.EllipseMulti:
                     comment_.Add("");
@@ -758,8 +809,8 @@ public partial class Evaluation : MonoBehaviour
                 //三角形
 
                 //尖っている
-                case CommentIdentifier.SharpMulti:
-                    comment_.Add("");
+                case CommentIdentifier.SharpBad:
+                    comment_.Add("部屋の悪い気が，尖った家具によって増幅されてますので，悪い運気を消すか，尖った家具をなくしましょう．");
                     break;
 
                 //奇抜な形状
@@ -770,63 +821,58 @@ public partial class Evaluation : MonoBehaviour
 
                 //高級そう
                 case CommentIdentifier.LuxuryNorthWest:
-                    comment_.Add("");
+                    comment_.Add("北西の部屋では，高級そうな家具を置けば置くほど仕事運，金運を少しずつ上げることができます．");
                     break;
-
+                case CommentIdentifier.LuxurySplitNorthWest:
+                    comment_.Add("高級そうな家具は部屋の北西側に置くと仕事運，金運が上がります．");
+                    break;
                 case CommentIdentifier.LuxuryZeroNorthWest:
-                    comment_.Add("");
+                    comment_.Add("北西の部屋に高級そうな家具が1つもないと，仕事運，人気運が下がってしまいます．");
                     break;
 
                 //音が出る
                 case CommentIdentifier.SoundEast:
-                    comment_.Add("");
+                    comment_.Add("東の部屋では，音が出る，いい匂いがする，風に関連する家具置けば置くほど人気運，恋愛運を少しずつ上げることができます．");
                     break;
 
                 case CommentIdentifier.SoundSouthEast:
-                    comment_.Add("");
+                    comment_.Add("南東の部屋では，音が出る，いい匂いがする，風に関連する家具置けば置くほど人気運，恋愛運を少しずつ上げることができます．");
+                    break;
+                case CommentIdentifier.SoundSplitEastSouthEast:
+                    comment_.Add("音が出る，いい匂いがする，風に関連する家具を部屋の東側や南東側に置くと人気運，恋愛運が上がります．");
                     break;
 
                 //(いい)におい
-                case CommentIdentifier.SmellEast:
-                    comment_.Add("");
-                    break;
 
-                case CommentIdentifier.SmellSouthEast:
-                    comment_.Add("");
-                    break;
 
                 //発光
                 //硬い
                 //やわらかい
                 //温かみ
-                case CommentIdentifier.WarmFew:
-                    comment_.Add("");
+                case CommentIdentifier.WarmInteger:
+                    comment_.Add("温かみのある家具は置けば置くほど健康運を少しずつ上げることができます．");
                     break;
 
                 //冷たさ
                 case CommentIdentifier.ColdNorth:
-                    comment_.Add("");
+                    comment_.Add("北の部屋では，冷たい家具を置くと健康運がどんどん下がってしまいます．");
                     break;
 
-                case CommentIdentifier.ColdInteger:
-                    comment_.Add("");
+                case CommentIdentifier.ColdSplitNorth:
+                    comment_.Add("冷たい家具は，部屋の北側に置いてしまうと健康運を下げてしまいます．");
                     break;
 
                 //花関連
                 //風関連
-                case CommentIdentifier.WindEast:
-                    comment_.Add("");
-                    break;
 
-                case CommentIdentifier.WindSouthEast:
-                    comment_.Add("");
-                    break;
 
                 //西洋風
                 case CommentIdentifier.WesternWest:
-                    comment_.Add("");
+                    comment_.Add("西の部屋では，西洋風の家具を置けば置くほど金運を少しずつ上げることができます．");
                     break;
-
+                case CommentIdentifier.WesternSplitWest:
+                    comment_.Add("西洋風の家具は部屋の西側に置くと金運が上がります．");
+                    break;
                 //乱雑
 
                 default:

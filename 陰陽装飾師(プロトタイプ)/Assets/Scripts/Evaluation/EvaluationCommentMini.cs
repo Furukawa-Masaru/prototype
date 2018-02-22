@@ -6,6 +6,7 @@ using UnityEngine;
 //ゲーム途中のワンポイントアドバイス
 public partial class Evaluation : MonoBehaviour
 {
+
     partial void CommentMini()
     {
         int comment_num_elements = 2; //五行陰陽関係コメント数
@@ -141,13 +142,94 @@ public partial class Evaluation : MonoBehaviour
             switch (comment_flag_[i].comment_identifier_)
             {
                 case CommentIdentifier.OverYin:
-                    //人工観葉植物，乱雑関係は最終評価で
-                    comment_.Add("陰気を下げましょう");
+                    {
+                        string comment_buffer = "";
+                        bool bad_flag = false;
+                        bool foliage_flag = false;
+                        bool white_flag = false;
+                        for (int j = 0; j < furniture_grid_.Count; ++j)
+                        {
+                            if ((furniture_grid_[j].material_type().IndexOf(FurnitureGrid.MaterialType.ArtificialFoliage) >= 0)
+                                && (furniture_grid_[j].characteristic().IndexOf(FurnitureGrid.Characteristic.Clutter) >= 0))
+                            {
+                                bad_flag = true;
+                                comment_buffer += "人工観葉植物, 乱雑な家具を置かないようにしましょう";
+                                break;
+                            }
+                            else if (furniture_grid_[j].material_type().IndexOf(FurnitureGrid.MaterialType.ArtificialFoliage) >= 0)
+                            {
+                                bad_flag = true;
+                                comment_buffer += "人工観葉植物を置かないようにしましょう";
+                                break;
+                            }
+                            else if ((furniture_grid_[j].characteristic().IndexOf(FurnitureGrid.Characteristic.Clutter) >= 0))
+                            {
+                                bad_flag = true;
+                                comment_buffer += "乱雑な家具を置かないようにしましょう";
+                                break;
+                            }
+
+                            if (furniture_grid_[j].furniture_type() == FurnitureGrid.FurnitureType.FoliagePlant)
+                            {
+                                foliage_flag = true;
+                            }
+
+                            if (furniture_grid_[j].color_name().IndexOf(FurnitureGrid.ColorName.White) >= 0)
+                            {
+                                white_flag = true;
+                            }
+                        }
+
+                        if ((bad_flag == false) && (foliage_flag == false))
+                        {
+                            comment_buffer += "観葉植物で陰気を中和しましょう";
+                        }
+                        else if ((bad_flag == false) && (white_flag == false))
+                        {
+                            comment_buffer += "白い家具で陰気を中和しましょう";
+                        }
+                        else if (bad_flag == false)
+                        {
+                            comment_buffer += "部屋の陰気を陽気で中和しましょう";
+
+                        }
+
+                        comment_.Add(comment_buffer);
+                    }
                     break;
                 case CommentIdentifier.OverYang:
-                    comment_.Add("陽気を下げましょう");
-                    break;
+                    {
+                        string comment_buffer = "";
+                        bool foliage_flag = false;
+                        bool white_flag = false;
+                        for (int j = 0; j < furniture_grid_.Count; ++j)
+                        {
+                            if (furniture_grid_[j].furniture_type() == FurnitureGrid.FurnitureType.FoliagePlant)
+                            {
+                                foliage_flag = true;
+                            }
 
+                            if (furniture_grid_[j].color_name().IndexOf(FurnitureGrid.ColorName.White) >= 0)
+                            {
+                                white_flag = true;
+                            }
+                        }
+
+                        if (foliage_flag == false)
+                        {
+                            comment_buffer += "観葉植物で陽気を中和しましょう";
+                        }
+                        else if (white_flag == false)
+                        {
+                            comment_buffer += "白い家具で陽気を中和しましょう";
+                        }
+                        else
+                        {
+                            comment_buffer += "部屋の陽気を陰気で中和しましょう";
+                        }
+                        comment_.Add(comment_buffer);
+                    }
+                    break;
                 //部屋の方位から受けるパワー関連
                 case CommentIdentifier.NorthWeak:
                     comment_.Add("水の気を中心に部屋の気を上げましょう");
@@ -728,6 +810,9 @@ public partial class Evaluation : MonoBehaviour
                 case CommentIdentifier.BedNoBedroom:
                     comment_.Add("最低限ベッドは置きましょう");
                     break;
+                case CommentIdentifier.BedNatural:
+                    comment_.Add("化学繊維，プラスチックが使われていないベッドを置きましょう");
+                    break;
                 case CommentIdentifier.BedGapWall:
                     comment_.Add("ベッドと壁の隙間を開けないようにしましょう");
                     break;
@@ -870,18 +955,21 @@ public partial class Evaluation : MonoBehaviour
                 //ここから色特性
                 //白関連
                 case CommentIdentifier.WhiteColorPurification:
-                    comment_.Add("白い家具を置きましょう");
+                    comment_.Add("白い家具を最低限1個置きましょう");
                     break;
                 case CommentIdentifier.WhiteColorResetYinYang:
                     comment_.Add("白い家具で部屋の陰陽を中和しましょう");
                     break;
 
                 //黒関連
-                case CommentIdentifier.BlackColorStrengthening:
+                case CommentIdentifier.BlackStrengthening:
+                    comment_.Add("家具の色を見直すか，黒い家具を消しましょう");
+                    break;
+                case CommentIdentifier.BlackNoStrengthening:
                     comment_.Add("黒い家具を置きましょう");
                     break;
                 case CommentIdentifier.BlackNoGreemWarm:
-                    comment_.Add("黒い家具を置くときは温かみのある家具や緑の家具と合わせましょう");
+                    comment_.Add("黒，青の家具を置くときは温かみのある家具や緑の家具と合わせましょう");
                     break;
                 case CommentIdentifier.BlackInteger:
                     comment_.Add("黒い家具を増やしましょう");
@@ -897,7 +985,7 @@ public partial class Evaluation : MonoBehaviour
                     break;
 
                 //赤関連
-                case CommentIdentifier.RedColorOne:
+                case CommentIdentifier.RedOne:
                     comment_.Add("赤い家具を最低限1個置きましょう");
                     break;
                 case CommentIdentifier.RedOver:
@@ -909,44 +997,52 @@ public partial class Evaluation : MonoBehaviour
                     comment_.Add("ピンクの家具を最低限1個置きましょう");
                     break;
                 case CommentIdentifier.PinkColorNoOrange:
-                    comment_.Add("ピンクの家具とオレンジの家具を合わせましょう");
+                    comment_.Add("オレンジの家具を最低限1個置きましょう");
                     break;
-                case CommentIdentifier.PinkColorNorth:
+                case CommentIdentifier.PinkBed:
                     comment_.Add("ピンクの家具を増やしましょう");
                     break;
+                case CommentIdentifier.PinkNorth:
+                    comment_.Add("ピンクの家具を増やしましょう");
+                    break;
+                case CommentIdentifier.PinkSplitNorth:
+                    comment_.Add("部屋の北側にピンクの家具を増やしましょう");
+                    break;
+
 
                 //青関連
                 case CommentIdentifier.BlueColorOne:
                     comment_.Add("青い家具を最低限1個置きましょう");
                     break;
-                case CommentIdentifier.BlueBedroom:
-                    comment_.Add("青い家具を増やしましょう");
-                    break;
-                case CommentIdentifier.BlueNoGreenWarm:
-                    comment_.Add("青い家具を置くときは温かみのある家具や緑の家具と合わせましょう");
+                case CommentIdentifier.BlueInteger:
+                    comment_.Add("青, 水色の家具を増やしましょう");
                     break;
 
 
                 //水色関連
                 case CommentIdentifier.LightBlueColorNoOrange:
-                    comment_.Add("水色の家具とオレンジの家具を合わせましょう");
+                    comment_.Add("オレンジの家具を最低限1個置きましょう");
                     break;
 
 
                 //オレンジ関連
                 case CommentIdentifier.OrangeColorNoPink:
-                    comment_.Add("ピンクの家具とオレンジの家具を合わせましょう");
+                    comment_.Add("ピンクの家具を最低限1個置きましょう");
                     break;
                 case CommentIdentifier.OrangeColorNoLightBlue:
-                    comment_.Add("水色の家具とオレンジの家具を合わせましょう");
+                    comment_.Add("水色の家具を最低限1個置きましょう");
                     break;
                 case CommentIdentifier.OrangeSouthEast:
                     comment_.Add("オレンジの家具を増やしましょう");
                     break;
+                case CommentIdentifier.OrangeSplitSouthEast:
+                    comment_.Add("部屋の南東側にオレンジの家具を増やしましょう");
+                    break;
+
 
                 //黄色関連
                 case CommentIdentifier.YellowBrownOcherOne:
-                    comment_.Add("");
+                    comment_.Add("黄色か茶色か黄土色の家具を最低限1個置きましょう");
                     break;
 
                 //緑
@@ -954,22 +1050,30 @@ public partial class Evaluation : MonoBehaviour
                 //黄緑
 
                 //ベージュ関連
-                case CommentIdentifier.BeigeInteger:
-                    comment_.Add("ベージュの家具を増やしましょう");
+                case CommentIdentifier.BeigeCreamNorthWest:
+                    comment_.Add("ベージュ, クリーム色の家具を増やしましょう");
+                    break;
+                case CommentIdentifier.BeigeCreamSplitNorthWest:
+                    comment_.Add("部屋の北西側にベージュ，クリーム色の家具を置きましょう");
                     break;
 
                 //クリーム色
-                case CommentIdentifier.CreamColor:
-                    comment_.Add("");
-                    break;
 
                 //茶
                 //黄土色
                 //金
                 case CommentIdentifier.GoldOne:
-                    comment_.Add("");
+                    comment_.Add("金色の家具を最低限1個置きましょう");
                     break;
+                case CommentIdentifier.GoldBad:
+                    comment_.Add("金色の家具が，悪い運気を増幅させています．");
+                    break;
+
                 //銀
+                case CommentIdentifier.SilverInteger:
+                    comment_.Add("銀色の家具を増やしましょう");
+                    break;
+
                 //紫
 
                 //材質関連
@@ -1023,6 +1127,9 @@ public partial class Evaluation : MonoBehaviour
                 case CommentIdentifier.HighFormNorthEast:
                     comment_.Add("背が高い家具を増やしましょう");
                     break;
+                case CommentIdentifier.HighFormSplitNorthEast:
+                    comment_.Add("部屋の北東側に背の高い家具を増やしましょう");
+                    break;
                 case CommentIdentifier.HighOver:
                     comment_.Add("背が高い家具が多すぎます");
                     break;
@@ -1031,12 +1138,18 @@ public partial class Evaluation : MonoBehaviour
                 case CommentIdentifier.LowFormSouthWest:
                     comment_.Add("背の低い家具を増やしましょう");
                     break;
+                case CommentIdentifier.LowFormSplitSouthWest:
+                    comment_.Add("部屋の南西側に背の低い家具を増やしましょう");
+                    break;
                 //縦長
                 //横長
 
                 //正方形
-                case CommentIdentifier.SquareMulti:
-                    comment_.Add("");
+                case CommentIdentifier.SquareOne:
+                    comment_.Add("正方形，または長方形の家具を最低限1個置きましょう．");
+                    break;
+                case CommentIdentifier.SquareBad:
+                    comment_.Add("悪い運気を消すか，正方形，長方形の家具をなくしましょう．");
                     break;
 
                 //長方形
@@ -1045,10 +1158,12 @@ public partial class Evaluation : MonoBehaviour
                     break;
 
                 //円形
-                case CommentIdentifier.RoundMulti:
-                    comment_.Add("");
+                case CommentIdentifier.RoundBad:
+                    comment_.Add("丸，または楕円形の家具を最低限1個置いて，悪い運気を浄化しましょう．");
                     break;
-
+                case CommentIdentifier.RoundOne:
+                    comment_.Add("丸，楕円形の家具をなくしましょう．");
+                    break;
                 //楕円形
                 case CommentIdentifier.EllipseMulti:
                     comment_.Add("");
@@ -1057,11 +1172,9 @@ public partial class Evaluation : MonoBehaviour
                 //三角形
 
                 //尖っている
-                case CommentIdentifier.SharpMulti:
-                    comment_.Add("");
+                case CommentIdentifier.SharpBad:
+                    comment_.Add("悪い運気を消すか，尖った家具をなくしましょう．");
                     break;
-
-                //奇抜な形状
 
 
 
@@ -1069,61 +1182,55 @@ public partial class Evaluation : MonoBehaviour
 
                 //高級そう
                 case CommentIdentifier.LuxuryNorthWest:
-                    comment_.Add("");
+                    comment_.Add("高級そうな家具を増やしましょう");
                     break;
-
+                case CommentIdentifier.LuxurySplitNorthWest:
+                    comment_.Add("部屋の北西側に高級そうな家具を増やしましょう");
+                    break;
                 case CommentIdentifier.LuxuryZeroNorthWest:
-                    comment_.Add("");
+                    comment_.Add("高級そうなの家具を最低限1個置きましょう");
                     break;
 
                 //音が出る
                 case CommentIdentifier.SoundEast:
-                    comment_.Add("");
+                    comment_.Add("音が出る家具や，いい匂いのする家具，風に関連する家具を増やしましょう");
                     break;
-
                 case CommentIdentifier.SoundSouthEast:
-                    comment_.Add("");
+                    comment_.Add("音が出る家具や，いい匂いのする家具，風に関連する家具を増やしましょう");
+                    break;
+                case CommentIdentifier.SoundSplitEastSouthEast:
+                    comment_.Add("部屋の東側や南東側に音が出る家具や，いい匂いのする家具，風に関連する家具を増やしましょう");
                     break;
 
                 //(いい)におい
-                case CommentIdentifier.SmellEast:
-                    comment_.Add("");
-                    break;
 
-                case CommentIdentifier.SmellSouthEast:
-                    comment_.Add("");
-                    break;
 
                 //発光
                 //硬い
                 //やわらかい
                 //温かみ
-                case CommentIdentifier.WarmFew:
-                    comment_.Add("");
+                case CommentIdentifier.WarmInteger:
+                    comment_.Add("温かみのある家具を増やしましょう");
                     break;
 
                 //冷たさ
                 case CommentIdentifier.ColdNorth:
-                    comment_.Add("");
+                    comment_.Add("冷たい家具を置かないようにしましょう");
                     break;
 
-                case CommentIdentifier.ColdInteger:
-                    comment_.Add("");
+                case CommentIdentifier.ColdSplitNorth:
+                    comment_.Add("部屋の北側に冷たい家具を置かないようにしましょう");
                     break;
 
                 //花関連
                 //風関連
-                case CommentIdentifier.WindEast:
-                    comment_.Add("");
-                    break;
-
-                case CommentIdentifier.WindSouthEast:
-                    comment_.Add("");
-                    break;
 
                 //西洋風
                 case CommentIdentifier.WesternWest:
-                    comment_.Add("");
+                    comment_.Add("西洋風な家具を増やしましょう");
+                    break;
+                case CommentIdentifier.WesternSplitWest:
+                    comment_.Add("部屋の西側に西洋風な家具を増やしましょう");
                     break;
 
                 //乱雑
